@@ -1,0 +1,215 @@
+import 'dart:convert';
+
+import 'package:drift/drift.dart';
+
+import '../app_database.dart';
+import '../tables.dart';
+
+part 'sync_dao.g.dart';
+
+/// Queue operation types. Payloads are JSON so the queue survives schema
+/// changes and can be inspected in tests.
+abstract final class PendingOperationType {
+  static const favoritesSync = 'favorites.sync';
+  static const pinsSync = 'pins.sync';
+  static const profileSync = 'profile.sync';
+  static const commandUpsert = 'command.upsert';
+  static const commandDelete = 'command.delete';
+}
+
+class PendingOperation {
+  const PendingOperation({
+    required this.id,
+    required this.uid,
+    required this.type,
+    required this.entityId,
+    required this.createdAt,
+    this.payload = const {},
+    this.attempts = 0,
+    this.lastError,
+  });
+
+  final int id;
+  final String uid;
+  final String type;
+  final String entityId;
+  final Map<String, dynamic> payload;
+  final DateTime createdAt;
+  final int attempts;
+  final String? lastError;
+}
+
+@DriftAccessor(tables: [PendingOperations, SyncState])
+class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
+  SyncDao(super.db);
+
+  /// Adds an operation to the durable queue. The unique key `(uid, type,
+  /// entityId)` collapses repeats: toggling a favorite twenty times leaves a
+  /// single operation carrying the latest requested state.
+  Future<void> enqueue({
+    required String uid,
+    required String type,
+    String entityId = '',
+    Map<String, dynamic> payload = const {},
+  }) async {
+    final companion = PendingOperationsCompanion(
+      uid: Value(uid),
+      type: Value(type),
+      entityId: Value(entityId),
+      payloadJson: Value(jsonEncode(payload)),
+      createdAt: Value(DateTime.now().toUtc()),
+      attempts: const Value(0),
+      lastError: const Value(null),
+    );
+    await transaction(() async {
+      // insertOnConflictUpdate targets the primary key only, so it cannot use
+      // the (uid, type, entityId) unique index. Look the row up explicitly and
+      // update it, keeping a single queued operation per entity.
+      final existing =
+          await (select(pendingOperations)..where(
+                (table) =>
+                    table.uid.equals(uid) &
+                    table.type.equals(type) &
+                    table.entityId.equals(entityId),
+              ))
+              .getSingleOrNull();
+      if (existing == null) {
+        await into(pendingOperations).insert(companion);
+      } else {
+        await (update(
+          pendingOperations,
+        )..where((table) => table.id.equals(existing.id))).write(companion);
+      }
+    });
+  }
+
+  Stream<int> watchPendingCount(String uid) {
+    return customSelect(
+      'SELECT COUNT(*) AS count FROM pending_operations WHERE uid = ?',
+      variables: [Variable.withString(uid)],
+      readsFrom: {pendingOperations},
+    ).watchSingle().map((row) {
+      final value = row.data['count'];
+      return value is int ? value : 0;
+    });
+  }
+
+  Future<int> pendingCount(String uid) async {
+    final row = await customSelect(
+      'SELECT COUNT(*) AS count FROM pending_operations WHERE uid = ?',
+      variables: [Variable.withString(uid)],
+      readsFrom: {pendingOperations},
+    ).getSingle();
+    final value = row.data['count'];
+    return value is int ? value : 0;
+  }
+
+  Future<List<PendingOperation>> readPending(
+    String uid, {
+    int limit = 25,
+  }) async {
+    final rows =
+        await (select(pendingOperations)
+              ..where((table) => table.uid.equals(uid))
+              ..orderBy([(table) => OrderingTerm.asc(table.id)])
+              ..limit(limit))
+            .get();
+    return rows.map(_mapOperation).toList(growable: false);
+  }
+
+  Future<PendingOperation?> readOperation(int id) async {
+    final row = await (select(
+      pendingOperations,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapOperation(row);
+  }
+
+  Future<bool> hasOperations(String uid, Set<String> types) async {
+    if (types.isEmpty) return false;
+    final placeholders = List.filled(types.length, '?').join(', ');
+    final row = await customSelect(
+      'SELECT COUNT(*) AS count FROM pending_operations '
+      'WHERE uid = ? AND type IN ($placeholders)',
+      variables: [Variable.withString(uid), ...types.map(Variable.withString)],
+      readsFrom: {pendingOperations},
+    ).getSingle();
+    final value = row.data['count'];
+    return value is int && value > 0;
+  }
+
+  Future<void> markSucceeded(int id) async {
+    await (delete(
+      pendingOperations,
+    )..where((table) => table.id.equals(id))).go();
+  }
+
+  Future<void> markFailed(int id, String error) async {
+    final clipped = error.length > 300 ? error.substring(0, 300) : error;
+    await customUpdate(
+      'UPDATE pending_operations '
+      'SET attempts = attempts + 1, last_error = ? WHERE id = ?',
+      variables: [Variable.withString(clipped), Variable.withInt(id)],
+      updates: {pendingOperations},
+    );
+  }
+
+  Future<void> removeForEntity(String uid, String type, String entityId) async {
+    await (delete(pendingOperations)..where(
+          (table) =>
+              table.uid.equals(uid) &
+              table.type.equals(type) &
+              table.entityId.equals(entityId),
+        ))
+        .go();
+  }
+
+  Future<void> clearForUser(String uid) async {
+    await (delete(
+      pendingOperations,
+    )..where((table) => table.uid.equals(uid))).go();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Small key/value state shared by seeding, sync bookkeeping and migration.
+  // ---------------------------------------------------------------------------
+
+  Future<String?> readState(String key) async {
+    final row = await (select(
+      syncState,
+    )..where((table) => table.key.equals(key))).getSingleOrNull();
+    return row?.value;
+  }
+
+  Future<void> writeState(String key, String value) async {
+    await into(
+      syncState,
+    ).insertOnConflictUpdate(SyncStateCompanion.insert(key: key, value: value));
+  }
+
+  Future<void> deleteState(String key) =>
+      (delete(syncState)..where((table) => table.key.equals(key))).go();
+
+  PendingOperation _mapOperation(PendingOperationRow row) {
+    var payload = <String, dynamic>{};
+    try {
+      final decoded = jsonDecode(row.payloadJson);
+      if (decoded is Map) {
+        payload = Map<String, dynamic>.from(decoded);
+      }
+    } on FormatException {
+      // A corrupt payload can never be replayed safely. Leaving it as an empty
+      // map means the processor will drop the operation with a logged error
+      // instead of deleting local user data.
+    }
+    return PendingOperation(
+      id: row.id,
+      uid: row.uid,
+      type: row.type,
+      entityId: row.entityId,
+      payload: payload,
+      createdAt: row.createdAt.toUtc(),
+      attempts: row.attempts,
+      lastError: row.lastError,
+    );
+  }
+}

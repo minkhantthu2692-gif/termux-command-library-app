@@ -1,0 +1,211 @@
+# Build instructions
+
+## Toolchain
+
+| Tool | Version used for this project |
+| --- | --- |
+| Flutter | 3.47.8 (stable) |
+| Dart | 3.13.7 |
+| Java/JDK | 17 |
+| Android min SDK | 24 (Android 7.0) |
+| Android compile/target SDK | Flutter defaults for the installed Flutter version |
+| Android Gradle Plugin | 9.1.0 |
+| Kotlin | 2.4.0 |
+
+Use a JDK that matches the Android Gradle Plugin requirement (JDK 17 is the safe
+choice for this repository). Flutter's Android Studio bundle includes a suitable
+JDK; `flutter doctor -v` shows which one is in use.
+
+## First-time setup
+
+```bash
+flutter pub get
+flutter gen-l10n
+dart run build_runner build --delete-conflicting-outputs
+flutter doctor
+```
+
+`build_runner` generates `lib/data/local/database/app_database.g.dart` and related
+Drift code. `flutter gen-l10n` generates `lib/app/localization/generated/`. Both are
+already checked in for convenience, but regenerate them after changing tables,
+DAOs or ARB files.
+
+## Run locally (no Firebase, no Groq key)
+
+```bash
+flutter run
+```
+
+The app opens with the bundled 52-guide catalogue and a local guest identity.
+Authentication screens explain that Firebase is not configured. This mode is
+useful for UI work, offline testing and Dart tests.
+
+## Run with Firebase
+
+Pass the client configuration as compile-time defines. Do not add a
+`google-services.json` requirement to the app; `FirebaseBootstrap` reads these
+values directly.
+
+PowerShell:
+
+```powershell
+flutter run `
+  --dart-define=FIREBASE_API_KEY=YOUR_API_KEY `
+  --dart-define=FIREBASE_APP_ID=YOUR_APP_ID `
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID `
+  --dart-define=FIREBASE_PROJECT_ID=YOUR_PROJECT_ID `
+  --dart-define=FIREBASE_AUTH_DOMAIN=YOUR_PROJECT_ID.firebaseapp.com
+```
+
+Bash:
+
+```bash
+flutter run \
+  --dart-define=FIREBASE_API_KEY=YOUR_API_KEY \
+  --dart-define=FIREBASE_APP_ID=YOUR_APP_ID \
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID \
+  --dart-define=FIREBASE_PROJECT_ID=YOUR_PROJECT_ID \
+  --dart-define=FIREBASE_AUTH_DOMAIN=YOUR_PROJECT_ID.firebaseapp.com
+```
+
+The auth domain is optional. All other values are required for online mode. If
+initialization fails, the app logs only a generic message and continues in
+local-only mode.
+
+For repeatable local builds, put defines in a private script or IDE run
+configuration that is not committed. Do not store server credentials or a
+service-account JSON in the repository.
+
+## Debug APK
+
+```bash
+flutter build apk --debug
+```
+
+Output:
+
+```text
+build/app/outputs/flutter-apk/app-debug.apk
+```
+
+With Firebase defines, append the same `--dart-define` flags to `flutter build`.
+
+## Release APK
+
+```bash
+flutter build apk --release
+```
+
+The current `android/app/build.gradle.kts` deliberately uses the debug signing
+configuration for release builds as a development placeholder. **Do not distribute
+that artifact as a production release.**
+
+To configure a private release key:
+
+1. Create a keystore outside the repository, for example:
+
+   ```bash
+   keytool -genkeypair -v \
+     -keystore ~/keystores/termux-command-library.jks \
+     -keyalg RSA -keysize 2048 -validity 10000 \
+     -alias termux-command-library
+   ```
+
+2. Create `android/key.properties` (already ignored by Git):
+
+   ```properties
+   storePassword=...
+   keyPassword=...
+   keyAlias=termux-command-library
+   storeFile=/absolute/path/to/termux-command-library.jks
+   ```
+
+3. Load the properties in `android/app/build.gradle.kts` and define a release
+   signing config, then use it in `buildTypes.release`.
+4. Never commit the keystore, `key.properties`, passwords or the extracted signing
+   certificate.
+5. Build and verify the signed APK/AAB:
+
+   ```bash
+   flutter build apk --release
+   flutter build appbundle --release
+   ```
+
+Flutter can split by ABI to reduce APK size:
+
+```bash
+flutter build apk --release --split-per-abi
+```
+
+## Build without Firebase values
+
+No `--dart-define` is valid for CI and local development. The resulting app is a
+complete offline library; cloud sign-in and synchronization are unavailable. The
+UI must not crash or silently claim that cloud features are configured.
+
+## Tests and analysis
+
+```bash
+dart format lib test
+flutter analyze
+flutter test
+```
+
+Current coverage includes:
+
+- Validators and command-risk analysis.
+- Command models, seed catalogue and seeding behavior.
+- Drift command/preference/settings/sync/AI DAOs, including file-backed
+  persistence and conflict rules.
+- AI repository caching, history, model selection and provider errors.
+- Groq HTTP key validation, model parsing and SSE streaming.
+- App onboarding, shell navigation, theme and Myanmar locale propagation.
+
+Widget tests that use Drift must unmount the widget tree, pump the fake async
+zone so Drift's stream-cleanup timers run, and close the database inside
+`tester.runAsync`. Skipping this can deadlock `Database.close()` in the fake async
+zone.
+
+Firebase rules tests and live Firebase/Groq end-to-end tests require external
+projects and are not run by `flutter test`.
+
+The Firestore rules tests run locally against the Firestore emulator with Node
+(Java only for the emulator itself); see
+[Security Rules › Emulator testing](security-rules.md#emulator-testing) for the
+exact command and the 25 covered cases.
+
+## Continuous integration outline
+
+A minimal CI job:
+
+```bash
+flutter pub get
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter build apk --debug
+```
+
+Use a pinned Flutter version. Do not inject production Firebase service-account
+credentials into PR builds. Firebase client identifiers can be supplied as CI
+secrets if an online smoke build is needed, but PRs from forks must not receive
+them.
+
+## Generated files
+
+- `lib/data/local/database/app_database.g.dart` — Drift code.
+- `lib/app/localization/generated/` — `gen-l10n` output.
+- `pubspec.lock` — commit for reproducible application builds.
+
+Regenerate instead of hand-editing generated files. If `build_runner` reports
+conflicting outputs, run:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+## Troubleshooting build failures
+
+See [Troubleshooting](troubleshooting.md). The most common causes are a missing
+JDK 17, an Android SDK/licence problem, a stale generated Drift file, or running
+`flutter test` before `flutter pub get`.

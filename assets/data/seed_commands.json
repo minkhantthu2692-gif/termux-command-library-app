@@ -1,0 +1,933 @@
+[
+  {
+    "id": "update-all-packages",
+    "name": "Update all packages",
+    "description": "Refresh the package index and upgrade every installed Termux package in one pass. Run this regularly so dependencies stay compatible.",
+    "categoryId": "package_management",
+    "tags": ["update", "maintenance", "pkg"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "2–5 min", "requires": "Termux"},
+    "steps": [
+      {"id": "update-all-packages-1", "order": 0, "title": "Update and upgrade", "description": "The two commands are chained so the upgrade uses the freshest index. Review the package list before confirming.", "command": "pkg update && pkg upgrade -y", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-01T08:00:00Z",
+    "updatedAt": "2026-10-12T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "install-a-package",
+    "name": "Install a package",
+    "description": "Install Git from the Termux repository and confirm the binary is available. The same pattern works for most CLI tools.",
+    "categoryId": "package_management",
+    "tags": ["install", "git", "pkg"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "install-a-package-1", "order": 0, "title": "Install Git", "description": "The -y flag accepts the dependency prompt. Remove it if you prefer to review every prompt.", "command": "pkg install git -y", "runMode": "foreground"},
+      {"id": "install-a-package-2", "order": 1, "title": "Verify the install", "description": "Printing the version proves the binary is on PATH.", "command": "git --version", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-02T08:00:00Z",
+    "updatedAt": "2026-10-03T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "search-for-packages",
+    "name": "Search the package repository",
+    "description": "Find packages by name or description without installing anything. Useful when you only remember part of a tool's name.",
+    "categoryId": "package_management",
+    "tags": ["search", "pkg", "discover"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "search-for-packages-1", "order": 0, "title": "Search for Python tools", "description": "Replace python with another keyword to explore a different area.", "command": "pkg search python", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-03T08:00:00Z",
+    "updatedAt": "2026-10-04T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "list-installed-packages",
+    "name": "List installed packages",
+    "description": "See exactly what is installed in your Termux prefix. Handy before removing tools or comparing two devices.",
+    "categoryId": "package_management",
+    "tags": ["packages", "audit", "pkg"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "list-installed-packages-1", "order": 0, "title": "Print installed packages", "description": "Pipe through less if the list is long: pkg list-installed | less.", "command": "pkg list-installed", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-04T08:00:00Z",
+    "updatedAt": "2026-10-05T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "remove-a-package",
+    "name": "Remove a package",
+    "description": "Uninstall a tool and then remove orphaned dependencies. Replace the example package name with your own before running.",
+    "categoryId": "package_management",
+    "tags": ["uninstall", "cleanup", "pkg"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1–2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "remove-a-package-1", "order": 0, "title": "Uninstall the package", "description": "The example removes cowsay. Change the name to the package you want to remove.", "command": "pkg uninstall cowsay", "runMode": "foreground"},
+      {"id": "remove-a-package-2", "order": 1, "title": "Remove unused dependencies", "description": "This only removes packages that nothing else depends on.", "command": "pkg autoremove -y", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-05T08:00:00Z",
+    "updatedAt": "2026-10-06T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "clean-package-cache",
+    "name": "Clean the package cache",
+    "description": "Free space by deleting cached .deb files. Installed packages are not affected.",
+    "categoryId": "package_management",
+    "tags": ["cache", "storage", "pkg"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "clean-package-cache-1", "order": 0, "title": "Clean cached packages", "description": "Termux can re-download anything it needs later.", "command": "pkg clean", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-06T08:00:00Z",
+    "updatedAt": "2026-10-06T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "install-proot-distro",
+    "name": "Install proot-distro",
+    "description": "proot-distro runs full Linux distributions without root. Install it once, then add the distributions you need.",
+    "categoryId": "linux_distributions",
+    "tags": ["proot", "linux", "install"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "install-proot-distro-1", "order": 0, "title": "Install the helper", "description": "proot-distro manages downloads, login shells and removal for you.", "command": "pkg install proot-distro -y", "runMode": "foreground"},
+      {"id": "install-proot-distro-2", "order": 1, "title": "Check the version", "description": "Confirm the command is available.", "command": "proot-distro --version", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-07T08:00:00Z",
+    "updatedAt": "2026-10-07T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "list-proot-distributions",
+    "name": "List available distributions",
+    "description": "See which distributions can be installed and which ones already exist on this device.",
+    "categoryId": "linux_distributions",
+    "tags": ["proot", "list", "linux"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "proot-distro"},
+    "steps": [
+      {"id": "list-proot-distributions-1", "order": 0, "title": "Show the catalogue", "description": "The output marks installed distributions and their aliases.", "command": "proot-distro list", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-08T08:00:00Z",
+    "updatedAt": "2026-10-07T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "install-ubuntu",
+    "name": "Install Ubuntu",
+    "description": "Download and unpack an Ubuntu root filesystem. This can take several minutes and needs a stable connection.",
+    "categoryId": "linux_distributions",
+    "tags": ["ubuntu", "proot", "install"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "5–10 min", "requires": "proot-distro • ~500 MB"},
+    "steps": [
+      {"id": "install-ubuntu-1", "order": 0, "title": "Install Ubuntu", "description": "Keep the app open while the root filesystem downloads.", "command": "proot-distro install ubuntu", "runMode": "foreground"},
+      {"id": "install-ubuntu-2", "order": 1, "title": "Confirm it is installed", "description": "The list now shows ubuntu as installed.", "command": "proot-distro list", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-09T08:00:00Z",
+    "updatedAt": "2026-10-08T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "login-to-ubuntu",
+    "name": "Enter Ubuntu",
+    "description": "Open an interactive Ubuntu shell from Termux. Your Termux home is available at /root in many proot setups, but check before relying on it.",
+    "categoryId": "linux_distributions",
+    "tags": ["ubuntu", "proot", "shell"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "1 min", "requires": "Ubuntu installed"},
+    "steps": [
+      {"id": "login-to-ubuntu-1", "order": 0, "title": "Log in", "description": "Type exit inside Ubuntu to return to Termux.", "command": "proot-distro login ubuntu", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-10T08:00:00Z",
+    "updatedAt": "2026-10-08T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "remove-ubuntu",
+    "name": "Remove an installed distribution",
+    "description": "Permanently delete a proot root filesystem and everything inside it. Back up files you need before confirming.",
+    "categoryId": "linux_distributions",
+    "tags": ["proot", "remove", "cleanup"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "1 min", "requires": "proot-distro"},
+    "steps": [
+      {"id": "remove-ubuntu-1", "order": 0, "title": "Remove the root filesystem", "description": "This deletes the Ubuntu installation. Files stored outside it are untouched.", "command": "proot-distro remove ubuntu", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-11T08:00:00Z",
+    "updatedAt": "2026-10-09T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "create-a-shell-alias",
+    "name": "Create a shell alias",
+    "description": "Save keystrokes with a permanent alias. This example makes ll print a detailed directory listing.",
+    "categoryId": "shell_scripting",
+    "tags": ["alias", "bash", "productivity"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "create-a-shell-alias-1", "order": 0, "title": "Add the alias", "description": "The single quotes are preserved in .bashrc exactly as written.", "command": "echo \"alias ll='ls -lah'\" >> ~/.bashrc", "runMode": "foreground"},
+      {"id": "create-a-shell-alias-2", "order": 1, "title": "Reload the shell", "description": "Open a new session or source the file now.", "command": "source ~/.bashrc", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-12T08:00:00Z",
+    "updatedAt": "2026-10-09T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "customize-the-prompt",
+    "name": "Customize the shell prompt",
+    "description": "Show the user, host and working directory in every Bash prompt. The change is written to .bashrc and survives restarts.",
+    "categoryId": "shell_scripting",
+    "tags": ["prompt", "bash", "customize"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Bash"},
+    "steps": [
+      {"id": "customize-the-prompt-1", "order": 0, "title": "Write a new PS1", "description": "The escaped codes are expanded by Bash each time a prompt is drawn.", "command": "echo \"export PS1='\\u@\\h:\\w\\$ '\" >> ~/.bashrc", "runMode": "foreground"},
+      {"id": "customize-the-prompt-2", "order": 1, "title": "Apply it", "description": "Reload the file in the current session.", "command": "source ~/.bashrc", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-13T08:00:00Z",
+    "updatedAt": "2026-10-10T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "first-bash-script",
+    "name": "Write your first Bash script",
+    "description": "Create a small script that fails fast and prints a message. The heredoc writes the file without touching your editor.",
+    "categoryId": "shell_scripting",
+    "tags": ["bash", "script", "beginner"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "first-bash-script-1", "order": 0, "title": "Create hello.sh", "description": "Every newline and quote in the heredoc is preserved.", "command": "cat > hello.sh <<'EOF'\n#!/data/data/com.termux/files/usr/bin/bash\nset -euo pipefail\necho \"Hello from Termux\"\nEOF", "runMode": "foreground"},
+      {"id": "first-bash-script-2", "order": 1, "title": "Make it executable", "description": "A script needs the executable bit before it can be launched directly.", "command": "chmod +x hello.sh", "runMode": "foreground"},
+      {"id": "first-bash-script-3", "order": 2, "title": "Run it", "description": "The output should be: Hello from Termux", "command": "./hello.sh", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-14T08:00:00Z",
+    "updatedAt": "2026-10-10T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "loop-over-log-files",
+    "name": "Loop over log files",
+    "description": "Iterate through matching files and process each one. This is a safer starting point than parsing ls output.",
+    "categoryId": "shell_scripting",
+    "tags": ["loop", "bash", "files"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "Bash"},
+    "steps": [
+      {"id": "loop-over-log-files-1", "order": 0, "title": "Run the loop", "description": "If no .log files exist, the literal pattern is skipped by the nullglob suggestion below.", "command": "shopt -s nullglob\nfor file in *.log; do\n  echo \"Processing $file\"\ndone", "runMode": "foreground"},
+      {"id": "loop-over-log-files-2", "order": 1, "title": "Make globbing permanent", "description": "Optional: keep nullglob enabled in future shells.", "command": "echo 'shopt -s nullglob' >> ~/.bashrc", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-15T08:00:00Z",
+    "updatedAt": "2026-10-11T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "check-shell-scripts",
+    "name": "Lint a shell script",
+    "description": "Catch quoting and portability mistakes before a script runs. ShellCheck explains every finding with a link.",
+    "categoryId": "shell_scripting",
+    "tags": ["shellcheck", "lint", "quality"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "check-shell-scripts-1", "order": 0, "title": "Install ShellCheck", "description": "A small package that pays for itself quickly.", "command": "pkg install shellcheck -y", "runMode": "foreground"},
+      {"id": "check-shell-scripts-2", "order": 1, "title": "Check your script", "description": "Replace hello.sh with the file you want to inspect.", "command": "shellcheck hello.sh", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-16T08:00:00Z",
+    "updatedAt": "2026-10-11T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "set-up-shared-storage",
+    "name": "Set up shared storage",
+    "description": "Give Termux access to Android's shared storage so you can open files from Downloads and other folders. Android will ask for permission.",
+    "categoryId": "file_storage",
+    "tags": ["storage", "permissions", "android"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "set-up-shared-storage-1", "order": 0, "title": "Request access", "description": "Accept Android's permission dialog. Shared storage appears under ~/storage/shared.", "command": "termux-setup-storage", "runMode": "foreground"},
+      {"id": "set-up-shared-storage-2", "order": 1, "title": "List the links", "description": "Folders such as downloads, dcim and shared are created if permission was granted.", "command": "ls ~/storage", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-17T08:00:00Z",
+    "updatedAt": "2026-10-12T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "find-large-files",
+    "name": "Find large files and folders",
+    "description": "Sort the current directory by size so you can see what is using space. Review the list before deleting anything.",
+    "categoryId": "file_storage",
+    "tags": ["storage", "du", "cleanup"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "find-large-files-1", "order": 0, "title": "Show the largest entries", "description": "Change ~ to another folder to inspect it instead of your home directory.", "command": "du -ah ~ 2>/dev/null | sort -rh | head -20", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-18T08:00:00Z",
+    "updatedAt": "2026-10-12T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "search-text-in-files",
+    "name": "Search text inside files",
+    "description": "Find a string recursively with line numbers. Useful for projects and configuration files.",
+    "categoryId": "file_storage",
+    "tags": ["grep", "search", "files"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "search-text-in-files-1", "order": 0, "title": "Search a folder", "description": "Replace TODO with your search term and ~/projects with the folder to scan.", "command": "grep -RIn \"TODO\" ~/projects", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-19T08:00:00Z",
+    "updatedAt": "2026-10-13T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "create-a-tar-archive",
+    "name": "Create a compressed archive",
+    "description": "Package a project folder into a dated .tar.gz archive. The original files stay in place.",
+    "categoryId": "file_storage",
+    "tags": ["tar", "backup", "archive"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1–3 min", "requires": "Termux"},
+    "steps": [
+      {"id": "create-a-tar-archive-1", "order": 0, "title": "Build the archive", "description": "The filename includes today's date. Adjust the folder name.", "command": "tar -czf backup-$(date +%F).tar.gz ~/projects", "runMode": "foreground"},
+      {"id": "create-a-tar-archive-2", "order": 1, "title": "Verify it exists", "description": "Check the size before moving the archive somewhere else.", "command": "ls -lh backup-$(date +%F).tar.gz", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-20T08:00:00Z",
+    "updatedAt": "2026-10-13T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "extract-a-tar-archive",
+    "name": "Extract a tar archive",
+    "description": "Unpack a .tar.gz file into the current directory. Run it inside an empty folder if you do not know the archive contents.",
+    "categoryId": "file_storage",
+    "tags": ["tar", "extract", "archive"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "extract-a-tar-archive-1", "order": 0, "title": "List the contents first", "description": "Reviewing entries prevents surprises before extraction.", "command": "tar -tzf backup.tar.gz | head -20", "runMode": "foreground"},
+      {"id": "extract-a-tar-archive-2", "order": 1, "title": "Extract", "description": "Replace the filename with the archive you want to unpack.", "command": "tar -xzf backup.tar.gz", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-21T08:00:00Z",
+    "updatedAt": "2026-10-14T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "extract-a-zip-file",
+    "name": "Extract a zip file",
+    "description": "Install unzip and inspect an archive before writing its files. Useful for downloads from shared storage.",
+    "categoryId": "file_storage",
+    "tags": ["zip", "extract", "files"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "extract-a-zip-file-1", "order": 0, "title": "Install unzip", "description": "Termux does not always include unzip by default.", "command": "pkg install unzip -y", "runMode": "foreground"},
+      {"id": "extract-a-zip-file-2", "order": 1, "title": "Inspect the archive", "description": "Check the paths before extracting.", "command": "unzip -l archive.zip", "runMode": "foreground"},
+      {"id": "extract-a-zip-file-3", "order": 2, "title": "Extract", "description": "Files are written relative to the current directory.", "command": "unzip archive.zip", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-22T08:00:00Z",
+    "updatedAt": "2026-10-14T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "check-disk-usage",
+    "name": "Check disk usage",
+    "description": "See remaining space and the size of top-level folders. This helps diagnose failed installs and downloads.",
+    "categoryId": "file_storage",
+    "tags": ["disk", "storage", "diagnostics"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "check-disk-usage-1", "order": 0, "title": "Show free space", "description": "The Use% column shows how full each mount is.", "command": "df -h", "runMode": "foreground"},
+      {"id": "check-disk-usage-2", "order": 1, "title": "Show folder sizes", "description": "Only top-level entries in your home directory are measured.", "command": "du -sh ~/* 2>/dev/null | sort -h", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-23T08:00:00Z",
+    "updatedAt": "2026-10-15T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "set-git-identity",
+    "name": "Set your Git identity",
+    "description": "Configure the name and email written into every commit. Use the address attached to your Git hosting account.",
+    "categoryId": "git_version_control",
+    "tags": ["git", "config", "setup"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Git"},
+    "steps": [
+      {"id": "set-git-identity-1", "order": 0, "title": "Set your name", "description": "Replace the example name before running.", "command": "git config --global user.name \"Your Name\"", "runMode": "foreground"},
+      {"id": "set-git-identity-2", "order": 1, "title": "Set your email", "description": "Replace the example address with the one your host recognizes.", "command": "git config --global user.email \"you@example.com\"", "runMode": "foreground"},
+      {"id": "set-git-identity-3", "order": 2, "title": "Verify", "description": "Both values should be printed.", "command": "git config --global --list", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-24T08:00:00Z",
+    "updatedAt": "2026-10-15T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "clone-a-repository",
+    "name": "Clone a repository",
+    "description": "Download a Git repository and enter it. This example uses Termux's public app repository.",
+    "categoryId": "git_version_control",
+    "tags": ["git", "clone", "termux"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1–2 min", "requires": "Git • network"},
+    "steps": [
+      {"id": "clone-a-repository-1", "order": 0, "title": "Clone", "description": "HTTPS cloning works without an SSH key. Private repositories need authentication.", "command": "git clone https://github.com/termux/termux-app.git", "runMode": "foreground"},
+      {"id": "clone-a-repository-2", "order": 1, "title": "Enter the folder", "description": "Inspect the README before building or modifying anything.", "command": "cd termux-app && ls", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-25T08:00:00Z",
+    "updatedAt": "2026-10-16T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "daily-git-workflow",
+    "name": "Daily Git workflow",
+    "description": "Review, stage and commit changes with a clear message. Follow your project's contribution rules before committing.",
+    "categoryId": "git_version_control",
+    "tags": ["git", "commit", "workflow"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "2 min", "requires": "Git repository"},
+    "steps": [
+      {"id": "daily-git-workflow-1", "order": 0, "title": "Check status", "description": "See which files changed before staging anything.", "command": "git status --short", "runMode": "foreground"},
+      {"id": "daily-git-workflow-2", "order": 1, "title": "Review the diff", "description": "Read the changes. Add individual paths instead of . when you want more control.", "command": "git diff", "runMode": "foreground"},
+      {"id": "daily-git-workflow-3", "order": 2, "title": "Stage and commit", "description": "Replace the example message with a short description of the change.", "command": "git add . && git commit -m \"Describe the change\"", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-26T08:00:00Z",
+    "updatedAt": "2026-10-16T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "create-a-new-repository",
+    "name": "Publish a new repository",
+    "description": "Turn a folder into a Git repository and push it to an empty remote. Create the empty remote on your Git host first.",
+    "categoryId": "git_version_control",
+    "tags": ["git", "remote", "publish"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "3–5 min", "requires": "Git • Git host account"},
+    "steps": [
+      {"id": "create-a-new-repository-1", "order": 0, "title": "Initialize locally", "description": "Run this inside the project folder.", "command": "git init && git add . && git commit -m \"Initial commit\"", "runMode": "foreground"},
+      {"id": "create-a-new-repository-2", "order": 1, "title": "Rename the branch", "description": "Many hosts expect main.", "command": "git branch -M main", "runMode": "foreground"},
+      {"id": "create-a-new-repository-3", "order": 2, "title": "Add the remote", "description": "Replace the example URL with your empty repository.", "command": "git remote add origin https://github.com/your-account/your-repository.git", "runMode": "foreground"},
+      {"id": "create-a-new-repository-4", "order": 3, "title": "Push", "description": "Your host will ask for authentication. Never paste a password into a shared script.", "command": "git push -u origin main", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-27T08:00:00Z",
+    "updatedAt": "2026-10-17T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "create-an-ssh-key",
+    "name": "Create an SSH key",
+    "description": "Generate an Ed25519 key for Git hosting or servers. The private key never leaves your device; only copy the public key.",
+    "categoryId": "security_testing",
+    "tags": ["ssh", "keys", "security"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "OpenSSH"},
+    "steps": [
+      {"id": "create-an-ssh-key-1", "order": 0, "title": "Install OpenSSH", "description": "Skip if ssh-keygen is already available.", "command": "pkg install openssh -y", "runMode": "foreground"},
+      {"id": "create-an-ssh-key-2", "order": 1, "title": "Generate the key", "description": "Press Enter to accept the default path, then choose a passphrase.", "command": "ssh-keygen -t ed25519 -C \"you@example.com\"", "runMode": "foreground"},
+      {"id": "create-an-ssh-key-3", "order": 2, "title": "Print the public key", "description": "Copy only the .pub line into your account settings. Never share id_ed25519.", "command": "cat ~/.ssh/id_ed25519.pub", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-28T08:00:00Z",
+    "updatedAt": "2026-10-17T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "install-python",
+    "name": "Install Python",
+    "description": "Install Python 3 and confirm the interpreter and package manager work. Termux packages are not the same as Android system Python.",
+    "categoryId": "programming_development",
+    "tags": ["python", "install", "pip"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "install-python-1", "order": 0, "title": "Install Python", "description": "This includes pip.", "command": "pkg install python -y", "runMode": "foreground"},
+      {"id": "install-python-2", "order": 1, "title": "Check both tools", "description": "Both commands should print a version.", "command": "python --version && pip --version", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-29T08:00:00Z",
+    "updatedAt": "2026-10-18T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "python-virtual-environment",
+    "name": "Create a Python virtual environment",
+    "description": "Keep project dependencies isolated from the system Python. Activate the environment before installing packages.",
+    "categoryId": "programming_development",
+    "tags": ["python", "venv", "project"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "Python"},
+    "steps": [
+      {"id": "python-virtual-environment-1", "order": 0, "title": "Create the environment", "description": "Run this inside your project folder.", "command": "python -m venv .venv", "runMode": "foreground"},
+      {"id": "python-virtual-environment-2", "order": 1, "title": "Activate it", "description": "Your prompt usually changes while the environment is active.", "command": "source .venv/bin/activate", "runMode": "foreground"},
+      {"id": "python-virtual-environment-3", "order": 2, "title": "Upgrade pip", "description": "Install dependencies only after activation.", "command": "python -m pip install --upgrade pip", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-09-30T08:00:00Z",
+    "updatedAt": "2026-10-18T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "install-python-requirements",
+    "name": "Install project requirements",
+    "description": "Recreate a Python environment from a requirements file. Activate the virtual environment first.",
+    "categoryId": "programming_development",
+    "tags": ["python", "pip", "dependencies"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1–3 min", "requires": "Python • venv"},
+    "steps": [
+      {"id": "install-python-requirements-1", "order": 0, "title": "Install the requirements", "description": "The file must exist in the current directory.", "command": "python -m pip install -r requirements.txt", "runMode": "foreground"},
+      {"id": "install-python-requirements-2", "order": 1, "title": "Freeze the resolved versions", "description": "Optional: write exact versions back to the file for reproducible installs.", "command": "python -m pip freeze > requirements.lock.txt", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-01T08:00:00Z",
+    "updatedAt": "2026-10-19T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "install-nodejs",
+    "name": "Install Node.js",
+    "description": "Install the LTS Node.js runtime and npm. Avoid building native modules until their build tools are installed.",
+    "categoryId": "programming_development",
+    "tags": ["nodejs", "npm", "install"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "install-nodejs-1", "order": 0, "title": "Install Node.js LTS", "description": "The package name is nodejs-lts in Termux.", "command": "pkg install nodejs-lts -y", "runMode": "foreground"},
+      {"id": "install-nodejs-2", "order": 1, "title": "Verify", "description": "Both Node and npm should report versions.", "command": "node --version && npm --version", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-02T08:00:00Z",
+    "updatedAt": "2026-10-19T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "start-a-node-project",
+    "name": "Start a Node project",
+    "description": "Create a package manifest and install Express. Run npm init inside an empty project folder.",
+    "categoryId": "programming_development",
+    "tags": ["nodejs", "npm", "express"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2–4 min", "requires": "Node.js • network"},
+    "steps": [
+      {"id": "start-a-node-project-1", "order": 0, "title": "Create package.json", "description": "The -y flag accepts the defaults.", "command": "npm init -y", "runMode": "foreground"},
+      {"id": "start-a-node-project-2", "order": 1, "title": "Install Express", "description": "Dependencies are written to package.json and node_modules.", "command": "npm install express", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-03T08:00:00Z",
+    "updatedAt": "2026-10-20T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "serve-files-over-http",
+    "name": "Serve a folder over HTTP",
+    "description": "Share files on your local network with Python's built-in server. Stop it with Ctrl+C when finished.",
+    "categoryId": "programming_development",
+    "tags": ["python", "http", "lan"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Python"},
+    "steps": [
+      {"id": "serve-files-over-http-1", "order": 0, "title": "Start the server", "description": "Run it in the folder to share. Open http://localhost:8000 on the device, or the device IP from another machine on the same network.", "command": "python -m http.server 8000", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-04T08:00:00Z",
+    "updatedAt": "2026-10-20T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "install-a-c-compiler",
+    "name": "Install a C compiler",
+    "description": "Install Clang and verify it can compile a trivial program. This is the starting point for many native builds.",
+    "categoryId": "programming_development",
+    "tags": ["clang", "c", "compiler"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "install-a-c-compiler-1", "order": 0, "title": "Install Clang", "description": "The package also pulls in the linker and standard headers.", "command": "pkg install clang -y", "runMode": "foreground"},
+      {"id": "install-a-c-compiler-2", "order": 1, "title": "Check the version", "description": "Printing the version confirms the toolchain is on PATH.", "command": "clang --version", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-05T08:00:00Z",
+    "updatedAt": "2026-10-21T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "search-with-ripgrep",
+    "name": "Search code with ripgrep",
+    "description": "ripgrep is faster and friendlier than grep for source trees. It respects ignore files such as .gitignore by default.",
+    "categoryId": "programming_development",
+    "tags": ["ripgrep", "search", "code"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "search-with-ripgrep-1", "order": 0, "title": "Install ripgrep", "description": "The binary is named rg.", "command": "pkg install ripgrep -y", "runMode": "foreground"},
+      {"id": "search-with-ripgrep-2", "order": 1, "title": "Search the current project", "description": "Replace TODO with your pattern.", "command": "rg \"TODO\" .", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-06T08:00:00Z",
+    "updatedAt": "2026-10-21T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "connect-over-ssh",
+    "name": "Connect to a server over SSH",
+    "description": "Open an interactive shell on a remote machine. Host keys are verified on first connection, so read the fingerprint prompt carefully.",
+    "categoryId": "networking_remote",
+    "tags": ["ssh", "remote", "server"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "1 min", "requires": "OpenSSH • server access"},
+    "steps": [
+      {"id": "connect-over-ssh-1", "order": 0, "title": "Install OpenSSH", "description": "Skip if ssh is already available.", "command": "pkg install openssh -y", "runMode": "foreground"},
+      {"id": "connect-over-ssh-2", "order": 1, "title": "Connect", "description": "Replace the example user and host. SSH will prompt for a password or use your key.", "command": "ssh user@example.com", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-07T08:00:00Z",
+    "updatedAt": "2026-10-22T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "copy-files-over-ssh",
+    "name": "Copy a file to a server",
+    "description": "Upload a local file to a remote home directory with scp. Replace the example host and filename before running.",
+    "categoryId": "networking_remote",
+    "tags": ["scp", "transfer", "remote"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "1 min", "requires": "OpenSSH • server access"},
+    "steps": [
+      {"id": "copy-files-over-ssh-1", "order": 0, "title": "Upload the file", "description": "The trailing colon separates the host from the remote path.", "command": "scp ./file.txt user@example.com:~/", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-08T08:00:00Z",
+    "updatedAt": "2026-10-22T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "start-sshd-in-termux",
+    "name": "Start an SSH server in Termux",
+    "description": "Accept SSH connections to your device on a local network. Set a strong password and only enable this on networks you trust.",
+    "categoryId": "networking_remote",
+    "tags": ["sshd", "termux", "remote"],
+    "metadata": {"difficulty": "Advanced", "estimatedTime": "3 min", "requires": "OpenSSH • LAN"},
+    "steps": [
+      {"id": "start-sshd-in-termux-1", "order": 0, "title": "Install OpenSSH", "description": "The package includes both the client and server.", "command": "pkg install openssh -y", "runMode": "foreground"},
+      {"id": "start-sshd-in-termux-2", "order": 1, "title": "Set a password", "description": "Choose a long, unique password. The username is printed by whoami.", "command": "passwd", "runMode": "foreground"},
+      {"id": "start-sshd-in-termux-3", "order": 2, "title": "Start the server", "description": "Termux sshd listens on port 8022 by default. Stop it with Ctrl+C.", "command": "sshd", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-09T08:00:00Z",
+    "updatedAt": "2026-10-23T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "download-a-file-with-curl",
+    "name": "Download a file with curl",
+    "description": "Download over HTTPS and keep the server's filename. Verify downloaded files before running or opening them.",
+    "categoryId": "networking_remote",
+    "tags": ["curl", "download", "network"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1–3 min", "requires": "curl • network"},
+    "steps": [
+      {"id": "download-a-file-with-curl-1", "order": 0, "title": "Download", "description": "The -L flag follows redirects. Replace the example URL.", "command": "curl -L -O https://example.com/file.zip", "runMode": "foreground"},
+      {"id": "download-a-file-with-curl-2", "order": 1, "title": "Check the result", "description": "A non-zero size is a good first sign that the download completed.", "command": "ls -lh file.zip", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-10T08:00:00Z",
+    "updatedAt": "2026-10-23T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "test-network-connectivity",
+    "name": "Test network connectivity",
+    "description": "Check HTTPS responses and DNS resolution when installs or syncs fail. Both commands are read-only.",
+    "categoryId": "networking_remote",
+    "tags": ["network", "diagnostics", "dns"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "test-network-connectivity-1", "order": 0, "title": "Check an HTTPS endpoint", "description": "Look for a 2xx or 3xx status line.", "command": "curl -I https://example.com", "runMode": "foreground"},
+      {"id": "test-network-connectivity-2", "order": 1, "title": "Check DNS", "description": "Install dnsutils first if nslookup is missing: pkg install dnsutils -y.", "command": "nslookup example.com", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-11T08:00:00Z",
+    "updatedAt": "2026-10-24T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "find-your-public-ip",
+    "name": "Find your public IP",
+    "description": "Ask a public service for the address your connection appears to use. This is not stored by the app and may be shared with your ISP.",
+    "categoryId": "networking_remote",
+    "tags": ["ip", "network", "privacy"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "curl • network"},
+    "steps": [
+      {"id": "find-your-public-ip-1", "order": 0, "title": "Query the address", "description": "The service sees your request; use it only when needed.", "command": "curl -s https://ifconfig.me", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-12T08:00:00Z",
+    "updatedAt": "2026-10-24T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "inspect-running-processes",
+    "name": "Inspect running processes",
+    "description": "See what Termux and its child processes are doing. Use this when a background job will not stop or a build is stuck.",
+    "categoryId": "system_process",
+    "tags": ["processes", "ps", "diagnostics"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "inspect-running-processes-1", "order": 0, "title": "List processes", "description": "The PID column is what you pass to kill if a process must be stopped.", "command": "ps -ef", "runMode": "foreground"},
+      {"id": "inspect-running-processes-2", "order": 1, "title": "Filter for one program", "description": "Replace python with the process name you are looking for.", "command": "ps -ef | grep python", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-13T08:00:00Z",
+    "updatedAt": "2026-10-24T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "check-memory-and-load",
+    "name": "Check memory and load",
+    "description": "See available RAM and current load before running a heavy build. Termux shares memory with Android, so leave headroom.",
+    "categoryId": "system_process",
+    "tags": ["memory", "performance", "diagnostics"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "check-memory-and-load-1", "order": 0, "title": "Show memory", "description": "The available column is the most useful number for headroom.", "command": "free -h", "runMode": "foreground"},
+      {"id": "check-memory-and-load-2", "order": 1, "title": "Show load", "description": "Load is sampled over 1, 5 and 15 minutes.", "command": "uptime", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-14T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "inspect-termux-environment",
+    "name": "Inspect the Termux environment",
+    "description": "Collect the Termux version, architecture and prefix paths. Useful when reporting a problem or choosing a package build.",
+    "categoryId": "system_process",
+    "tags": ["termux", "diagnostics", "architecture"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "inspect-termux-environment-1", "order": 0, "title": "Show Termux information", "description": "Review the output for the version and architecture fields.", "command": "termux-info", "runMode": "foreground"},
+      {"id": "inspect-termux-environment-2", "order": 1, "title": "Show the architecture", "description": "Common values are aarch64, arm and x86_64.", "command": "uname -m", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-15T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "send-a-notification",
+    "name": "Send a completion notification",
+    "description": "Ask Android to show a notification when a long job finishes. Requires the Termux:API app and the termux-api package.",
+    "categoryId": "termux_api_device",
+    "tags": ["termux-api", "notification", "automation"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "Termux:API"},
+    "steps": [
+      {"id": "send-a-notification-1", "order": 0, "title": "Install the API package", "description": "The Termux:API companion app must also be installed from the official releases.", "command": "pkg install termux-api -y", "runMode": "foreground"},
+      {"id": "send-a-notification-2", "order": 1, "title": "Send a test notification", "description": "Android may ask for notification permission the first time.", "command": "termux-notification --title \"Build finished\" --content \"Your command completed\"", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-16T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "use-the-clipboard",
+    "name": "Read and write the clipboard",
+    "description": "Move short text between Termux and Android without retyping it. Requires Termux:API.",
+    "categoryId": "termux_api_device",
+    "tags": ["termux-api", "clipboard", "productivity"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux:API"},
+    "steps": [
+      {"id": "use-the-clipboard-1", "order": 0, "title": "Put text on the clipboard", "description": "The text is placed on Android's clipboard for other apps.", "command": "echo \"Hello from Termux\" | termux-clipboard-set", "runMode": "foreground"},
+      {"id": "use-the-clipboard-2", "order": 1, "title": "Read it back", "description": "This prints the current clipboard contents; treat it as sensitive if you copied a secret.", "command": "termux-clipboard-get", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-17T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "check-battery-status",
+    "name": "Check battery status",
+    "description": "Read the battery level, charging state and temperature with Termux:API. Useful in scripts that should pause on low battery.",
+    "categoryId": "termux_api_device",
+    "tags": ["termux-api", "battery", "device"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux:API"},
+    "steps": [
+      {"id": "check-battery-status-1", "order": 0, "title": "Query the battery", "description": "The output is JSON, which is easy to parse in a script.", "command": "termux-battery-status", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-18T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "keep-termux-awake",
+    "name": "Keep Termux awake",
+    "description": "Hold a wake lock while a long download or build runs. Release it when finished so Android can manage battery normally.",
+    "categoryId": "termux_api_device",
+    "tags": ["termux-api", "wake-lock", "background"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "1 min", "requires": "Termux:API"},
+    "steps": [
+      {"id": "keep-termux-awake-1", "order": 0, "title": "Acquire a wake lock", "description": "Android will keep the CPU available while this lock is held.", "command": "termux-wake-lock", "runMode": "foreground"},
+      {"id": "keep-termux-awake-2", "order": 1, "title": "Release it", "description": "Run this after the long task. Leaving a wake lock on drains the battery.", "command": "termux-wake-unlock", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-19T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "audit-listening-ports",
+    "name": "Audit listening ports",
+    "description": "List TCP and UDP sockets that are accepting connections. Reviewing this helps you notice unexpected local services.",
+    "categoryId": "security_testing",
+    "tags": ["ports", "audit", "network"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "2 min", "requires": "Termux"},
+    "steps": [
+      {"id": "audit-listening-ports-1", "order": 0, "title": "Install net-tools", "description": "Termux may not ship netstat by default.", "command": "pkg install net-tools -y", "runMode": "foreground"},
+      {"id": "audit-listening-ports-2", "order": 1, "title": "List listening sockets", "description": "The -tulpn flags select TCP/UDP listeners and show ports; process names may require root.", "command": "netstat -tulpn", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-20T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "verify-a-download",
+    "name": "Verify a downloaded file",
+    "description": "Compare a SHA-256 checksum with the value published by the source. A mismatch means the download should not be used.",
+    "categoryId": "security_testing",
+    "tags": ["checksum", "download", "integrity"],
+    "metadata": {"difficulty": "Beginner", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "verify-a-download-1", "order": 0, "title": "Compute the hash", "description": "Replace file.zip with the file you downloaded.", "command": "sha256sum file.zip", "runMode": "foreground"},
+      {"id": "verify-a-download-2", "order": 1, "title": "Compare manually", "description": "Read the published checksum from the vendor's official release page and compare every character. Do not trust a checksum sent over an unverified channel.", "command": "sha256sum file.zip", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-21T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  },
+  {
+    "id": "inspect-file-permissions",
+    "name": "Inspect file permissions",
+    "description": "Find world-writable files in your home directory. Unexpected permissions are worth investigating before sharing a backup.",
+    "categoryId": "security_testing",
+    "tags": ["permissions", "files", "audit"],
+    "metadata": {"difficulty": "Intermediate", "estimatedTime": "1 min", "requires": "Termux"},
+    "steps": [
+      {"id": "inspect-file-permissions-1", "order": 0, "title": "Find world-writable files", "description": "The command only lists candidates; it does not change permissions.", "command": "find ~ -type f -perm -o+w 2>/dev/null", "runMode": "foreground"}
+    ],
+    "authorUid": "termux-library",
+    "authorNickname": "Termux Library",
+    "createdAt": "2026-10-22T08:00:00Z",
+    "updatedAt": "2026-10-25T08:00:00Z",
+    "version": 1,
+    "status": "published"
+  }
+]

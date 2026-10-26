@@ -1,0 +1,256 @@
+# Troubleshooting
+
+## The app opens in local-only mode
+
+**Symptom:** Sign-in says Firebase is not configured, the sync badge says
+local-only, but browsing works.
+
+**Cause:** One or more required `--dart-define` values were missing, or Firebase
+initialization failed.
+
+**Check:**
+
+```bash
+flutter run --dart-define=FIREBASE_API_KEY=... \
+  --dart-define=FIREBASE_APP_ID=... \
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
+  --dart-define=FIREBASE_PROJECT_ID=...
+```
+
+- All four are required; the auth domain is optional.
+- Values are compile-time. Hot reload does not pick up new defines; restart the
+  app.
+- Make sure the Android app is registered under package
+  `com.minkh.termux_command_library`.
+- Check `flutter logs` for the generic Firebase initialization warning.
+- The app intentionally does not print credentials or raw Firebase errors.
+
+If you only need offline browsing, local-only mode is expected and supported.
+
+## `PERMISSION_DENIED` from Firestore
+
+Possible causes:
+
+1. Rules were not deployed. Run:
+   `firebase deploy --only firestore:rules`.
+2. The user is anonymous and is trying to publish. Anonymous users are guests;
+   link or register first.
+3. The document's `authorUid` does not match the signed-in UID.
+4. An update changed `authorUid`, `createdAt`, or lowered `version`.
+5. A field limit in `validCommand`/`validProfile` was exceeded.
+6. The profile document contains an unexpected field (for example a manually
+   added `role`).
+7. The user is editing another user's guide without the admin claim.
+8. The admin claim was just granted but the ID token is stale. Sign out/in or
+   refresh the token.
+
+Read the Firestore error details in a debug build. Do not paste service-account
+credentials or full tokens into issue reports.
+
+## `failed-precondition` / missing index
+
+Firestore needs the composite indexes in `firestore.indexes.json`:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+Index builds can take minutes. The error usually includes a console link. Until
+the index is ready, manual refresh fails but local browsing continues. Do not work
+around it by fetching unbounded collections in the client.
+
+## Sign-in or registration fails
+
+| Error | Checks |
+| --- | --- |
+| `operation-not-allowed` | Email/Password or Anonymous provider is disabled in Firebase Auth |
+| `invalid-email` | Email syntax; a bare username is completed as `@gmail.com` |
+| `wrong-password` / `invalid-credential` | Credentials; use password reset |
+| `email-already-in-use` | Sign in instead of registering, or link from the anonymous account |
+| `weak-password` | Use at least 8 characters |
+| `credential-already-in-use` | The email belongs to another Firebase UID; sign in to that account. Different UIDs are not merged. |
+| `requires-recent-login` | Re-authenticate with the current password before changing/deleting |
+
+Password reset emails require the device to receive email and the Firebase
+authorized-domain/template configuration to be valid. The app never handles OTP
+codes.
+
+## Favorites or pins disappear
+
+- Confirm you are signed in to the same account/UID.
+- Pins are ordered per user; favorites are a set.
+- While offline, changes are queued. Check the sync badge for pending operations
+  and errors.
+- Signing out returns to the local guest identity, which has separate favorites and
+  pins. This is expected; it is not data loss.
+- Clearing local cache preserves favorites/pins. Clearing app storage or
+  uninstalling removes local rows; cloud rows return after sign-in and sync.
+- Two devices editing favorites at the same time can overwrite each other's array.
+  See [Synchronization](synchronization.md#favorites-and-pins).
+
+## Changes remain "pending"
+
+- Check network connectivity and the sync status message.
+- Retryable failures back off automatically; manual refresh can force a retry.
+- A permanent permission/validation failure stops the batch. Fix the cause (for
+  example, sign in again or correct an oversized field), then refresh.
+- Do not clear app data to "fix" pending writes; that discards unsynced local
+  changes. Use the visible retry/refresh path.
+
+## Termux is not detected
+
+- Install the official `com.termux` APK from GitHub releases, not the outdated Play
+  Store build.
+- Android 11+ requires package visibility. This repo declares
+  `<queries><package android:name="com.termux" /></queries>`; do not remove it.
+- Open Termux once after installation.
+- Rebuild/reinstall the app after manifest changes.
+
+## `RUN_COMMAND` permission is denied / command does nothing
+
+1. Enable external apps in Termux:
+
+   ```bash
+   echo "allow-external-apps=true" >> ~/.termux/termux.properties
+   termux-reload-settings
+   ```
+
+2. Grant the permission in Android settings:
+   **Apps → Termux Command Library → Permissions**.
+3. Restart Termux and the app.
+4. Use foreground mode for output; background commands may not show output.
+5. The app only reports "sent". Check Termux's terminal for the actual result.
+
+If `termux-*` commands are missing, install Termux:API and grant the Android
+permissions it requests. See [Termux integration](termux-integration.md).
+
+## AI key test fails
+
+| Status | Meaning |
+| --- | --- |
+| 401 / 403 | Invalid, revoked or unauthorized key |
+| 429 | Rate limit; wait and retry |
+| 5xx | Groq service error; retry later |
+| Timeout/network | No connectivity to `api.groq.com` |
+| Empty model list | Key valid but no models available; refresh later |
+
+- Copy the key without spaces or quotes.
+- The key is stored in Android secure storage. If secure storage is unavailable on
+  a modified device, remove/reinstall the app and try again.
+- Test the key in the Groq console to separate app and account issues.
+- The app does not use a hard-coded fallback model. Fetch models and select one.
+- Revoke a leaked key immediately in the Groq console.
+
+## AI answers are not cached
+
+- Caching must be enabled with a non-zero duration.
+- The cache key includes provider, model, prompt version, messages, temperature and
+  max tokens. Changing any of them produces a new entry.
+- History clearing does not clear the response cache; use the separate cache
+  control.
+- Cache entries expire. Changing the model or prompt version invalidates old
+  entries by design.
+
+## Attachments are rejected
+
+Supported types: `.txt`, `.md`, `.sh`, `.py`, `.log`. Maximum size is 256 KB and
+one file per message. Large text files are truncated to the first 20,000
+characters for the prompt; the UI discloses this. Attachment contents are not
+saved in history, only the file name. Do not attach secrets.
+
+## Myanmar text renders poorly
+
+- Select **Myanmar** in Settings → Appearance.
+- Keep the Myanmar fallback font enabled; it is bundled as `NotoSansMyanmar`.
+- If a selected Latin font lacks Myanmar glyphs, Flutter falls back to Noto Sans
+  Myanmar. Do not remove the fallback from the theme.
+- Test on a physical device; some OEM font overrides can behave differently.
+
+## Theme/navigation bar colors look wrong
+
+- The app supports light, dark and system modes. The system navigation bar color
+  follows the app theme.
+- Some Android OEMs enforce their own navigation-bar contrast. The app disables
+  contrast enforcement where supported, but cannot override every vendor skin.
+- Test gesture and three-button navigation on the target Android version.
+- Status-bar icon brightness is derived from the theme; a custom `AppBar`
+  `systemOverlayStyle` can override it intentionally.
+
+## Database or migration failure
+
+- Never delete or rewrite the SQLite file to "fix" a schema issue; that loses
+  unsynced data.
+- Add an explicit, additive migration in `AppDatabase.migration`.
+- Regenerate Drift code after schema changes:
+  `dart run build_runner build --delete-conflicting-outputs`.
+- Check foreign keys and indexes.
+- If the database is corrupt, the app should surface an error; recovering data is
+  preferable to silently clearing it.
+
+## `flutter analyze` fails on generated files
+
+Regenerate the generated code first:
+
+```bash
+flutter pub get
+flutter gen-l10n
+dart run build_runner build --delete-conflicting-outputs
+flutter analyze
+```
+
+Do not hand-edit `*.g.dart` or `lib/app/localization/generated/`.
+
+## `flutter test` hangs
+
+Widget tests that use Drift must:
+
+1. Unmount the `ProviderScope` (`pumpWidget(const SizedBox.shrink())`).
+2. Pump the fake async zone enough for Drift's stream-cleanup timers to run.
+3. Close the database inside `tester.runAsync`.
+
+Awaiting `db.close()` directly in the fake async test zone can deadlock because
+Drift waits for timers that only run when the test advances time. The widget test
+helpers in this repository demonstrate the correct sequence.
+
+Also make sure no stale `flutter test`/Dart processes are holding files; stop them
+and rerun.
+
+## Android build fails
+
+- Use JDK 17. Run `flutter doctor -v` and check the Java version.
+- Accept Android SDK licenses: `flutter doctor --android-licenses`.
+- Clean only when necessary; deleting `build/` is safe, deleting user data or
+  generated source is not:
+  `flutter clean && flutter pub get`.
+- Ensure `android/local.properties` points at the installed Flutter SDK.
+- If Gradle fails after an SDK/AGP upgrade, read the first error, not the last
+  cascade.
+- Release builds currently use debug signing as a placeholder. Configure a private
+  keystore before distribution.
+
+## App cannot be installed over an existing build
+
+The signing key changed. Uninstall the old development build first, or use the same
+signing key consistently. Never uninstall a production app without confirming that
+cloud data is synchronized and local-only drafts are backed up.
+
+## Firebase quota or billing surprise
+
+- Firestore reads/writes and Auth usage are visible in the Firebase console.
+- Set Google Cloud budget alerts.
+- The app limits sync pages, listener size and local search to reduce reads.
+- Do not run refresh loops or per-keystroke Firestore queries.
+- Managed Firestore exports require a Blaze plan.
+
+## Nothing here matches
+
+Collect:
+
+- Flutter and Dart versions (`flutter --version`).
+- Android version and device model.
+- Exact reproduction steps.
+- Whether Firebase is configured (without printing keys).
+- A redacted debug log.
+
+Do not include API keys, service-account JSON, keystores, passwords, full ID
+tokens or private command content in a public issue.

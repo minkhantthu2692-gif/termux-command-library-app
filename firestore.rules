@@ -1,0 +1,222 @@
+rules_version = '2';
+
+// Termux Command Library – Firestore Security Rules
+//
+// Collections
+//   commands/{commandId}  Public command guides. Anyone may read published
+//                         guides; only the registered owner (or an admin) may
+//                         create, edit or delete a guide.
+//   users/{uid}           Private profile, favorite IDs and ordered pin IDs.
+//                         Only the signed-in owner may read or write the doc.
+//
+// Roles are derived exclusively from Firebase Authentication:
+//   guest      → not signed in, or an anonymous Firebase user
+//   registered → password (or other linked) sign-in provider
+//   admin      → custom claim `admin: true`, set only by a trusted operator
+//
+// Clients can never grant themselves a role because this file does not read
+// any role from the profile document.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isRegistered() {
+      return signedIn() &&
+        request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isPublished() {
+      return resource.data.status == 'published';
+    }
+
+    function validCategory(categoryId) {
+      return categoryId in [
+        'package_management',
+        'linux_distributions',
+        'shell_scripting',
+        'file_storage',
+        'git_version_control',
+        'programming_development',
+        'networking_remote',
+        'system_process',
+        'termux_api_device',
+        'security_testing'
+      ];
+    }
+
+    // Tags are short display labels. Firestore rules cannot iterate lists, so
+    // the array size and joined length are the enforceable bounds; join() also
+    // fails for non-string elements. The client trims and validates each tag.
+    function validTags(tags) {
+      return tags.size() <= 10
+        && tags.join('').size() <= 320;
+    }
+
+    // Metadata is an open-ended string map for display extras. Firestore rules
+    // cannot iterate arbitrary map keys without exploding the expression
+    // budget, so only the entry count is enforced here; the 1 MiB document cap
+    // bounds the payload and the client validates value types before writing.
+    function validMetadata(metadata) {
+      return metadata.size() <= 12;
+    }
+
+    function validStep(step, requireContent) {
+      return step is map
+        && step.keys().hasOnly([
+             'id', 'order', 'title', 'description', 'command', 'runMode'
+           ])
+        && step.id is string
+        && step.id.size() > 0
+        && step.id.size() <= 64
+        && step.order is int
+        && step.order >= 0
+        && step.order < 30
+        && step.title is string
+        && step.title.size() <= 120
+        && step.description is string
+        && step.description.size() <= 2000
+        && step.command is string
+        && step.command.size() <= 64000
+        && step.runMode in ['foreground', 'background']
+        && (!requireContent ||
+             (step.title.size() > 0 && step.command.size() > 0));
+    }
+
+    function validStepAt(steps, index, requireContent) {
+      return steps.size() <= index ||
+        validStep(steps[index], requireContent);
+    }
+
+    // Firestore evaluates at most 1,000 rule expressions per request and has
+    // no way to iterate a list. Deep-validating every step in a long guide
+    // exhausts that budget, so the first five steps are checked field by field
+    // and the remaining steps rely on the size cap plus client-side validation.
+    // This is a schema-integrity trade-off, not an authorization boundary:
+    // only the registered owner or an admin may write a command at all.
+    function validSteps(steps, requireContent) {
+      return steps.size() <= 30
+        && (!requireContent || steps.size() > 0)
+        && validStepAt(steps, 0, requireContent)
+        && validStepAt(steps, 1, requireContent)
+        && validStepAt(steps, 2, requireContent)
+        && validStepAt(steps, 3, requireContent)
+        && validStepAt(steps, 4, requireContent);
+    }
+
+    function validCommand(data) {
+      return data.keys().hasAll([
+          'name', 'description', 'categoryId', 'tags', 'metadata', 'steps',
+          'authorUid', 'authorNickname', 'createdAt', 'updatedAt', 'version',
+          'status'
+        ])
+        && data.keys().hasOnly([
+          'name', 'description', 'categoryId', 'tags', 'metadata', 'steps',
+          'authorUid', 'authorNickname', 'createdAt', 'updatedAt', 'version',
+          'status'
+        ])
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 100
+        && data.description is string
+        && data.description.size() <= 4000
+        && data.categoryId is string
+        && validCategory(data.categoryId)
+        && data.tags is list
+        && validTags(data.tags)
+        && data.metadata is map
+        && validMetadata(data.metadata)
+        && data.steps is list
+        && validSteps(data.steps, data.status == 'published')
+        && data.authorUid is string
+        && data.authorUid.size() > 0
+        && data.authorNickname is string
+        && data.authorNickname.size() <= 40
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.version is int
+        && data.version >= 1
+        && data.status in ['published', 'draft', 'archived'];
+    }
+
+    match /commands/{commandId} {
+      // Published guides are public. Authors can read their own drafts and an
+      // admin can inspect anything for moderation.
+      allow read: if isPublished()
+        || isAdmin()
+        || (signedIn() && resource.data.authorUid == request.auth.uid);
+
+      allow create: if isRegistered()
+        && request.resource.data.authorUid == request.auth.uid
+        && validCommand(request.resource.data);
+
+      allow update: if isAdmin()
+        || (isRegistered() &&
+            isOwner(resource.data.authorUid) &&
+            request.resource.data.authorUid == resource.data.authorUid
+            && request.resource.data.createdAt == resource.data.createdAt
+            && request.resource.data.version >= resource.data.version
+            && validCommand(request.resource.data));
+
+      allow delete: if isAdmin()
+        || (isRegistered() && isOwner(resource.data.authorUid));
+    }
+
+    function validProfile(uid, data) {
+      return data.uid == uid
+        && data.keys().hasOnly([
+          'uid', 'nickname', 'email', 'avatarId', 'favoriteIds', 'pinnedIds',
+          'createdAt', 'updatedAt'
+        ])
+        && data.updatedAt is timestamp
+        && data.keys().hasAll([
+          'uid', 'nickname', 'email', 'avatarId', 'createdAt', 'updatedAt'
+        ])
+        && data.nickname is string
+        && data.nickname.size() <= 40
+        && data.email is string
+        && data.email.size() <= 254
+        && data.avatarId is string
+        && data.avatarId.size() <= 40
+        // Arrays may be absent briefly while a profile is created and the
+        // favorites/pins queues catch up. They are validated whenever present.
+        // Firestore rules cannot iterate arbitrary-length lists, so the size
+        // cap and joined length are the enforceable bounds; the client also
+        // validates each ID.
+        && (!('favoriteIds' in data) ||
+             (data.favoriteIds is list
+              && data.favoriteIds.size() <= 5000
+              && data.favoriteIds.join('').size() <= 640000))
+        && (!('pinnedIds' in data) ||
+             (data.pinnedIds is list
+              && data.pinnedIds.size() <= 200
+              && data.pinnedIds.join('').size() <= 25600))
+        && data.createdAt is timestamp;
+    }
+
+    match /users/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && validProfile(uid, request.resource.data);
+      allow update: if isOwner(uid)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validProfile(uid, request.resource.data);
+    }
+
+    // Everything else is denied. In particular there is no client-writable
+    // role document and no storage bucket configured for this project.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
