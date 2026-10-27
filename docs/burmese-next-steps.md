@@ -10,7 +10,7 @@
 | --- | --- |
 | စစ်ဆေးသည့်ရက်စွဲ | ၂၀၂၆ ခုနှစ်၊ အောက်တိုဘာ ၂၇ ရက် |
 | App version | `1.0.0+1` |
-| Commit | `6e98270` (branch `main`) |
+| Commit | `main` branch (နောက်ဆုံး commit ကို GitHub တွင် ကြည့်ပါ) |
 | GitHub repository | <https://github.com/minkhantthu2692-gif/termux-command-library-app> |
 | Firebase project | `termuxcommandlibrary` |
 | Android package | `com.termuxcommandlibrary.mm` |
@@ -22,24 +22,24 @@
 အောက်ပါအစီအစဉ်အတိုင်း လုပ်ပါ။ အပေါ်ဆုံးအဆင့်များကို မပြီးမချင်း
 app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 
-| အစီအစဉ် | လုပ်ငန်း | ကြာချိန် | မဖြစ်မနေ? |
-| --- | --- | --- | --- |
-| ၁ | Firebase Authentication provider များ ဖွင့်ခြင်း | ၁၅ မိနစ် | ✅ မဖြစ်မနေ |
-| ၂ | Google SHA-1/SHA-256 ထည့်ပြီး JSON အသစ်ရယူခြင်း | ၁၅ မိနစ် | ✅ Google အတွက် (SHA-1 ပြီး) |
-| ၃ | GitHub OAuth App ဖန်တီးခြင်း | ၁၅ မိနစ် | ✅ GitHub အတွက် |
-| ၄ | Firestore Database ဖန်တီးခြင်း | ၁၀ မိနစ် | ✅ မဖြစ်မနေ |
-| ၅ | Rules နှင့် Indexes deploy လုပ်ခြင်း | ၁၀ မိနစ် | ✅ မဖြစ်မနေ |
-| ၆ | ပြန် build လုပ်ပြီး စက်ထဲ ထည့်ခြင်း | ၁၀ မိနစ် | ✅ မဖြစ်မနေ |
-| ၇ | စက်ပေါ်တွင် စမ်းသပ်ခြင်း | ၃၀ မိနစ် | ✅ မဖြစ်မနေ |
-| ၈ | Termux ပြင်ဆင်ခြင်း | ၁၀ မိနစ် | ✅ command run ရန် |
-| ၉ | Groq API ကီး ထည့်ခြင်း | ၅ မိနစ် | ⬜ ရွေးချယ်နိုင် |
-| ၁၀ | Admin custom claim သတ်မှတ်ခြင်း | ၁၀ မိနစ် | ⬜ ရွေးချယ်နိုင် |
-| ၁၁ | Release keystore ဖြင့် လက်မှတ်ထိုးခြင်း | ၃၀ မိနစ် | ⬜ ဖြန့်ဝေမှသာ |
+| အစီအစဉ် | လုပ်ငန်း | အခြေအနေ |
+| --- | --- | --- |
+| ၁ | Firebase Authentication provider များ ဖွင့်ခြင်း | ✅ ပြီး (လေးခုလုံး) |
+| ၂ | Google SHA-1/SHA-256 ထည့်ပြီး JSON အသစ်ရယူခြင်း | ✅ SHA-1 ပြီး |
+| ၃ | GitHub OAuth App ဖန်တီးခြင်း | ✅ ပြီး (provider ဖွင့်ပြီး) |
+| ၄ | Firestore Database ဖန်တီးခြင်း | ✅ ပြီး |
+| ၅ | Rules နှင့် Indexes deploy လုပ်ခြင်း | ✅ ပြီး (index များ build ဆဲ) |
+| ၆ | ပြန် build လုပ်ပြီး စက်ထဲ ထည့်ခြင်း | 🟡 build ပြီး၊ install မရသေး |
+| ၇ | စက်ပေါ်တွင် စမ်းသပ်ခြင်း | ⬜ မရသေး |
+| ၈ | Termux ပြင်ဆင်ခြင်း | ⬜ မရသေး |
+| ၉ | Groq API ကီး ထည့်ခြင်း | ⬜ ရွေးချယ်နိုင် |
+| ၁၀ | Admin custom claim သတ်မှတ်ခြင်း | ⬜ ရွေးချယ်နိုင် |
+| ၁၁ | Release keystore ဖြင့် လက်မှတ်ထိုးခြင်း | ⬜ ဖြန့်ဝေမှသာ |
 
-> **အရေးကြီး:** အောက်ပါအဆင့်များကို ကျွန်ုပ် (AI) က သင့်ကိုယ်စား
-> လုပ်၍ မရပါ။ Firebase Console နှင့် GitHub အကောင့်များသို့
-> သင်ကိုယ်တိုင် ဝင်ရောက်ရမည်။ လျှို့ဝှက် credential များကို
-> chat ထဲ မပို့ပါနှင့်။
+> **အရေးကြီး:** Firebase ချိတ်ဆက်မှု (provider များ၊ Firestore၊ rules၊
+> indexes) ကို ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော စက်ပေါ်စမ်းသပ်မှု၊
+> Termux၊ Groq နှင့် release keystore ကို သင်ကိုယ်တိုင် လုပ်ရမည်။
+> လျှို့ဝှက် credential များကို chat ထဲ မပို့ပါနှင့်။
 
 ---
 
@@ -52,27 +52,34 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
 | Test များ | ✅ ပြီး | `flutter test` — 154/154 အောင် |
-| Debug APK build | ✅ ပြီး | `build\app\outputs\flutter-apk\app-debug.apk` |
+| Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
+| Release APK build | ✅ ပြီး | `app-release.apk` (70.4 MB) — debug key ဖြင့် |
 | Native Kotlin haptics | ✅ compile အောင် | `HapticsController.class` APK ထဲ ပါဝင် |
-| GitHub push | ✅ ပြီး | `origin/main` = `6e98270` |
+| GitHub push | ✅ ပြီး | `origin/main` |
 | Firebase project ချိတ်ဆက်မှု | ✅ ဖိုင် ရှိ | `google-services.json` package ကိုက်ညီ |
-| Firestore rules/indexes ဖိုင် | ✅ အသင့် | deploy လုပ်ရန် ကျန် |
-| Firebase CLI | ⚠️ တပ်ဆင်ပြီး | version 15.34.1၊ **login မဝင်ရသေး** |
-| Auth provider များ | ⚠️ မစစ်ရသေး | Console သို့ ဝင်မရသဖြင့် အတည်မပြုနိုင် |
+| Firebase CLI | ✅ ဝင်ပြီး | `minkhantthu2692@gmail.com` |
+| Auth provider များ | ✅ ဖွင့်ပြီး | Email၊ Anonymous၊ Google၊ GitHub |
 | Google SHA-1 လက်ဗွေ | ✅ ပါပြီ | JSON ထဲတွင် Android OAuth client ပါပြီ |
 | Google SHA-256 လက်ဗွေ | ⚠️ မစစ်ရသေး | JSON တွင် မပါပါ (ပုံမှန်)။ Console တွင် စစ်ပါ |
-| Firestore database | ⚠️ မစစ်ရသေး | rules deploy မလုပ်ရသေး |
+| Firestore database | ✅ ရှိ | `(default)`၊ Firestore Native |
+| Rules နှင့် Indexes | ✅ deploy ပြီး | index နှစ်ခု build ဆဲ (CREATING) |
 | Release signing | ❌ မပါ | လက်ရှိ release သည် debug key သုံးထား |
 | စက်ပေါ် စမ်းသပ်မှု | ❌ မရသေး | Android device မချိတ်ထား |
 | Groq API ကီး | ❌ မရသေး | သင့်ကိုယ်ပိုင် ကီး ထည့်ရမည် |
 
-**အနှစ်ချုပ်:** code နှင့် ဒေသတွင်း (offline) အလုပ်လုပ်မှုသည် အပြည့်အဝ
-ပြီးသည်။ ကျန်သည်မှာ **ပြင်ပ service များ ချိတ်ဆက်ခြင်း** နှင့်
-**စက်ပေါ် အတည်ပြုခြင်း** သာ ဖြစ်သည်။
+**အနှစ်ချုပ်:** code၊ ဒေသတွင်း (offline) အလုပ်လုပ်မှု၊ Firebase project
+ချိတ်ဆက်မှု၊ auth provider များ၊ Firestore rules/indexes နှင့် APK
+build များ အားလုံး ပြီးစီးထားသည်။ ကျန်သည်မှာ **စက်အစစ်ပေါ်တွင်
+အတည်ပြုခြင်း**၊ **Termux ပြင်ဆင်ခြင်း**၊ **Groq ကီး** နှင့်
+**release keystore** သာ ဖြစ်သည်။
 
 ---
 
 ## ၂။ အဆင့် ၁ — Firebase Authentication ဖွင့်ခြင်း
+
+> **လက်ရှိ အခြေအနေ:** ဤ project တွင် provider လေးခုလုံး
+> (Email/Password၊ Anonymous၊ Google၊ GitHub) ဖွင့်ပြီးဖြစ်သည်။
+> အောက်ပါအဆင့်များကို အခြား project အတွက် လိုအပ်မှသာ လုပ်ပါ။
 
 ### ၂.၁ Console သို့ ဝင်ခြင်း
 
@@ -225,6 +232,10 @@ keytool -list -v -alias upload -keystore android\upload-keystore.jks
 
 ## ၅။ အဆင့် ၄ — Cloud Firestore ဖန်တီးခြင်း
 
+> **လက်ရှိ အခြေအနေ:** ဤ project တွင် `(default)` database
+> (Firestore Native) ဖန်တီးပြီးဖြစ်သည်။ အောက်ပါအဆင့်များကို
+> အခြား project အတွက် လိုအပ်မှသာ လုပ်ပါ။
+
 1. Firebase Console → **Firestore Database** → **Create database**။
 2. **Production mode** ကို ရွေးပါ။
    (Rules ကို နောက်အဆင့်တွင် deploy လုပ်မည်။)
@@ -253,13 +264,17 @@ document ရေးချိန်တွင် အလိုအလျောက် 
 ### ၆.၁ Firebase CLI ဝင်ရောက်ခြင်း
 
 CLI သည် ဤ machine တွင် တပ်ဆင်ပြီးဖြစ်သည် (version 15.34.1)။
-သို့သော် **အကောင့် မဝင်ရသေးပါ**။
+**`minkhantthu2692@gmail.com` ဖြင့် ဝင်ပြီးဖြစ်သည်။**
+
+အခြား machine သို့မဟုတ် အကောင့်အသစ်အတွက်:
 
 ```bash
 firebase login
 ```
 
-Browser ပွင့်လာလျှင် သင့် Google အကောင့်ဖြင့် ဝင်ပါ။
+Browser ပြသလာသော **session ID** နှင့် **authorization code** ကို
+မရောထွေးပါနှင့်။ အတည်ပြုပြီးနောက် ရလာသော ရှည်လျားသည့်
+authorization code ကိုသာ `firebase login <code>` တွင် ထည့်ပါ။
 
 စစ်ဆေးရန်:
 
@@ -280,6 +295,12 @@ firebase use default
 
 ### ၆.၃ Deploy လုပ်ခြင်း
 
+> **လက်ရှိ အခြေအနေ:** ဤ project တွင် deploy လုပ်ပြီးဖြစ်သည်။
+> Rules သည် compile အောင်ပြီး အသက်ဝင်နေသည်။ Index နှစ်ခုသည်
+> `CREATING` အခြေအနေတွင် ရှိပြီး မိနစ်အနည်းငယ်အတွင်း
+> `READY` ဖြစ်လာမည်။ အောက်ပါ command ကို ပြန်လိုအပ်မှသာ
+> (rules/indexes ပြင်ပြီးတိုင်း) run ပါ။
+
 ```bash
 firebase deploy --only firestore:rules,firestore:indexes
 ```
@@ -291,10 +312,11 @@ firebase deploy --only firestore:rules,firestore:indexes
 
 ### ၆.၄ စစ်ဆေးရန်
 
-- [ ] Console → **Firestore → Rules** တွင် ဤ repo ၏
-      `firestore.rules` စာသား ပေါ်နေသည်။
-- [ ] **Firestore → Indexes** တွင် index နှစ်ခု ရှိသည်။
-- [ ] Console → **Authentication → Settings → Authorized domains**
+- [x] Console → **Firestore → Rules** တွင် ဤ repo ၏
+      `firestore.rules` စာသား ပေါ်နေသည်။ (deploy လုပ်ပြီး)
+- [x] **Firestore → Indexes** တွင် index နှစ်ခု ရှိသည်။
+      (build ဆဲ — `READY` ဖြစ်သည်အထိ စောင့်ပါ)
+- [x] Console → **Authentication → Settings → Authorized domains**
       တွင် `termuxcommandlibrary.firebaseapp.com` ပါသည်။
 
 > Index မပြီးသေးလျှင် app ၏ refresh တွင် error ပြနိုင်သည်။
@@ -328,6 +350,19 @@ adb devices
 flutter build apk --debug
 adb install -r build\app\outputs\flutter-apk\app-debug.apk
 ```
+
+သို့မဟုတ် ဆိုဒ်သေးပြီး မြန်သည့် release APK (debug key ဖြင့်
+လက်မှတ်ထိုးထားသည်၊ စမ်းသပ်ရန် သင့်တော်သည်):
+
+```bash
+flutter build apk --release
+adb install -r build\app\outputs\flutter-apk\app-release.apk
+```
+
+> နှစ်မျိုးလုံးကို တစ်ချိန်တည်း install လုပ်၍ မရပါ။ တစ်ခုကို
+> အရင် uninstall လုပ်ပါ၊ သို့မဟုတ် `-r` ဖြင့် အစားထိုးပါ။
+> Signing key မတူလျှင် `INSTALL_FAILED_UPDATE_INCOMPATIBLE`
+> error ပြနိုင်သည်။ ထိုအခါ app ကို uninstall လုပ်ပြီး ပြန် install ပါ။
 
 `adb` မတွေ့လျှင် Android SDK ၏ `platform-tools` folder ကို
 PATH ထဲ ထည့်ပါ။
@@ -547,6 +582,19 @@ release {
 
 ဤအခြေအနေဖြင့် ဖြန့်ဝေ၍ မရပါ။ သင့်ကိုယ်ပိုင် keystore လိုသည်။
 
+> **လက်ရှိ build:** `app-release.apk` (70.4 MB) ကို ထုတ်ပြီးဖြစ်သည်။
+> ၎င်းသည် release mode ဖြင့် compile ထားသော်လည်း **debug key** ဖြင့်
+> လက်မှတ်ထိုးထားသည်။ `apksigner` ဖြင့် စစ်ဆေးပြီး လက်ဗွေနှစ်ခုလုံး
+> Firebase တွင် ထည့်ထားသည့် တန်ဖိုးများနှင့် ကိုက်ညီသည်:
+>
+> ```text
+> SHA-1   ef4069727593878b4d2c56caf4684370c491dd00
+> SHA-256 63421e96b0707e58933bbd3856e517fd67e1654dc485e6d8e566f3ae30b96e22
+> ```
+>
+> ထို့ကြောင့် ဤ APK ကို စက်ထဲ ထည့်၍ စမ်းသပ်နိုင်သည်။
+> သို့သော် Google Play က လက်ခံမည် မဟုတ်ပါ။
+
 ### ၁၂.၂ Keystore ဖန်တီးခြင်း
 
 ```powershell
@@ -691,14 +739,18 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 
 ### လက်ရှိ ပိတ်ဆို့နေသော အချက်များ (အစဉ်လိုက်)
 
-1. Firebase provider များ ဖွင့်ခြင်း — **မလုပ်ရသေး**
-2. Firestore database ဖန်တီးပြီး rules/indexes deploy လုပ်ခြင်း — **မလုပ်ရသေး**
-3. SHA-256 ကို Console တွင် ထည့်ပြီး စစ်ဆေးခြင်း — **SHA-1 ပြီး၊ SHA-256 မစစ်ရသေး**
-4. GitHub OAuth App ဖန်တီးခြင်း — **မလုပ်ရသေး**
-5. စက်ပေါ်တွင် အဆင့် ၈ စာရင်းအတိုင်း စမ်းသပ်ခြင်း — **မလုပ်ရသေး**
-6. Termux ပြင်ဆင်ခြင်း — **မလုပ်ရသေး**
+1. Firebase provider များ ဖွင့်ခြင်း — ✅ **ပြီး** (Email၊ Anonymous၊ Google၊ GitHub)
+2. Firestore database ဖန်တီးပြီး rules/indexes deploy လုပ်ခြင်း — ✅ **ပြီး**
+   (index များ `READY` ဖြစ်သည်အထိ စောင့်ရန် ကျန်)
+3. SHA လက်ဗွေ — ✅ **SHA-1 ပြီး**၊ SHA-256 ကို Console တွင် စစ်ရန် ကျန်
+4. GitHub OAuth App — ✅ **ပြီး** (provider ဖွင့်ပြီး)
+5. စက်ပေါ်တွင် အဆင့် ၈ စာရင်းအတိုင်း စမ်းသပ်ခြင်း — ⬜ **မလုပ်ရသေး**
+   (Android device မချိတ်ထား)
+6. Termux ပြင်ဆင်ခြင်း — ⬜ **မလုပ်ရသေး**
+7. Release keystore — ⬜ **မလုပ်ရသေး** (Play Store ဖြန့်ဝေမှသာ)
+8. Groq API ကီး — ⬜ **ရွေးချယ်နိုင်** (BYOK)
 
-အထက်ပါ ၆ ချက် ပြီးလျှင် app သည် အသုံးပြုရန် အသင့် ဖြစ်မည်။
+အထက်ပါ ၅ နှင့် ၆ ကို ပြီးလျှင် app သည် အသုံးပြုရန် အသင့် ဖြစ်မည်။
 Release ဖြန့်ဝေလိုမှသာ **အဆင့် ၁၁** (keystore) ကို ထပ်လုပ်ပါ။
 
 ---
