@@ -25,7 +25,7 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | အစီအစဉ် | လုပ်ငန်း | ကြာချိန် | မဖြစ်မနေ? |
 | --- | --- | --- | --- |
 | ၁ | Firebase Authentication provider များ ဖွင့်ခြင်း | ၁၅ မိနစ် | ✅ မဖြစ်မနေ |
-| ၂ | Google SHA-1/SHA-256 ထည့်ပြီး JSON အသစ်ရယူခြင်း | ၁၅ မိနစ် | ✅ Google အတွက် |
+| ၂ | Google SHA-1/SHA-256 ထည့်ပြီး JSON အသစ်ရယူခြင်း | ၁၅ မိနစ် | ✅ Google အတွက် (SHA-1 ပြီး) |
 | ၃ | GitHub OAuth App ဖန်တီးခြင်း | ၁၅ မိနစ် | ✅ GitHub အတွက် |
 | ၄ | Firestore Database ဖန်တီးခြင်း | ၁၀ မိနစ် | ✅ မဖြစ်မနေ |
 | ၅ | Rules နှင့် Indexes deploy လုပ်ခြင်း | ၁၀ မိနစ် | ✅ မဖြစ်မနေ |
@@ -59,7 +59,8 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | Firestore rules/indexes ဖိုင် | ✅ အသင့် | deploy လုပ်ရန် ကျန် |
 | Firebase CLI | ⚠️ တပ်ဆင်ပြီး | version 15.34.1၊ **login မဝင်ရသေး** |
 | Auth provider များ | ⚠️ မစစ်ရသေး | Console သို့ ဝင်မရသဖြင့် အတည်မပြုနိုင် |
-| Google SHA လက်ဗွေ | ❌ မပါ | JSON ထဲတွင် Android OAuth client မရှိ |
+| Google SHA-1 လက်ဗွေ | ✅ ပါပြီ | JSON ထဲတွင် Android OAuth client ပါပြီ |
+| Google SHA-256 လက်ဗွေ | ⚠️ မစစ်ရသေး | JSON တွင် မပါပါ (ပုံမှန်)။ Console တွင် စစ်ပါ |
 | Firestore database | ⚠️ မစစ်ရသေး | rules deploy မလုပ်ရသေး |
 | Release signing | ❌ မပါ | လက်ရှိ release သည် debug key သုံးထား |
 | စက်ပေါ် စမ်းသပ်မှု | ❌ မရသေး | Android device မချိတ်ထား |
@@ -131,10 +132,18 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 
 ### ၃.၁ လက်ရှိ အခြေအနေ
 
-`android/app/google-services.json` ကို စစ်ကြည့်လျှင်
-`oauth_client` ထဲတွင် **client_type 3 (web)** သာ ပါသည်။
-**Android OAuth client (SHA-1 ပါသော) မပါသေးပါ။**
-ထို့ကြောင့် Google Sign-In သည် လက်ရှိ JSON ဖြင့် မစမ်းသပ်ရသေးပါ။
+`android/app/google-services.json` တွင် **Android OAuth client**
+(`client_type: 1`) ပါပြီဖြစ်ပြီး ၎င်း၏ `certificate_hash` သည်
+debug SHA-1 နှင့် ကိုက်ညီသည်။ ထို့ကြောင့် **SHA-1 ကို ထည့်ပြီးဖြစ်သည်**။
+
+မှတ်ချက်: `google-services.json` တွင် SHA-1 ကိုသာ ပြသည်။
+SHA-256 ကို ဖိုင်ထဲတွင် မတွေ့ရပါ — ၎င်းသည် ပုံမှန်ဖြစ်သည်။
+SHA-256 ထည့်ထားခြင်း ရှိ/မရှိကို Console ၏
+**Project settings → Your apps → SHA certificate fingerprints**
+တွင် စစ်ပါ။
+
+စက်အသစ် သို့မဟုတ် keystore အသစ်အတွက် အောက်ပါအတိုင်း
+လက်ဗွေ ပြန်ယူပါ။
 
 ### ၃.၂ Debug လက်ဗွေ ရယူခြင်း (Windows)
 
@@ -645,7 +654,7 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 | App က "local-only" ဟု ပြ | Firebase initialize မဖြစ် | `google-services.json` ရှိ/မရှိ၊ package name ကိုက်/မကိုက် စစ်ပါ။ ဖိုင်အသစ်ဖြင့် **ပြန် build** လုပ်ပါ |
 | Sign-in ခလုတ် မပေါ် | Firebase မရှိ | `google-services.json` ထည့်ပြီး ပြန် build လုပ်ပါ |
 | `operation-not-allowed` | Provider မဖွင့်ထား | Console တွင် ထို provider ကို Enable လုပ်ပါ |
-| Google ဝင်မရ | SHA မထည့်ရသေး | SHA-1/SHA-256 ထည့်ပြီး JSON ပြန် download လုပ်ပါ |
+| Google ဝင်မရ | SHA မထည့် / provider မဖွင့် | SHA-1/SHA-256 ထည့်ပြီး JSON ပြန် download လုပ်ပါ။ Authentication → Google ကို Enable ဖြစ်/မဖြစ် စစ်ပါ |
 | GitHub redirect error | Callback URL မမှန် | `https://termuxcommandlibrary.firebaseapp.com/__/auth/handler` အတိအကျ ဖြစ်ရမည် |
 | `PERMISSION_DENIED` | Rules deploy မလုပ် | `firebase deploy --only firestore:rules` လုပ်ပါ |
 | Index error | Index မပြီးသေး | Console → Indexes တွင် "Enabled" ဖြစ်သည်အထိ စောင့်ပါ |
@@ -684,7 +693,7 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 
 1. Firebase provider များ ဖွင့်ခြင်း — **မလုပ်ရသေး**
 2. Firestore database ဖန်တီးပြီး rules/indexes deploy လုပ်ခြင်း — **မလုပ်ရသေး**
-3. Google SHA ထည့်ပြီး JSON အသစ်ရယူခြင်း — **မလုပ်ရသေး**
+3. SHA-256 ကို Console တွင် ထည့်ပြီး စစ်ဆေးခြင်း — **SHA-1 ပြီး၊ SHA-256 မစစ်ရသေး**
 4. GitHub OAuth App ဖန်တီးခြင်း — **မလုပ်ရသေး**
 5. စက်ပေါ်တွင် အဆင့် ၈ စာရင်းအတိုင်း စမ်းသပ်ခြင်း — **မလုပ်ရသေး**
 6. Termux ပြင်ဆင်ခြင်း — **မလုပ်ရသေး**
