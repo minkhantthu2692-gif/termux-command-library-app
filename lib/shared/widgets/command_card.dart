@@ -198,11 +198,13 @@ class CommandCard extends StatelessWidget {
                       const SizedBox(width: AppSpacing.x2),
                       Expanded(
                         child: Text(
-                          l10n.byAuthor(
-                            command.authorNickname.trim().isEmpty
-                                ? l10n.curatedBy
-                                : command.authorNickname,
-                          ),
+                          command.isSeed
+                              ? l10n.curatedBy
+                              : l10n.byAuthor(
+                                  command.authorNickname.trim().isEmpty
+                                      ? l10n.member
+                                      : command.authorNickname,
+                                ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: texts.labelSmall?.copyWith(

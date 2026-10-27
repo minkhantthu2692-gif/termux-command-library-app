@@ -46,10 +46,15 @@ class CommandDao extends DatabaseAccessor<AppDatabase> with _$CommandDaoMixin {
 
   Future<void> markSynced(CommandPost remotePost) async {
     final existing = await _getRow(remotePost.id);
-    if (existing?.isPendingSync ?? false) {
-      // The user edited again while the write was in flight; keep the newer
-      // local state and its pending flag.
-      return;
+    if (existing != null && existing.isPendingSync) {
+      // Keep a genuinely newer local edit that happened while the write was
+      // in flight. Comparing against the payload (rather than treating every
+      // pending row as newer) lets the normal successful write clear the badge.
+      final editedAgain =
+          existing.version > remotePost.version ||
+          (existing.version == remotePost.version &&
+              existing.updatedAt.isAfter(remotePost.updatedAt));
+      if (editedAgain) return;
     }
     await _writePost(
       remotePost.copyWith(isPendingSync: false),

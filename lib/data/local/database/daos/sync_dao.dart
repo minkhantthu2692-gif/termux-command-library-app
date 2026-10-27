@@ -25,6 +25,7 @@ class PendingOperation {
     required this.entityId,
     required this.createdAt,
     this.payload = const {},
+    this.payloadJson = '',
     this.attempts = 0,
     this.lastError,
   });
@@ -34,6 +35,10 @@ class PendingOperation {
   final String type;
   final String entityId;
   final Map<String, dynamic> payload;
+
+  /// Original encoded payload, used to avoid deleting an operation that was
+  /// replaced by a newer edit while its write was in flight.
+  final String payloadJson;
   final DateTime createdAt;
   final int attempts;
   final String? lastError;
@@ -143,6 +148,19 @@ class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
     )..where((table) => table.id.equals(id))).go();
   }
 
+  /// Removes the operation only when it still carries the payload that was
+  /// sent. If a newer edit replaced that payload during the write, the row
+  /// stays queued so the newer change is not silently lost.
+  Future<bool> markSucceededIfUnchanged(int id, String payloadJson) async {
+    final removed =
+        await (delete(pendingOperations)..where(
+              (table) =>
+                  table.id.equals(id) & table.payloadJson.equals(payloadJson),
+            ))
+            .go();
+    return removed > 0;
+  }
+
   Future<void> markFailed(int id, String error) async {
     final clipped = error.length > 300 ? error.substring(0, 300) : error;
     await customUpdate(
@@ -207,6 +225,7 @@ class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
       type: row.type,
       entityId: row.entityId,
       payload: payload,
+      payloadJson: row.payloadJson,
       createdAt: row.createdAt.toUtc(),
       attempts: row.attempts,
       lastError: row.lastError,

@@ -49,6 +49,10 @@ class SyncCoordinator {
   Timer? _retryTimer;
   AuthSession? _session;
   String? _attachedUid;
+
+  /// Guards overlapping session changes. A stale switch must never attach
+  /// after a newer one, and detaching must finish before the next attach.
+  int _sessionGeneration = 0;
   bool _started = false;
   bool _disposed = false;
   bool _processing = false;
@@ -94,10 +98,20 @@ class SyncCoordinator {
     final sameUid = _session?.uid == session.uid;
     final sameMode = _session?.isLocalOnly == session.isLocalOnly;
     _session = session;
-    if (sameUid && sameMode && _attachedUid != null) return;
-    if (sameUid && sameMode && session.isLocalOnly) return;
+    if (sameUid && sameMode && (_attachedUid != null || session.isLocalOnly)) {
+      return;
+    }
 
-    unawaited(_detach());
+    // Serialize the switch. Previously `_detach()` was fired without awaiting
+    // and could resume after `_attach()`, cancelling the fresh listeners and
+    // nulling `_attachedUid` — leaving uploads queued forever.
+    final generation = ++_sessionGeneration;
+    unawaited(_switchSession(session, generation));
+  }
+
+  Future<void> _switchSession(AuthSession session, int generation) async {
+    await _detach();
+    if (_disposed || generation != _sessionGeneration) return;
 
     if (session.isLocalOnly || _cloud == null) {
       _attachedUid = null;
@@ -148,9 +162,11 @@ class SyncCoordinator {
   Future<void> _detach() async {
     _processTimer?.cancel();
     _retryTimer?.cancel();
-    await _commandsSub?.cancel();
-    await _profileSub?.cancel();
-    await _pendingSub?.cancel();
+    // Capture and clear the references before awaiting so a listener created
+    // by the next attach can never be cancelled by this detach.
+    final commandsSub = _commandsSub;
+    final profileSub = _profileSub;
+    final pendingSub = _pendingSub;
     _commandsSub = null;
     _profileSub = null;
     _pendingSub = null;
@@ -158,6 +174,9 @@ class SyncCoordinator {
     _profileBootstrapStarted = false;
     _processTimer = null;
     _retryTimer = null;
+    await commandsSub?.cancel();
+    await profileSub?.cancel();
+    await pendingSub?.cancel();
   }
 
   Future<void> _applyCommandEvent(CloudCommandEvent event) async {
@@ -308,6 +327,7 @@ class SyncCoordinator {
     if (uid == null || cloud == null || _processing || _disposed) return;
     _processing = true;
     var failedRetryable = false;
+    var superseded = false;
     try {
       final operations = await _syncDao.readPending(uid);
       if (operations.isEmpty) return;
@@ -327,7 +347,17 @@ class SyncCoordinator {
         if (!force && operation.attempts >= _maxAutomaticAttempts) continue;
         try {
           await _executeOperation(uid, operation);
-          await _syncDao.markSucceeded(operation.id);
+          // Only acknowledge the payload that was actually written. A newer
+          // edit may have replaced the queued payload while this write was in
+          // flight; deleting the row unconditionally would lose that edit.
+          final acknowledged = await _syncDao.markSucceededIfUnchanged(
+            operation.id,
+            operation.payloadJson,
+          );
+          if (!acknowledged) {
+            superseded = true;
+            break;
+          }
         } on AppException catch (error) {
           await _syncDao.markFailed(operation.id, error.code.name);
           if (error.retryable) {
@@ -343,7 +373,7 @@ class SyncCoordinator {
       }
       if (failedRetryable) {
         _scheduleRetry(const Duration(seconds: 8));
-      } else {
+      } else if (!superseded) {
         await _syncDao.writeState(
           _lastSyncedKey,
           DateTime.now().toUtc().toIso8601String(),
@@ -366,6 +396,11 @@ class SyncCoordinator {
       );
     } finally {
       _processing = false;
+      // The replacement payload was queued while `_processing` was true, so
+      // schedule the follow-up after releasing the guard.
+      if (superseded && !_disposed && _attachedUid == uid) {
+        _scheduleProcessing();
+      }
     }
   }
 
@@ -432,8 +467,14 @@ class SyncCoordinator {
   Future<void> refresh({bool showBusy = true}) async {
     final uid = _attachedUid;
     final cloud = _cloud;
-    if (uid == null || cloud == null) {
+    if (cloud == null) {
       throw const AppException(AppErrorCode.firebaseNotConfigured);
+    }
+    if (uid == null) {
+      // Cloud is available but no registered session is attached yet. Saying
+      // "Firebase is not configured" here was misleading and hid the real
+      // state from the user.
+      throw const AppException(AppErrorCode.authRequired);
     }
     if (_refreshing) return;
     _refreshing = true;

@@ -113,6 +113,54 @@ void main() {
       expect(await db.syncDao.readOperation(operation.id), isNull);
     });
 
+    test('acknowledges a write only when its payload is unchanged', () async {
+      await db.syncDao.enqueue(
+        uid: uid,
+        type: PendingOperationType.commandUpsert,
+        entityId: 'guide-1',
+        payload: const {'name': 'First'},
+      );
+      final operation = (await db.syncDao.readPending(uid)).single;
+
+      expect(
+        await db.syncDao.markSucceededIfUnchanged(
+          operation.id,
+          operation.payloadJson,
+        ),
+        isTrue,
+      );
+      expect(await db.syncDao.pendingCount(uid), 0);
+    });
+
+    test('keeps a payload replaced while its write was in flight', () async {
+      await db.syncDao.enqueue(
+        uid: uid,
+        type: PendingOperationType.commandUpsert,
+        entityId: 'guide-1',
+        payload: const {'name': 'First'},
+      );
+      final operation = (await db.syncDao.readPending(uid)).single;
+
+      // The user saved again after the first payload was read but before the
+      // network write completed. The row keeps its id but carries a new payload.
+      await db.syncDao.enqueue(
+        uid: uid,
+        type: PendingOperationType.commandUpsert,
+        entityId: 'guide-1',
+        payload: const {'name': 'Second'},
+      );
+
+      expect(
+        await db.syncDao.markSucceededIfUnchanged(
+          operation.id,
+          operation.payloadJson,
+        ),
+        isFalse,
+      );
+      final remaining = (await db.syncDao.readPending(uid)).single;
+      expect(remaining.payload['name'], 'Second');
+    });
+
     test('clearing a user queue leaves other users untouched', () async {
       await db.syncDao.enqueue(
         uid: uid,

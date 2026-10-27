@@ -151,6 +151,21 @@ Flutter can split by ABI to reduce APK size:
 flutter build apk --release --split-per-abi
 ```
 
+## Launcher icon
+
+The launcher artwork lives in `assets/brand/app_icon.png` (legacy icon) and
+`assets/brand/app_icon_foreground.png` (transparent adaptive foreground). Both
+are generated from the same indigo terminal mark used by the in-app logo:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool\generate_app_icon.ps1
+```
+
+The script writes every density-specific `mipmap-*/ic_launcher*.png` file. The
+adaptive XML in `android/app/src/main/res/mipmap-anydpi-v26/` and the background
+colour in `values/colors.xml` are committed separately. The foreground stays
+inside the adaptive safe zone, so launcher masks do not clip the gold dot.
+
 ## Build without Firebase
 
 Building without `android/app/google-services.json` and without `--dart-define`

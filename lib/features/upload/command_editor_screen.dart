@@ -565,7 +565,10 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
             post: draft,
             publish: publish,
             authorNickname:
-                ref.read(profileProvider).value?.effectiveNickname ?? '',
+                ref.read(profileProvider).value?.effectiveNickname ??
+                session.displayName ??
+                session.email?.split('@').first ??
+                '',
           );
       if (!mounted) return;
       unawaited(triggerHaptic(ref, cue: HapticCue.success));

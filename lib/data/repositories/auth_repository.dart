@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -47,38 +49,66 @@ class AuthRepository {
     isLocalOnly: true,
   );
 
-  Stream<AuthSession> watchSessions() async* {
+  Stream<AuthSession> watchSessions() {
+    final controller = StreamController<AuthSession>();
+    StreamSubscription<AuthSession?>? remoteSubscription;
     AuthSession? last;
-    Future<AuthSession> ensure(AuthSession session) async {
-      await _ensureProfile(session);
-      return session;
-    }
+    var cancelled = false;
 
     void emit(AuthSession session) {
+      if (cancelled || controller.isClosed || session == last) return;
       last = session;
+      controller.add(session);
     }
 
-    final current = _gateway?.currentSession;
-    if (current != null) {
-      final guest = current;
-      emit(guest);
-      yield guest;
-    } else {
-      final guest = await ensure(localGuestSession);
-      emit(guest);
-      yield guest;
-    }
+    controller.onListen = () async {
+      final current = _gateway?.currentSession;
+      final initial = current ?? localGuestSession;
+      await _ensureProfile(initial);
+      emit(initial);
+      if (cancelled || controller.isClosed) return;
 
-    final gateway = _gateway;
-    if (gateway == null) return;
-
-    await for (final remote in gateway.watchSessions()) {
-      final next = remote ?? await ensure(localGuestSession);
-      if (next != last) {
-        last = next;
-        yield next;
+      final gateway = _gateway;
+      if (gateway == null) {
+        await controller.close();
+        return;
       }
-    }
+
+      // Keep an explicit subscription instead of `await for` inside an
+      // `async*` generator: cancelling such a generator while it awaits a
+      // broadcast stream never completes, which left the sync coordinator
+      // attached after disposal.
+      remoteSubscription = gateway.watchSessions().listen(
+        (remote) {
+          if (remote != null) {
+            emit(remote);
+            return;
+          }
+          unawaited(
+            _ensureProfile(localGuestSession)
+                .then((_) => emit(localGuestSession)),
+          );
+        },
+        onError: (Object error, StackTrace stack) {
+          if (!cancelled && !controller.isClosed) {
+            controller.addError(error, stack);
+          }
+        },
+        onDone: () {
+          if (!cancelled && !controller.isClosed) {
+            unawaited(controller.close());
+          }
+        },
+      );
+    };
+
+    controller.onCancel = () async {
+      cancelled = true;
+      await remoteSubscription?.cancel();
+      remoteSubscription = null;
+    };
+
+    return controller.stream;
   }
 
   Future<void> _ensureProfile(AuthSession session) async {

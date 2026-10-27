@@ -501,9 +501,13 @@ class _Header extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    command.authorNickname.trim().isEmpty
+                    command.isSeed
                         ? l10n.curatedBy
-                        : l10n.byAuthor(command.authorNickname),
+                        : l10n.byAuthor(
+                            command.authorNickname.trim().isEmpty
+                                ? l10n.member
+                                : command.authorNickname,
+                          ),
                     style: context.texts.labelMedium,
                   ),
                   const SizedBox(height: 1),

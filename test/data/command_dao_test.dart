@@ -439,7 +439,13 @@ void main() {
 
     test('markSynced does not clear a newer pending local edit', () async {
       await db.commandDao.saveLocalPost(
-        buildCommand(id: 'inflight', name: 'Newer local', isPendingSync: true),
+        buildCommand(
+          id: 'inflight',
+          name: 'Newer local',
+          version: 2,
+          updatedAt: DateTime.utc(2026, 10, 1, 9),
+          isPendingSync: true,
+        ),
         pendingSync: true,
       );
 
@@ -454,12 +460,12 @@ void main() {
 
     test('markSynced clears the flag for an acknowledged write', () async {
       await db.commandDao.saveLocalPost(
-        buildCommand(id: 'ack', name: 'Local'),
-        pendingSync: false,
+        buildCommand(id: 'ack', name: 'Local', isPendingSync: true),
+        pendingSync: true,
       );
 
       await db.commandDao.markSynced(
-        buildCommand(id: 'ack', name: 'Server copy', version: 2),
+        buildCommand(id: 'ack', name: 'Server copy'),
       );
 
       final loaded = await db.commandDao.getCommand('ack');
