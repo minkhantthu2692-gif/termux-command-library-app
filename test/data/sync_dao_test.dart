@@ -35,6 +35,30 @@ void main() {
       expect(operations.single.attempts, 0);
     });
 
+    test('enqueueIfAbsent never replaces an existing payload', () async {
+      expect(
+        await db.syncDao.enqueueIfAbsent(
+          uid: uid,
+          type: PendingOperationType.commandUpsert,
+          entityId: 'guide-1',
+          payload: const {'name': 'First'},
+        ),
+        isTrue,
+      );
+      expect(
+        await db.syncDao.enqueueIfAbsent(
+          uid: uid,
+          type: PendingOperationType.commandUpsert,
+          entityId: 'guide-1',
+          payload: const {'name': 'Second'},
+        ),
+        isFalse,
+      );
+
+      final operation = (await db.syncDao.readPending(uid)).single;
+      expect(operation.payload['name'], 'First');
+    });
+
     test('keeps operations separate by uid, type and entity', () async {
       await db.syncDao.enqueue(
         uid: uid,

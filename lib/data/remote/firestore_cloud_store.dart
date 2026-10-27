@@ -121,10 +121,23 @@ class FirestoreCloudStore implements CloudStore {
 
   @override
   Future<void> saveCommand(CommandPost command) async {
+    final doc = _commands.doc(command.id);
+    final data = _commandToMap(command);
+    final createdAt = data.remove('createdAt');
     try {
-      await _commands
-          .doc(command.id)
-          .set(_commandToMap(command), SetOptions(merge: false));
+      // `createdAt` is immutable in the security rules, but SQLite only keeps
+      // second precision. Re-sending a locally reconstructed timestamp would
+      // differ from the original server value (which may include microseconds)
+      // and every retry would be denied. Updating without that field preserves
+      // the server value, and the merged request resource still contains it
+      // for validation. `update()` replaces map fields such as `metadata`, so
+      // removing a metadata key does not leave a stale entry behind.
+      try {
+        await doc.update(data);
+      } on FirebaseException catch (error) {
+        if (error.code != 'not-found') rethrow;
+        await doc.set({...data, 'createdAt': createdAt});
+      }
     } catch (error) {
       throw mapFirebaseError(error);
     }
@@ -168,10 +181,22 @@ class FirestoreCloudStore implements CloudStore {
       if (pinnedIds != null) {
         data['pinnedIds'] = pinnedIds.toList(growable: false);
       }
-      if (createIfMissing) {
-        data['createdAt'] = FieldValue.serverTimestamp();
+      final doc = _users.doc(uid);
+      if (!createIfMissing) {
+        await doc.set(data, SetOptions(merge: true));
+        return;
       }
-      await _users.doc(uid).set(data, SetOptions(merge: true));
+      // `createdAt` is immutable in the security rules. Sending it on every
+      // profile sync made updates fail with permission-denied once the
+      // document already existed. Update first and only add `createdAt` when
+      // the document genuinely has to be created.
+      try {
+        await doc.update(data);
+      } on FirebaseException catch (error) {
+        if (error.code != 'not-found') rethrow;
+        data['createdAt'] = FieldValue.serverTimestamp();
+        await doc.set(data, SetOptions(merge: true));
+      }
     } catch (error) {
       throw mapFirebaseError(error);
     }

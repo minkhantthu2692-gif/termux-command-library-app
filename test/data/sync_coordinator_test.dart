@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:termux_command_library/core/errors/app_exception.dart';
 import 'package:termux_command_library/data/local/database/app_database.dart';
 import 'package:termux_command_library/data/local/database/daos/sync_dao.dart';
 import 'package:termux_command_library/data/models/auth_models.dart';
@@ -67,6 +68,35 @@ void main() {
     await coordinator.refresh();
     expect(coordinator.currentStatus.isRemote, isTrue);
   });
+
+  test(
+    'attach reports a failing queued write without an unhandled error',
+    () async {
+      cloud.saveCommandError = const AppException(
+        AppErrorCode.permissionDenied,
+      );
+      final post = buildCommand(
+        id: 'attach-failure',
+        name: 'Attach failure',
+        isPendingSync: true,
+      );
+      await db.commandDao.saveLocalPost(post, pendingSync: true);
+      await db.syncDao.enqueue(
+        uid: _memberSession.uid,
+        type: PendingOperationType.commandUpsert,
+        entityId: post.id,
+        payload: post.toJson(),
+      );
+
+      gateway.emit(_memberSession);
+      await pumpEventQueue(times: 30);
+
+      // The background refresh called from _attach must consume the expected
+      // failure. An unhandled exception here would fail the test zone.
+      expect(coordinator.currentStatus.phase, SyncPhase.error);
+      expect(await db.syncDao.pendingCount(_memberSession.uid), 1);
+    },
+  );
 
   test('syncs an upload queued right after sign-in', () async {
     gateway.emit(_memberSession);
@@ -138,6 +168,64 @@ void main() {
     expect(stored!.name, second.name);
     expect(stored.isPendingSync, isFalse);
   });
+
+  test('re-queues a pending guide whose queue entry was lost', () async {
+    gateway.emit(_memberSession);
+    await pumpEventQueue(times: 20);
+
+    final legacy = buildCommand(
+      id: 'legacy-pending',
+      name: 'Legacy pending',
+      isPendingSync: true,
+    );
+    await db.commandDao.saveLocalPost(legacy, pendingSync: true);
+    // Simulates a row acknowledged by an older build whose queue entry was
+    // already deleted while the local pending flag stayed set.
+    expect(await db.syncDao.pendingCount(_memberSession.uid), 0);
+
+    await coordinator.refresh();
+
+    expect(cloud.savedCommandIds, contains(legacy.id));
+    expect(await db.syncDao.pendingCount(_memberSession.uid), 0);
+    expect((await db.commandDao.getCommand(legacy.id))?.isPendingSync, isFalse);
+  });
+
+  test(
+    'reports a failed queued write instead of a successful refresh',
+    () async {
+      gateway.emit(_memberSession);
+      await pumpEventQueue(times: 20);
+
+      cloud.saveCommandError = const AppException(
+        AppErrorCode.permissionDenied,
+      );
+      final post = buildCommand(
+        id: 'denied',
+        name: 'Denied upload',
+        isPendingSync: true,
+      );
+      await db.commandDao.saveLocalPost(post, pendingSync: true);
+      await db.syncDao.enqueue(
+        uid: _memberSession.uid,
+        type: PendingOperationType.commandUpsert,
+        entityId: post.id,
+        payload: post.toJson(),
+      );
+
+      await expectLater(
+        coordinator.refresh(),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.permissionDenied,
+          ),
+        ),
+      );
+      expect(coordinator.currentStatus.phase, SyncPhase.error);
+      expect(await db.syncDao.pendingCount(_memberSession.uid), 1);
+    },
+  );
 }
 
 Future<void> _waitFor(FutureOr<bool> Function() condition) async {
@@ -169,6 +257,7 @@ class _FakeCloudStore implements CloudStore {
   final List<String> savedCommandIds = [];
   final List<String> savedCommandNames = [];
   Future<void> Function(CommandPost command)? onSaveCommand;
+  AppException? saveCommandError;
 
   @override
   Stream<CloudCommandEvent> watchLatestCommands({int limit = 250}) =>
@@ -192,6 +281,8 @@ class _FakeCloudStore implements CloudStore {
 
   @override
   Future<void> saveCommand(CommandPost command) async {
+    final error = saveCommandError;
+    if (error != null) throw error;
     savedCommandIds.add(command.id);
     savedCommandNames.add(command.name);
     await onSaveCommand?.call(command);

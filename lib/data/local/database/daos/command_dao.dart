@@ -128,6 +128,18 @@ class CommandDao extends DatabaseAccessor<AppDatabase> with _$CommandDaoMixin {
     )..where((t) => t.authorUid.equals(uid) & t.isSeed.equals(false))).go();
   }
 
+  /// IDs of guides still marked as pending for [uid]. The sync coordinator
+  /// uses this to re-queue rows whose queue entry was lost, for example after
+  /// an interrupted acknowledgement in an older build.
+  Future<List<String>> getPendingCommandIdsForAuthor(String uid) async {
+    final rows =
+        await (select(commands)..where(
+              (t) => t.authorUid.equals(uid) & t.isPendingSync.equals(true),
+            ))
+            .get();
+    return rows.map((row) => row.id).toList(growable: false);
+  }
+
   /// Applies a deletion that arrived from Firestore. Locally pending edits and
   /// seeded offline content are preserved.
   Future<bool> deleteRemoteCommand(String id) async {

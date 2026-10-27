@@ -70,12 +70,13 @@ Manual swipe-to-refresh (or foreground resume when configured) calls
 2. Apply each page to SQLite using the conflict rules.
 3. Fetch up to 200 guides authored by the current UID (including drafts).
 4. Bootstrap the remote profile if it has not been bootstrapped this session.
-5. Process pending operations.
-6. Record `lastSyncedAt`.
+5. Reconcile local pending flags with the queue, then process pending operations.
+6. Record `lastSyncedAt` only when every queued write succeeded.
 
 The refresh never truncates the local cache first. A failed page leaves earlier
 pages and all existing local data intact. The app avoids overlapping refreshes with
-a guard flag.
+a guard flag. A queued write that is still failing makes the refresh report an
+error instead of claiming success, so the retry action is honest and actionable.
 
 The realtime listener observes the newest 250 documents while paged refresh can
 hydrate up to 1000. This is intentional: the UI remains bounded, and a full
@@ -107,14 +108,20 @@ Processing is serialized. Each operation:
 4. Marks the local command synced or removes the queue row.
 5. On retryable failure, increments attempts, records a safe error code, and
    schedules a retry.
-6. On permanent failure, records the error and stops the batch so the user can see
-   it.
+6. On permanent failure, records the error and continues with independent
+   operations so one bad row does not block unrelated changes.
 
 The queue is not cleared on sign-out. It is namespaced by UID and is cleared when
 an account is deleted. Local-only guests never enqueue cloud operations.
 
 Queue rows survive app restarts. `markFailed` truncates stored error text so a
 server message cannot grow without bound or leak sensitive detail.
+
+A local guide can still be marked `isPendingSync` after its queue row was lost, for
+example when an older build acknowledged the write without clearing the flag. On
+attach and refresh the coordinator re-queues such guides with `enqueueIfAbsent`,
+which never replaces a payload that a concurrent edit already queued. The upsert is
+idempotent, so a row that was already uploaded is simply acknowledged again.
 
 ## Conflict resolution
 
@@ -153,6 +160,16 @@ newVersion = max(existing.version + 1, submitted.version + 1)
 
 Firestore rules require a non-decreasing `authorUid`-preserving version, and the
 immutability of `authorUid`/`createdAt`.
+
+### Immutable timestamps and SQLite precision
+
+SQLite stores command timestamps with second precision, while the server copy of
+`createdAt` may carry microseconds. Re-sending a locally reconstructed `createdAt`
+therefore changes the value and Firestore rejects the update with permission-denied.
+Command writes update the mutable fields only; Firestore merges the stored
+`createdAt` into the request resource, so the rules still see an unchanged value. A
+full create is used only when the document genuinely does not exist. Profile writes
+follow the same update-first rule for the same reason.
 
 ### Deletions
 
@@ -246,7 +263,12 @@ The repository's Dart tests cover:
 - cache clearing preserving seeds/own posts/favorites/pending operations,
 - account deletion clearing only the author's non-seed posts,
 - queue collapse, ordering, retries, attempt counts and per-UID isolation,
+- re-queuing a guide whose queue row was lost without overwriting a newer edit,
+- failed queued writes being reported instead of a false "refreshed" result,
 - file-backed SQLite persistence across close/reopen.
+
+The Firestore rules suite also verifies that an owner can edit a guide by updating
+mutable fields only, without resending `createdAt`.
 
 To test manually: enable airplane mode, toggle favorites/pins, edit a draft,
 restart the app, restore connectivity, then confirm the pending badge clears and

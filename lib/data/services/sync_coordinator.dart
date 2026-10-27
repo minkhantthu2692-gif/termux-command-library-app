@@ -156,7 +156,46 @@ class SyncCoordinator {
         );
 
     unawaited(_bootstrapCloudProfile(session));
-    unawaited(refresh(showBusy: false));
+    unawaited(_repairPendingCommands(session.uid));
+    unawaited(_refreshQuietly());
+  }
+
+  /// Attach-time refresh runs in the background. `refresh()` reports failures
+  /// through the status stream and rethrows so interactive callers can show a
+  /// snackbar; an unhandled asynchronous error at attach time would crash the
+  /// zone instead. The badge still shows the actionable error.
+  Future<void> _refreshQuietly() async {
+    try {
+      await refresh(showBusy: false);
+    } on AppException {
+      // Already published to the status stream by refresh().
+    }
+  }
+
+  /// Re-queues local guides marked pending that have no queue entry. Older
+  /// builds could delete a queue row without clearing the flag, which left the
+  /// badge stuck forever. The upsert is idempotent, so repairing a row that was
+  /// already uploaded simply acknowledges it again.
+  Future<void> _repairPendingCommands(String uid) async {
+    try {
+      final ids = await _commandDao.getPendingCommandIdsForAuthor(uid);
+      for (final id in ids) {
+        if (_disposed || _attachedUid != uid) return;
+        final post = await _commandDao.getCommand(id);
+        if (post == null || post.authorUid != uid || !post.isPendingSync) {
+          continue;
+        }
+        await _syncDao.enqueueIfAbsent(
+          uid: uid,
+          type: PendingOperationType.commandUpsert,
+          entityId: id,
+          payload: post.toJson(),
+        );
+      }
+    } catch (_) {
+      // Best-effort repair. The normal sync path and its visible errors still
+      // run, and the next refresh retries this reconciliation.
+    }
   }
 
   Future<void> _detach() async {
@@ -321,29 +360,29 @@ class SyncCoordinator {
     });
   }
 
-  Future<void> _processPending({bool force = false}) async {
+  Future<AppException?> _processPending({bool force = false}) async {
     final uid = _attachedUid;
     final cloud = _cloud;
-    if (uid == null || cloud == null || _processing || _disposed) return;
+    if (uid == null || cloud == null || _processing || _disposed) return null;
     _processing = true;
     var failedRetryable = false;
     var superseded = false;
+    AppException? failure;
     try {
       final operations = await _syncDao.readPending(uid);
-      if (operations.isEmpty) return;
+      if (operations.isEmpty) return null;
       if (!force &&
           operations.every((op) => op.attempts >= _maxAutomaticAttempts)) {
-        _setError(
-          const AppException(
-            AppErrorCode.network,
-            message: 'Retry limit reached',
-          ),
+        final error = const AppException(
+          AppErrorCode.network,
+          message: 'Retry limit reached',
         );
-        return;
+        _setError(error);
+        return error;
       }
       _emit(_status.copyWith(phase: SyncPhase.syncing));
       for (final operation in operations) {
-        if (_disposed || _attachedUid != uid) return;
+        if (_disposed || _attachedUid != uid) return failure;
         if (!force && operation.attempts >= _maxAutomaticAttempts) continue;
         try {
           await _executeOperation(uid, operation);
@@ -360,6 +399,7 @@ class SyncCoordinator {
           }
         } on AppException catch (error) {
           await _syncDao.markFailed(operation.id, error.code.name);
+          failure = error;
           if (error.retryable) {
             failedRetryable = true;
             break;
@@ -367,13 +407,14 @@ class SyncCoordinator {
           _setError(error);
         } catch (error) {
           await _syncDao.markFailed(operation.id, 'unknown');
+          failure = const AppException(AppErrorCode.unknown);
           failedRetryable = true;
           break;
         }
       }
       if (failedRetryable) {
         _scheduleRetry(const Duration(seconds: 8));
-      } else if (!superseded) {
+      } else if (failure == null && !superseded) {
         await _syncDao.writeState(
           _lastSyncedKey,
           DateTime.now().toUtc().toIso8601String(),
@@ -382,18 +423,19 @@ class SyncCoordinator {
       }
       _emit(
         _status.copyWith(
-          phase: failedRetryable ? SyncPhase.error : SyncPhase.idle,
+          phase: failure == null ? SyncPhase.idle : SyncPhase.error,
           pendingOperations: await _syncDao.pendingCount(uid),
           lastSyncedAt: _lastSyncedAt,
-          clearError: !failedRetryable,
+          clearError: failure == null,
         ),
       );
+      return failure;
     } catch (error) {
-      _setError(
-        error is AppException
-            ? error
-            : const AppException(AppErrorCode.database),
-      );
+      final mapped = error is AppException
+          ? error
+          : const AppException(AppErrorCode.database);
+      _setError(mapped);
+      return mapped;
     } finally {
       _processing = false;
       // The replacement payload was queued while `_processing` was true, so
@@ -502,7 +544,11 @@ class SyncCoordinator {
         final session = _session;
         if (session != null) await _bootstrapCloudProfile(session);
       }
-      await _processPending(force: true);
+      await _repairPendingCommands(uid);
+      final pendingFailure = await _processPending(force: true);
+      // A refresh that cannot upload queued work must not claim success. The
+      // error is also what makes the retry actionable for the user.
+      if (pendingFailure != null) throw pendingFailure;
       final now = DateTime.now().toUtc();
       _lastSyncedAt = now;
       await _syncDao.writeState(_lastSyncedKey, now.toIso8601String());

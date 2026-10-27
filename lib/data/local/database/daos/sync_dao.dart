@@ -88,6 +88,40 @@ class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
     });
   }
 
+  /// Adds an operation only when no operation of the same `(uid, type,
+  /// entityId)` exists. Repair code uses this so it cannot replace a newer
+  /// payload that was queued while the queue was being inspected.
+  Future<bool> enqueueIfAbsent({
+    required String uid,
+    required String type,
+    String entityId = '',
+    Map<String, dynamic> payload = const {},
+  }) async {
+    return transaction(() async {
+      final existing =
+          await (select(pendingOperations)..where(
+                (table) =>
+                    table.uid.equals(uid) &
+                    table.type.equals(type) &
+                    table.entityId.equals(entityId),
+              ))
+              .getSingleOrNull();
+      if (existing != null) return false;
+      await into(pendingOperations).insert(
+        PendingOperationsCompanion(
+          uid: Value(uid),
+          type: Value(type),
+          entityId: Value(entityId),
+          payloadJson: Value(jsonEncode(payload)),
+          createdAt: Value(DateTime.now().toUtc()),
+          attempts: const Value(0),
+          lastError: const Value(null),
+        ),
+      );
+      return true;
+    });
+  }
+
   Stream<int> watchPendingCount(String uid) {
     return customSelect(
       'SELECT COUNT(*) AS count FROM pending_operations WHERE uid = ?',

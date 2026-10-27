@@ -15,6 +15,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 
@@ -245,6 +246,20 @@ test('owner can update their own guide and increment the version', async () => {
       doc(aliceDb(), 'commands/owned'),
       command({ name: 'Owned, edited', version: 2 }),
     ),
+  );
+});
+
+test('owner can edit a guide without resending createdAt', async () => {
+  // The client updates only mutable fields. Firestore merges the server's
+  // immutable createdAt into the request resource, so the rule still sees an
+  // unchanged timestamp even though the local copy lost sub-second precision
+  // when it was stored in SQLite.
+  await assertSucceeds(
+    updateDoc(doc(aliceDb(), 'commands/owned'), {
+      name: 'Owned, edited from SQLite',
+      updatedAt: UPDATED_AT,
+      version: 3,
+    }),
   );
 });
 
