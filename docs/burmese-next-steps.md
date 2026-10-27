@@ -28,7 +28,7 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | ၂ | Google SHA-1/SHA-256 ထည့်ပြီး JSON အသစ်ရယူခြင်း | ✅ SHA-1 ပြီး |
 | ၃ | GitHub OAuth App ဖန်တီးခြင်း | ✅ ပြီး (provider ဖွင့်ပြီး) |
 | ၄ | Firestore Database ဖန်တီးခြင်း | ✅ ပြီး |
-| ၅ | Rules နှင့် Indexes deploy လုပ်ခြင်း | ✅ ပြီး (index များ build ဆဲ) |
+| ၅ | Rules နှင့် Indexes deploy လုပ်ခြင်း | ✅ ပြီး (index များ READY) |
 | ၆ | ပြန် build လုပ်ပြီး စက်ထဲ ထည့်ခြင်း | 🟡 build ပြီး၊ install မရသေး |
 | ၇ | စက်ပေါ်တွင် စမ်းသပ်ခြင်း | ⬜ မရသေး |
 | ၈ | Termux ပြင်ဆင်ခြင်း | ⬜ မရသေး |
@@ -62,7 +62,7 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | Google SHA-1 လက်ဗွေ | ✅ ပါပြီ | JSON ထဲတွင် Android OAuth client ပါပြီ |
 | Google SHA-256 လက်ဗွေ | ⚠️ မစစ်ရသေး | JSON တွင် မပါပါ (ပုံမှန်)။ Console တွင် စစ်ပါ |
 | Firestore database | ✅ ရှိ | `(default)`၊ Firestore Native |
-| Rules နှင့် Indexes | ✅ deploy ပြီး | index နှစ်ခု build ဆဲ (CREATING) |
+| Rules နှင့် Indexes | ✅ deploy ပြီး | index နှစ်ခုလုံး `READY` |
 | Release signing | ❌ မပါ | လက်ရှိ release သည် debug key သုံးထား |
 | စက်ပေါ် စမ်းသပ်မှု | ❌ မရသေး | Android device မချိတ်ထား |
 | Groq API ကီး | ❌ မရသေး | သင့်ကိုယ်ပိုင် ကီး ထည့်ရမည် |
@@ -296,10 +296,9 @@ firebase use default
 ### ၆.၃ Deploy လုပ်ခြင်း
 
 > **လက်ရှိ အခြေအနေ:** ဤ project တွင် deploy လုပ်ပြီးဖြစ်သည်။
-> Rules သည် compile အောင်ပြီး အသက်ဝင်နေသည်။ Index နှစ်ခုသည်
-> `CREATING` အခြေအနေတွင် ရှိပြီး မိနစ်အနည်းငယ်အတွင်း
-> `READY` ဖြစ်လာမည်။ အောက်ပါ command ကို ပြန်လိုအပ်မှသာ
-> (rules/indexes ပြင်ပြီးတိုင်း) run ပါ။
+> Rules သည် compile အောင်ပြီး အသက်ဝင်နေသည်။ Index နှစ်ခုလုံးသည်
+> `READY` ဖြစ်ပြီး အသုံးပြုနိုင်ပြီ ဖြစ်သည်။ အောက်ပါ command ကို
+> ပြန်လိုအပ်မှသာ (rules/indexes ပြင်ပြီးတိုင်း) run ပါ။
 
 ```bash
 firebase deploy --only firestore:rules,firestore:indexes
@@ -314,8 +313,7 @@ firebase deploy --only firestore:rules,firestore:indexes
 
 - [x] Console → **Firestore → Rules** တွင် ဤ repo ၏
       `firestore.rules` စာသား ပေါ်နေသည်။ (deploy လုပ်ပြီး)
-- [x] **Firestore → Indexes** တွင် index နှစ်ခု ရှိသည်။
-      (build ဆဲ — `READY` ဖြစ်သည်အထိ စောင့်ပါ)
+- [x] **Firestore → Indexes** တွင် index နှစ်ခု ရှိသည်။ (နှစ်ခုလုံး `READY`)
 - [x] Console → **Authentication → Settings → Authorized domains**
       တွင် `termuxcommandlibrary.firebaseapp.com` ပါသည်။
 
@@ -741,7 +739,7 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 
 1. Firebase provider များ ဖွင့်ခြင်း — ✅ **ပြီး** (Email၊ Anonymous၊ Google၊ GitHub)
 2. Firestore database ဖန်တီးပြီး rules/indexes deploy လုပ်ခြင်း — ✅ **ပြီး**
-   (index များ `READY` ဖြစ်သည်အထိ စောင့်ရန် ကျန်)
+   (index နှစ်ခုလုံး `READY`)
 3. SHA လက်ဗွေ — ✅ **SHA-1 ပြီး**၊ SHA-256 ကို Console တွင် စစ်ရန် ကျန်
 4. GitHub OAuth App — ✅ **ပြီး** (provider ဖွင့်ပြီး)
 5. စက်ပေါ်တွင် အဆင့် ၈ စာရင်းအတိုင်း စမ်းသပ်ခြင်း — ⬜ **မလုပ်ရသေး**
