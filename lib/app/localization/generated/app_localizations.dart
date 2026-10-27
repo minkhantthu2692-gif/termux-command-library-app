@@ -1982,6 +1982,24 @@ abstract class AppLocalizations {
   /// **'Account type'**
   String get role;
 
+  /// No description provided for @refreshRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh account type'**
+  String get refreshRole;
+
+  /// No description provided for @refreshRoleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload your saved role from Firebase.'**
+  String get refreshRoleBody;
+
+  /// No description provided for @roleRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'Account type refreshed.'**
+  String get roleRefreshed;
+
   /// No description provided for @memberSince.
   ///
   /// In en, this message translates to:

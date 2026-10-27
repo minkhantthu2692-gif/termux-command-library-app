@@ -83,6 +83,13 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                   subtitle: l10n.reauthenticateNeeded,
                   onTap: () => context.push('/profile/password'),
                 ),
+              if (cloudConfigured && !session.isLocalOnly)
+                SettingsTile(
+                  leading: const Icon(Icons.verified_user_outlined),
+                  title: l10n.refreshRole,
+                  subtitle: l10n.refreshRoleBody,
+                  onTap: _busy ? null : _refreshRole,
+                ),
               if (session.isAnonymous && cloudConfigured)
                 SettingsTile(
                   leading: const Icon(Icons.person_add_alt_rounded),
@@ -156,6 +163,22 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _refreshRole() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() => _busy = true);
+    try {
+      await ref.read(authRepositoryProvider).refreshIdentityClaims();
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.roleRefreshed);
+      }
+    } catch (error) {
+      if (mounted) context.showErrorSnack(error);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _clearLocalData() async {

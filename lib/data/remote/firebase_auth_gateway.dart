@@ -10,10 +10,18 @@ class FirebaseAuthGateway implements AuthGateway {
 
   final FirebaseAuth _auth;
 
+  /// Last session resolved with token claims. The synchronous `currentSession`
+  /// getter cannot await `getIdTokenResult`, but reusing the resolved session
+  /// avoids reporting a stale `isAdmin: false` after a claim refresh.
+  AuthSession? _lastSession;
+
   @override
   AuthSession? get currentSession {
     final user = _auth.currentUser;
-    return user == null ? null : _syncSession(user);
+    if (user == null) return null;
+    final cached = _lastSession;
+    if (cached != null && cached.uid == user.uid) return cached;
+    return _syncSession(user);
   }
 
   @override
@@ -34,7 +42,10 @@ class FirebaseAuthGateway implements AuthGateway {
     User? user, {
     bool forceRefreshToken = false,
   }) async {
-    if (user == null) return null;
+    if (user == null) {
+      _lastSession = null;
+      return null;
+    }
     var isAdmin = false;
     try {
       final token = await user.getIdTokenResult(forceRefreshToken);
@@ -43,7 +54,7 @@ class FirebaseAuthGateway implements AuthGateway {
       // A missing claim or a refresh hiccup must not prevent sign-in. Firestore
       // rules remain the actual authorization boundary.
     }
-    return AuthSession(
+    return _lastSession = AuthSession(
       uid: user.uid,
       email: user.email,
       displayName: user.displayName,
@@ -202,9 +213,12 @@ class FirebaseAuthGateway implements AuthGateway {
   }
 
   @override
-  Future<void> reload() async {
+  Future<AuthSession> refreshSession() async {
     try {
-      await _auth.currentUser?.reload();
+      final user = _auth.currentUser;
+      if (user == null) throw const AppException(AppErrorCode.authRequired);
+      await user.reload();
+      return (await _asyncSession(user, forceRefreshToken: true))!;
     } catch (error) {
       throw mapFirebaseAuthError(error);
     }
@@ -243,6 +257,7 @@ class FirebaseAuthGateway implements AuthGateway {
   Future<void> signOut() async {
     try {
       await _auth.signOut();
+      _lastSession = null;
     } catch (error) {
       throw mapFirebaseAuthError(error);
     }
@@ -254,6 +269,7 @@ class FirebaseAuthGateway implements AuthGateway {
       final user = _auth.currentUser;
       if (user == null) throw const AppException(AppErrorCode.authRequired);
       await user.delete();
+      _lastSession = null;
     } catch (error) {
       throw mapFirebaseAuthError(error);
     }

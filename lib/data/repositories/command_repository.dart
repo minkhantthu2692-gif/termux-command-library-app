@@ -175,6 +175,8 @@ class CommandRepository {
       throw const AppException(AppErrorCode.limitReached);
     }
 
+    final editingOtherAuthor =
+        existing != null && existing.authorUid != session.uid;
     final saved = CommandPost(
       id: post.id,
       name: post.name.trim(),
@@ -184,7 +186,12 @@ class CommandRepository {
       metadata: metadata,
       steps: steps,
       authorUid: existing?.authorUid ?? session.uid,
-      authorNickname: authorNickname.trim().isNotEmpty
+      // An admin editing a community guide preserves the original author's
+      // attribution. Taking the admin's nickname here made the guide look as if
+      // it had been re-authored.
+      authorNickname: editingOtherAuthor
+          ? existing.authorNickname
+          : authorNickname.trim().isNotEmpty
           ? authorNickname.trim()
           : (existing?.authorNickname ?? ''),
       createdAt: existing?.createdAt ?? now,
@@ -241,6 +248,17 @@ class CommandRepository {
     if (existing.authorUid != session.uid && !session.isAdmin) {
       throw const AppException(AppErrorCode.permissionDenied);
     }
+    if (!session.isLocalOnly && _cloudConfigured) {
+      // Persist the delete intent before removing the row. If the process dies
+      // in between, the queued operation still removes the cloud document and
+      // the tombstone hides any stale remote snapshot. This also drops a
+      // pending creation: the delete is the user's final intent and succeeds
+      // even when the document never reached Firestore.
+      await _syncDao.enqueueCommandDelete(
+        uid: session.uid,
+        commandId: commandId,
+      );
+    }
     await _commandDao.deleteLocalCommand(commandId);
     final removedPreferences = await _preferenceDao.removeCommandForUser(
       session.uid,
@@ -248,20 +266,6 @@ class CommandRepository {
     );
     if (removedPreferences) {
       await _queuePreferenceSync(session, favorites: true, pins: true);
-    }
-    if (!session.isLocalOnly && _cloudConfigured) {
-      // A pending local creation no longer needs its upsert; the delete is the
-      // final intent and is safe even if the document never reached Firestore.
-      await _syncDao.removeForEntity(
-        session.uid,
-        PendingOperationType.commandUpsert,
-        commandId,
-      );
-      await _syncDao.enqueue(
-        uid: session.uid,
-        type: PendingOperationType.commandDelete,
-        entityId: commandId,
-      );
     }
   }
 

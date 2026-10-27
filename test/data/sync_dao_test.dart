@@ -59,6 +59,46 @@ void main() {
       expect(operation.payload['name'], 'First');
     });
 
+    test('enqueueIfAbsent respects a blocking delete', () async {
+      await db.syncDao.enqueueCommandDelete(uid: uid, commandId: 'guide-1');
+
+      expect(
+        await db.syncDao.enqueueIfAbsent(
+          uid: uid,
+          type: PendingOperationType.commandUpsert,
+          entityId: 'guide-1',
+          payload: const {'name': 'Resurrected'},
+          blockedByType: PendingOperationType.commandDelete,
+        ),
+        isFalse,
+      );
+      expect(await db.syncDao.pendingCount(uid), 1);
+      expect(
+        (await db.syncDao.readPending(uid)).single.type,
+        PendingOperationType.commandDelete,
+      );
+    });
+
+    test(
+      'a queued delete replaces the pending upsert for that guide',
+      () async {
+        await db.syncDao.enqueue(
+          uid: uid,
+          type: PendingOperationType.commandUpsert,
+          entityId: 'guide-1',
+          payload: const {'name': 'Draft'},
+        );
+
+        await db.syncDao.enqueueCommandDelete(uid: uid, commandId: 'guide-1');
+
+        final operations = await db.syncDao.readPending(uid);
+        expect(operations, hasLength(1));
+        expect(operations.single.type, PendingOperationType.commandDelete);
+        expect(await db.syncDao.pendingDeleteIds(uid), {'guide-1'});
+        expect(await db.syncDao.pendingDeleteIds('user-2'), isEmpty);
+      },
+    );
+
     test('keeps operations separate by uid, type and entity', () async {
       await db.syncDao.enqueue(
         uid: uid,

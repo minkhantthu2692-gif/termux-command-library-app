@@ -40,6 +40,11 @@ class AuthRepository {
   final SyncDao _syncDao;
   final String _localGuestUid;
 
+  /// Active `watchSessions()` listeners. A forced claim refresh must push the
+  /// new role into those streams even though Firebase Auth does not emit an
+  /// `authStateChanges` event for a token refresh.
+  final List<void Function(AuthSession)> _sessionObservers = [];
+
   bool get isCloudConfigured => _gateway != null;
 
   AuthSession get localGuestSession => AuthSession(
@@ -61,7 +66,12 @@ class AuthRepository {
       controller.add(session);
     }
 
+    // Exposes this listener to refreshIdentityClaims() so a forced claim
+    // refresh can update the UI and the sync coordinator without a restart.
+    void publish(AuthSession session) => emit(session);
+
     controller.onListen = () async {
+      _sessionObservers.add(publish);
       final current = _gateway?.currentSession;
       final initial = current ?? localGuestSession;
       await _ensureProfile(initial);
@@ -70,6 +80,7 @@ class AuthRepository {
 
       final gateway = _gateway;
       if (gateway == null) {
+        _sessionObservers.remove(publish);
         await controller.close();
         return;
       }
@@ -95,6 +106,7 @@ class AuthRepository {
           }
         },
         onDone: () {
+          _sessionObservers.remove(publish);
           if (!cancelled && !controller.isClosed) {
             unawaited(controller.close());
           }
@@ -104,6 +116,7 @@ class AuthRepository {
 
     controller.onCancel = () async {
       cancelled = true;
+      _sessionObservers.remove(publish);
       await remoteSubscription?.cancel();
       remoteSubscription = null;
     };
@@ -405,14 +418,24 @@ class AuthRepository {
     }
   }
 
-  /// Used by account settings after a successful profile sync.
-  Future<void> refreshIdentityClaims() async {
+  /// Re-reads the Firebase profile and forces a fresh ID token, so a custom
+  /// claim granted by an operator becomes active without restarting the app.
+  /// The refreshed session is published to every active session listener.
+  Future<AuthSession> refreshIdentityClaims() async {
     final gateway = _gateway;
-    if (gateway == null) return;
+    if (gateway == null) {
+      throw const AppException(AppErrorCode.firebaseNotConfigured);
+    }
     try {
-      await gateway.reload();
+      final session = await gateway.refreshSession();
+      for (final observer in List.of(_sessionObservers)) {
+        observer(session);
+      }
+      return session;
     } catch (error) {
-      throw AppException(AppErrorCode.unknown, cause: error);
+      throw error is AppException
+          ? error
+          : AppException(AppErrorCode.unknown, cause: error);
     }
   }
 

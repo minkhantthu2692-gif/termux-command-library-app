@@ -23,6 +23,15 @@ const _memberSession = AuthSession(
   isLocalOnly: false,
 );
 
+const _adminSession = AuthSession(
+  uid: 'admin-1',
+  email: 'admin@example.com',
+  displayName: 'Admin',
+  isAnonymous: false,
+  isAdmin: true,
+  isLocalOnly: false,
+);
+
 void main() {
   late AppDatabase db;
   late _FakeAuthGateway gateway;
@@ -226,6 +235,146 @@ void main() {
       expect(await db.syncDao.pendingCount(_memberSession.uid), 1);
     },
   );
+
+  test('admin edit of another author keeps the original attribution', () async {
+    gateway.emit(_adminSession);
+    await pumpEventQueue(times: 20);
+
+    final original = buildCommand(
+      id: 'admin-edit',
+      name: 'Original guide',
+      authorUid: 'another-user',
+      authorNickname: 'Original author',
+    );
+    await db.commandDao.applyRemotePost(original);
+
+    final repository = CommandRepository(
+      commandDao: db.commandDao,
+      preferenceDao: db.preferenceDao,
+      syncDao: db.syncDao,
+      cloudConfigured: true,
+    );
+    final saved = await repository.savePost(
+      session: _adminSession,
+      post: buildCommand(
+        id: original.id,
+        name: 'Admin corrected guide',
+        authorUid: _adminSession.uid,
+        authorNickname: 'Admin',
+      ),
+      publish: true,
+      authorNickname: 'Admin',
+    );
+
+    expect(saved.authorUid, 'another-user');
+    expect(saved.authorNickname, 'Original author');
+
+    await _waitFor(() => cloud.savedCommandIds.contains(original.id));
+    expect(cloud.savedCommandNames, contains('Admin corrected guide'));
+    final stored = await db.commandDao.getCommand(original.id);
+    expect(stored!.authorUid, 'another-user');
+    expect(stored.authorNickname, 'Original author');
+    expect(stored.isPendingSync, isFalse);
+  });
+
+  test(
+    'admin repair re-queues another author guide with no queue entry',
+    () async {
+      gateway.emit(_adminSession);
+      await pumpEventQueue(times: 20);
+
+      final legacy = buildCommand(
+        id: 'admin-repair',
+        name: 'Needs repair',
+        authorUid: 'another-user',
+        isPendingSync: true,
+      );
+      await db.commandDao.saveLocalPost(legacy, pendingSync: true);
+      expect(await db.syncDao.pendingCount(_adminSession.uid), 0);
+
+      await coordinator.refresh();
+
+      expect(cloud.savedCommandIds, contains(legacy.id));
+      expect(
+        (await db.commandDao.getCommand(legacy.id))!.isPendingSync,
+        isFalse,
+      );
+    },
+  );
+
+  test('a queued delete cannot be undone by a stale remote snapshot', () async {
+    gateway.emit(_memberSession);
+    await pumpEventQueue(times: 20);
+
+    final remote = buildCommand(
+      id: 'deleted-guide',
+      name: 'Delete me',
+      authorUid: _memberSession.uid,
+    );
+    await db.commandDao.applyRemotePost(remote);
+
+    final repository = CommandRepository(
+      commandDao: db.commandDao,
+      preferenceDao: db.preferenceDao,
+      syncDao: db.syncDao,
+      cloudConfigured: true,
+    );
+    await repository.deletePost(session: _memberSession, commandId: remote.id);
+    expect(await db.commandDao.getCommand(remote.id), isNull);
+
+    // A snapshot captured before the delete can still arrive. It must not
+    // resurrect the guide locally.
+    cloud.emitCommands(
+      CloudCommandEvent(upserts: [remote], removedIds: const []),
+    );
+    await pumpEventQueue(times: 10);
+    expect(await db.commandDao.getCommand(remote.id), isNull);
+
+    // A manual refresh can also fetch the not-yet-deleted document.
+    cloud.fetchedCommands = [remote];
+    await coordinator.refresh();
+
+    expect(cloud.deletedCommandIds, contains(remote.id));
+    expect(await db.commandDao.getCommand(remote.id), isNull);
+    expect(await db.syncDao.pendingCount(_memberSession.uid), 0);
+  });
+
+  test(
+    'a snapshot after a completed delete still cannot restore the guide',
+    () async {
+      gateway.emit(_memberSession);
+      await pumpEventQueue(times: 20);
+
+      final remote = buildCommand(
+        id: 'deleted-then-stale',
+        name: 'Delete me twice',
+        authorUid: _memberSession.uid,
+      );
+      await db.commandDao.applyRemotePost(remote);
+
+      final repository = CommandRepository(
+        commandDao: db.commandDao,
+        preferenceDao: db.preferenceDao,
+        syncDao: db.syncDao,
+        cloudConfigured: true,
+      );
+      await repository.deletePost(
+        session: _memberSession,
+        commandId: remote.id,
+      );
+      await _waitFor(
+        () async => await db.syncDao.pendingCount(_memberSession.uid) == 0,
+      );
+      expect(cloud.deletedCommandIds, contains(remote.id));
+
+      cloud.emitCommands(
+        CloudCommandEvent(upserts: [remote], removedIds: const []),
+      );
+      await pumpEventQueue(times: 20);
+
+      expect(await db.commandDao.getCommand(remote.id), isNull);
+    },
+  );
 }
 
 Future<void> _waitFor(FutureOr<bool> Function() condition) async {
@@ -256,12 +405,17 @@ class _FakeAuthGateway implements AuthGateway {
 class _FakeCloudStore implements CloudStore {
   final List<String> savedCommandIds = [];
   final List<String> savedCommandNames = [];
+  final List<String> deletedCommandIds = [];
+  final _commandEvents = StreamController<CloudCommandEvent>.broadcast();
+  List<CommandPost> fetchedCommands = const [];
   Future<void> Function(CommandPost command)? onSaveCommand;
   AppException? saveCommandError;
 
+  void emitCommands(CloudCommandEvent event) => _commandEvents.add(event);
+
   @override
   Stream<CloudCommandEvent> watchLatestCommands({int limit = 250}) =>
-      const Stream.empty();
+      _commandEvents.stream;
 
   @override
   Stream<CloudProfile?> watchProfile(String uid) =>
@@ -274,7 +428,7 @@ class _FakeCloudStore implements CloudStore {
   Future<CloudCommandPage> fetchCommandsPage({
     int limit = 20,
     Object? cursor,
-  }) async => const CloudCommandPage(commands: [], hasMore: false);
+  }) async => CloudCommandPage(commands: fetchedCommands, hasMore: false);
 
   @override
   Future<List<CommandPost>> fetchAuthoredCommands(String uid) async => const [];
@@ -289,7 +443,9 @@ class _FakeCloudStore implements CloudStore {
   }
 
   @override
-  Future<void> deleteCommand(String commandId) async {}
+  Future<void> deleteCommand(String commandId) async {
+    deletedCommandIds.add(commandId);
+  }
 
   @override
   Future<void> saveProfile({

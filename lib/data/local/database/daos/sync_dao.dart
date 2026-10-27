@@ -57,6 +57,24 @@ class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
     String entityId = '',
     Map<String, dynamic> payload = const {},
   }) async {
+    await transaction(
+      () => _replaceOperation(
+        uid: uid,
+        type: type,
+        entityId: entityId,
+        payload: payload,
+      ),
+    );
+  }
+
+  /// Inserts or replaces the single queued operation for `(uid, type,
+  /// entityId)`. Must run inside a transaction.
+  Future<void> _replaceOperation({
+    required String uid,
+    required String type,
+    required String entityId,
+    Map<String, dynamic> payload = const {},
+  }) async {
     final companion = PendingOperationsCompanion(
       uid: Value(uid),
       type: Value(type),
@@ -66,25 +84,46 @@ class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
       attempts: const Value(0),
       lastError: const Value(null),
     );
+    // insertOnConflictUpdate targets the primary key only, so it cannot use
+    // the (uid, type, entityId) unique index. Look the row up explicitly and
+    // update it, keeping a single queued operation per entity.
+    final existing =
+        await (select(pendingOperations)..where(
+              (table) =>
+                  table.uid.equals(uid) &
+                  table.type.equals(type) &
+                  table.entityId.equals(entityId),
+            ))
+            .getSingleOrNull();
+    if (existing == null) {
+      await into(pendingOperations).insert(companion);
+    } else {
+      await (update(
+        pendingOperations,
+      )..where((table) => table.id.equals(existing.id))).write(companion);
+    }
+  }
+
+  /// Queues a guide deletion and drops any pending upsert for the same guide in
+  /// one transaction. The delete is the final intent; keeping an older upsert
+  /// could publish the guide again after the user removed it.
+  Future<void> enqueueCommandDelete({
+    required String uid,
+    required String commandId,
+  }) async {
     await transaction(() async {
-      // insertOnConflictUpdate targets the primary key only, so it cannot use
-      // the (uid, type, entityId) unique index. Look the row up explicitly and
-      // update it, keeping a single queued operation per entity.
-      final existing =
-          await (select(pendingOperations)..where(
-                (table) =>
-                    table.uid.equals(uid) &
-                    table.type.equals(type) &
-                    table.entityId.equals(entityId),
-              ))
-              .getSingleOrNull();
-      if (existing == null) {
-        await into(pendingOperations).insert(companion);
-      } else {
-        await (update(
-          pendingOperations,
-        )..where((table) => table.id.equals(existing.id))).write(companion);
-      }
+      await (delete(pendingOperations)..where(
+            (table) =>
+                table.uid.equals(uid) &
+                table.type.equals(PendingOperationType.commandUpsert) &
+                table.entityId.equals(commandId),
+          ))
+          .go();
+      await _replaceOperation(
+        uid: uid,
+        type: PendingOperationType.commandDelete,
+        entityId: commandId,
+      );
     });
   }
 
@@ -96,8 +135,20 @@ class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
     required String type,
     String entityId = '',
     Map<String, dynamic> payload = const {},
+    String? blockedByType,
   }) async {
     return transaction(() async {
+      if (blockedByType != null) {
+        final blocked =
+            await (select(pendingOperations)..where(
+                  (table) =>
+                      table.uid.equals(uid) &
+                      table.type.equals(blockedByType) &
+                      table.entityId.equals(entityId),
+                ))
+                .getSingleOrNull();
+        if (blocked != null) return false;
+      }
       final existing =
           await (select(pendingOperations)..where(
                 (table) =>
@@ -174,6 +225,20 @@ class SyncDao extends DatabaseAccessor<AppDatabase> with _$SyncDaoMixin {
     ).getSingle();
     final value = row.data['count'];
     return value is int && value > 0;
+  }
+
+  /// IDs of guides whose deletion is still queued for [uid]. Realtime listeners
+  /// use this so a stale Firestore snapshot cannot re-insert a guide that the
+  /// user already deleted while the delete is still uploading.
+  Future<Set<String>> pendingDeleteIds(String uid) async {
+    final rows =
+        await (select(pendingOperations)..where(
+              (table) =>
+                  table.uid.equals(uid) &
+                  table.type.equals(PendingOperationType.commandDelete),
+            ))
+            .get();
+    return rows.map((row) => row.entityId).where((id) => id.isNotEmpty).toSet();
   }
 
   Future<void> markSucceeded(int id) async {

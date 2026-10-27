@@ -43,7 +43,9 @@ abstract interface class AuthGateway {
 
   Future<void> sendEmailVerification();
 
-  Future<void> reload();
+  /// Re-reads the provider profile and forces a fresh ID token so custom claims
+  /// (for example `admin`) take effect without restarting the app.
+  Future<AuthSession> refreshSession();
 
   Future<void> reauthenticateWithPassword(String password);
 

@@ -1018,6 +1018,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get role => 'Account type';
 
   @override
+  String get refreshRole => 'Refresh account type';
+
+  @override
+  String get refreshRoleBody => 'Reload your saved role from Firebase.';
+
+  @override
+  String get roleRefreshed => 'Account type refreshed.';
+
+  @override
   String memberSince(String date) {
     return 'Member since $date';
   }

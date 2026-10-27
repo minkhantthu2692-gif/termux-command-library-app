@@ -1027,6 +1027,16 @@ class AppLocalizationsMy extends AppLocalizations {
   String get role => 'အကောင့်အမျိုးအစား';
 
   @override
+  String get refreshRole => 'အကောင့်အမျိုးအစား ပြန်လည်စစ်ဆေး';
+
+  @override
+  String get refreshRoleBody =>
+      'Firebase မှ သင့်အကောင့်အမျိုးအစားကို ပြန်လည်ရယူပါ။';
+
+  @override
+  String get roleRefreshed => 'အကောင့်အမျိုးအစား ပြန်လည်စစ်ဆေးပြီးပါပြီ။';
+
+  @override
   String memberSince(String date) {
     return '$date မှစ၍ အဖွဲ့ဝင်';
   }

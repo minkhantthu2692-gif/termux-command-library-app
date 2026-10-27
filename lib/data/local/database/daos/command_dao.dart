@@ -140,6 +140,16 @@ class CommandDao extends DatabaseAccessor<AppDatabase> with _$CommandDaoMixin {
     return rows.map((row) => row.id).toList(growable: false);
   }
 
+  /// Every local row still awaiting an upload, regardless of author. Admins may
+  /// edit other users' guides, so their repair pass cannot filter by their own
+  /// UID.
+  Future<List<String>> getAllPendingCommandIds() async {
+    final rows = await (select(
+      commands,
+    )..where((t) => t.isPendingSync.equals(true))).get();
+    return rows.map((row) => row.id).toList(growable: false);
+  }
+
   /// Applies a deletion that arrived from Firestore. Locally pending edits and
   /// seeded offline content are preserved.
   Future<bool> deleteRemoteCommand(String id) async {

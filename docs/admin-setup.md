@@ -90,18 +90,38 @@ FIREBASE_PROJECT_ID=your-project-id node set-admin-claim.mjs THE_UID false
 The script preserves any other custom claims already on the account. It does not
 touch Firestore documents.
 
+### Option B: Identity Toolkit Admin REST API
+
+If the Admin SDK is not installed but `gcloud` is available, call the same
+Identity Toolkit endpoint used by the Admin SDK:
+
+```bash
+ACCESS_TOKEN="$(gcloud auth print-access-token)"
+curl -sS -X POST \
+  "https://identitytoolkit.googleapis.com/v1/projects/your-project-id/accounts:update" \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"localId":"THE_UID","customAttributes":"{\"admin\":true}"}'
+```
+
+Never paste the access token into a shell history you share, an issue, a commit
+or the app. The token is short-lived but still grants administrative access.
+
 ## 3. Refresh the user's token
 
 Custom claims are embedded in the ID token. An already signed-in client keeps the
 old token until it refreshes. The user should:
 
-1. Sign out and sign in again, or
-2. Restart the app after the claim is set, or
-3. Use an explicit token-refresh path if one is added later.
+1. Open **Settings → Account → Refresh account type**, which forces an ID-token
+   refresh and publishes the updated role to the UI and the sync coordinator, or
+2. Sign out and sign in again.
 
-The app's account settings include a refresh action that calls
-`AuthRepository.refreshIdentityClaims()`. It is still safest to sign out and back
-in after changing claims.
+Restarting alone is not guaranteed to refresh a still-valid cached token.
+
+`AuthRepository.refreshIdentityClaims()` calls `AuthGateway.refreshSession()`,
+which reloads the Firebase user, calls `getIdTokenResult(true)`, and emits the
+new `AuthSession` to every active session listener. The app never grants a role
+locally; it only reads the claim from the refreshed token.
 
 ## 4. Verify the claim
 
@@ -110,6 +130,18 @@ In the Admin SDK:
 ```js
 const user = await admin.auth().getUser(THE_UID);
 console.log(user.customClaims); // { admin: true }
+```
+
+With the REST API:
+
+```bash
+ACCESS_TOKEN="$(gcloud auth print-access-token)"
+curl -sS -X POST \
+  "https://identitytoolkit.googleapis.com/v1/projects/your-project-id/accounts:lookup" \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"localId":["THE_UID"]}'
+# The response's users[0].customAttributes must contain {"admin":true}.
 ```
 
 In a client after refreshing:

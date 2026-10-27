@@ -61,6 +61,16 @@ class SyncCoordinator {
   int _pendingCount = 0;
   DateTime? _lastSyncedAt;
 
+  /// Serializes realtime snapshot application. Stream callbacks are not
+  /// awaited by `listen`, so two async events could otherwise finish out of
+  /// order and let a stale upsert overwrite a newer removal.
+  Future<void> _commandEventTail = Future<void>.value();
+
+  /// IDs whose cloud delete already succeeded during this attachment. A
+  /// Firestore snapshot captured before the delete can still arrive afterwards;
+  /// these IDs keep that stale upsert from resurrecting the local row.
+  final Set<String> _recentlyDeleted = <String>{};
+
   static const _lastSyncedKey = 'lastSyncedAt';
   static const _maxAutomaticAttempts = 8;
 
@@ -147,7 +157,7 @@ class SyncCoordinator {
 
     _commandsSub = cloud
         .watchLatestCommands(limit: 250)
-        .listen(_applyCommandEvent, onError: _onListenerError);
+        .listen(_queueCommandEvent, onError: _onListenerError);
     _profileSub = cloud
         .watchProfile(session.uid)
         .listen(
@@ -156,7 +166,7 @@ class SyncCoordinator {
         );
 
     unawaited(_bootstrapCloudProfile(session));
-    unawaited(_repairPendingCommands(session.uid));
+    unawaited(_repairPendingCommands(session));
     unawaited(_refreshQuietly());
   }
 
@@ -175,21 +185,31 @@ class SyncCoordinator {
   /// Re-queues local guides marked pending that have no queue entry. Older
   /// builds could delete a queue row without clearing the flag, which left the
   /// badge stuck forever. The upsert is idempotent, so repairing a row that was
-  /// already uploaded simply acknowledges it again.
-  Future<void> _repairPendingCommands(String uid) async {
+  /// already uploaded simply acknowledges it again. Admins may have edited
+  /// another user's guide, so their scan is not limited to their own UID.
+  Future<void> _repairPendingCommands(AuthSession session) async {
+    final uid = session.uid;
     try {
-      final ids = await _commandDao.getPendingCommandIdsForAuthor(uid);
+      final ids = session.isAdmin
+          ? await _commandDao.getAllPendingCommandIds()
+          : await _commandDao.getPendingCommandIdsForAuthor(uid);
       for (final id in ids) {
         if (_disposed || _attachedUid != uid) return;
         final post = await _commandDao.getCommand(id);
-        if (post == null || post.authorUid != uid || !post.isPendingSync) {
+        if (post == null ||
+            !post.isPendingSync ||
+            post.authorUid == AppConstants.seedAuthorUid) {
           continue;
         }
+        if (!session.isAdmin && post.authorUid != uid) continue;
         await _syncDao.enqueueIfAbsent(
           uid: uid,
           type: PendingOperationType.commandUpsert,
           entityId: id,
           payload: post.toJson(),
+          // A queued delete is the final intent; re-queueing an upsert would
+          // publish a guide the user just removed.
+          blockedByType: PendingOperationType.commandDelete,
         );
       }
     } catch (_) {
@@ -213,14 +233,28 @@ class SyncCoordinator {
     _profileBootstrapStarted = false;
     _processTimer = null;
     _retryTimer = null;
+    _commandEventTail = Future<void>.value();
+    _recentlyDeleted.clear();
     await commandsSub?.cancel();
     await profileSub?.cancel();
     await pendingSub?.cancel();
   }
 
+  void _queueCommandEvent(CloudCommandEvent event) {
+    _commandEventTail = _commandEventTail.then(
+      (_) => _applyCommandEvent(event),
+    );
+  }
+
   Future<void> _applyCommandEvent(CloudCommandEvent event) async {
+    if (_disposed || _attachedUid == null) return;
     try {
+      final blocked = await _blockedCommandIds();
       for (final post in event.upserts) {
+        // The cloud document can still exist while its delete is queued, and an
+        // old snapshot can arrive after the delete succeeded. Either way the
+        // local row must stay deleted.
+        if (blocked.contains(post.id)) continue;
         await _commandDao.applyRemotePost(post);
       }
       for (final id in event.removedIds) {
@@ -233,6 +267,15 @@ class SyncCoordinator {
             : const AppException(AppErrorCode.database),
       );
     }
+  }
+
+  /// Guide IDs that must not be re-inserted by a remote snapshot: queued
+  /// deletes for [uid] plus deletes already completed during this attachment.
+  Future<Set<String>> _blockedCommandIds([String? uid]) async {
+    final attached = uid ?? _attachedUid;
+    if (attached == null) return {..._recentlyDeleted};
+    final pending = await _syncDao.pendingDeleteIds(attached);
+    return {...pending, ..._recentlyDeleted};
   }
 
   Future<void> _applyProfile(AuthSession session, CloudProfile? profile) async {
@@ -479,7 +522,11 @@ class SyncCoordinator {
         if (operation.entityId.isEmpty) {
           throw const AppException(AppErrorCode.validation);
         }
+        // Mark the ID before the network call. Realtime upserts that were
+        // already in flight must not put the guide back while it is deleted.
+        _recentlyDeleted.add(operation.entityId);
         await cloud.deleteCommand(operation.entityId);
+        await _commandDao.deleteLocalCommand(operation.entityId);
       default:
         throw const AppException(AppErrorCode.unknown);
     }
@@ -494,8 +541,13 @@ class SyncCoordinator {
     }
     try {
       final command = CommandPost.fromJson(payload);
-      if (command.authorUid != expectedUid ||
-          command.authorUid == AppConstants.seedAuthorUid) {
+      if (command.authorUid == AppConstants.seedAuthorUid) {
+        throw const AppException(AppErrorCode.permissionDenied);
+      }
+      // A normal user may only upload guides they authored. An admin may edit
+      // another user's guide, and that payload retains the original author UID
+      // so attribution and ownership are preserved.
+      if (command.authorUid != expectedUid && !(_session?.isAdmin ?? false)) {
         throw const AppException(AppErrorCode.permissionDenied);
       }
       return command.copyWith(isSeed: false);
@@ -524,6 +576,7 @@ class SyncCoordinator {
       _emit(_status.copyWith(phase: SyncPhase.syncing, clearError: true));
     }
     try {
+      final blocked = await _blockedCommandIds(uid);
       Object? cursor;
       for (var page = 0; page < AppConstants.syncMaxPagesPerRefresh; page++) {
         final result = await cloud.fetchCommandsPage(
@@ -531,6 +584,7 @@ class SyncCoordinator {
           cursor: cursor,
         );
         for (final post in result.commands) {
+          if (blocked.contains(post.id)) continue;
           await _commandDao.applyRemotePost(post);
         }
         cursor = result.cursor;
@@ -538,14 +592,22 @@ class SyncCoordinator {
       }
       final authored = await cloud.fetchAuthoredCommands(uid);
       for (final post in authored) {
+        if (blocked.contains(post.id)) continue;
         await _commandDao.applyRemotePost(post);
       }
-      if (!_profileBootstrapStarted) {
-        final session = _session;
-        if (session != null) await _bootstrapCloudProfile(session);
+      final session = _session;
+      if (!_profileBootstrapStarted && session != null) {
+        await _bootstrapCloudProfile(session);
       }
-      await _repairPendingCommands(uid);
+      if (session != null) await _repairPendingCommands(session);
       final pendingFailure = await _processPending(force: true);
+      // A page fetched before a concurrent delete can still contain the guide.
+      // Re-apply every tombstone now that the fetch and delete passes are done,
+      // so the local row cannot survive the refresh.
+      final deletedIds = await _blockedCommandIds(uid);
+      for (final id in deletedIds) {
+        await _commandDao.deleteLocalCommand(id);
+      }
       // A refresh that cannot upload queued work must not claim success. The
       // error is also what makes the retry actionable for the user.
       if (pendingFailure != null) throw pendingFailure;

@@ -370,6 +370,9 @@
   "editProfile": "Edit profile",
   "profileUpdated": "Profile updated.",
   "role": "Account type",
+  "refreshRole": "Refresh account type",
+  "refreshRoleBody": "Reload your saved role from Firebase.",
+  "roleRefreshed": "Account type refreshed.",
   "memberSince": "Member since {date}",
   "@memberSince": {
     "placeholders": {
