@@ -511,6 +511,8 @@ Groq နှင့်အတူ:
 
 ## ၁၇။ နောက်ထပ် ဖတ်ရန်
 
+- [Burmese next steps](burmese-next-steps.md) — လက်ရှိ build အတွက်
+  ကျန်ရှိသော လုပ်ငန်းများ
 - [Firebase setup](firebase-setup.md)
 - [Firebase Authentication setup](firebase-auth-setup.md)
 - [Firestore setup](firestore-setup.md)

@@ -205,6 +205,7 @@ Riverpod app shell and theme/locale propagation.
 
 | Document | Contents |
 | --- | --- |
+| [Burmese next steps](docs/burmese-next-steps.md) | What remains to make this build fully functional, in Myanmar language |
 | [Burmese setup guide](docs/burmese-setup.md) | Complete setup walkthrough in Myanmar language |
 | [Firebase setup](docs/firebase-setup.md) | Project, Auth, Firestore, deployment |
 | [Firebase Authentication](docs/firebase-auth-setup.md) | Providers, flows, account linking and deletion |
