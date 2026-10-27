@@ -8,6 +8,9 @@
 | Anonymous Firebase user | Created when the user chooses an online guest flow. The UID can later be upgraded by account linking. |
 | Register | Avatar, nickname, email, password and confirmation. |
 | Sign in | Email/password. |
+| Google sign-in | Firebase `signInWithProvider(GoogleAuthProvider())` in a Custom Tab. Available on the sign-in and registration screens. |
+| GitHub sign-in | Firebase `signInWithProvider(GithubAuthProvider())` with the `user:email` scope. Available on the sign-in and registration screens. |
+| Link guest → provider | On the registration screen, Google/GitHub is linked to the current anonymous UID with `linkWithProvider`, preserving UID, posts, favorites and pins. |
 | Password reset | Firebase reset email; no OTP or SMS step. |
 | Link guest → registered | The current anonymous UID is linked to email/password, preserving UID, posts, favorites and pins. |
 | Change password | Requires the current password (re-authentication) and a new password of at least 8 characters. |
@@ -19,7 +22,9 @@ The app intentionally does **not** implement:
 - OTP or SMS verification.
 - Mandatory email verification gates.
 - Custom password-reset codes.
-- Social sign-in providers.
+- Apple, Facebook or other social providers. Only Google and GitHub are
+  offered; adding another provider only requires a new `AuthProviderKind` case
+  and a Firebase console configuration.
 
 `sendEmailVerification()` exists in the repository for future use, but no screen
 blocks the user on verification.
@@ -36,10 +41,76 @@ blocks the user on verification.
    are recognizable.
 6. Do not disable the Anonymous provider while anonymous accounts still exist;
    those users would lose access to their data.
+7. Enable **Google** and **GitHub** as described below. Both are optional: the
+   buttons are hidden when Firebase is not configured, and a disabled provider
+   shows a clear "sign-in method not enabled" message instead of crashing.
 
 Anonymous accounts are not automatically cleaned up. If online guest accounts
 are enabled in production, review Firebase Auth's anonymous-user cleanup options
 or provide an in-app upgrade path. This app already provides account linking.
+
+## Google sign-in setup
+
+1. Firebase console → **Authentication → Sign-in method → Google → Enable**.
+2. Choose a **project support email**. It is shown on the account picker.
+3. Add the signing fingerprints for every build you distribute. In **Project
+   settings → Your apps → Android app → Add fingerprint**, add the debug
+   SHA-1/SHA-256 and the release/Play App Signing SHA-1/SHA-256. Without them
+   Google sign-in fails on that build even though the console shows the provider
+   as enabled.
+4. Download the refreshed `google-services.json` after adding fingerprints or
+   clients and replace `android/app/google-services.json`.
+5. Rebuild the app. The Web OAuth client in `google-services.json` is what the
+   Firebase Auth Custom Tab flow uses; no separate `google_sign_in` dependency is
+   required.
+
+`GoogleAuthProvider()` uses Firebase's hosted flow, so the OAuth consent screen
+and redirect URI are managed by Firebase. No callback URL needs to be entered in
+the Google Cloud console for this flow.
+
+## GitHub sign-in setup
+
+1. Create a GitHub OAuth App: GitHub **Settings → Developer settings → OAuth Apps
+   → New OAuth App**.
+2. Set **Authorization callback URL** to the Firebase Auth handler for the
+   project:
+
+   ```text
+   https://<project-id>.firebaseapp.com/__/auth/handler
+   ```
+
+   For the current project that is
+   `https://termuxcommandlibrary.firebaseapp.com/__/auth/handler`.
+3. Copy the **Client ID** and generate a **Client secret**.
+4. Firebase console → **Authentication → Sign-in method → GitHub → Enable** and
+   paste both values. Save.
+5. The app requests the `user:email` scope, so GitHub accounts with a private
+   primary email still return an address to Firebase. Without this scope those
+   users sign in with a null email.
+6. The GitHub app can stay in development mode while testing. Only GitHub
+   accounts added as testers can authorize it until the app is published.
+
+Do not put the GitHub client secret in the Flutter app, `--dart-define`, source
+control or documentation. It belongs only in the Firebase console.
+
+## Social sign-in behavior
+
+- The **Continue with Google** and **Continue with GitHub** buttons appear above
+  the email form on both authentication screens. They are hidden when the build
+  is local-only (no Firebase configuration).
+- On **Sign in**, the provider creates or reuses a Firebase account. On
+  **Create account**, if the current session is an anonymous Firebase user, the
+  provider is linked to that UID so the existing collection and authored guides
+  survive.
+- If the provider account is already attached to a different Firebase user, the
+  link fails and the app reports that an account already exists. The user must
+  sign in with the provider instead; two Firebase UIDs are never merged.
+- Closing the browser tab or cancelling the account picker is treated as a
+  cancellation, not an error, and leaves the form usable.
+- The provider display name seeds the local profile nickname when the profile is
+  first created. The user can edit it later in Profile.
+- The email field is disabled while a provider flow is active to prevent two
+  concurrent sign-in attempts.
 
 ## Email handling
 
@@ -65,18 +136,19 @@ explicit email address. It never rewrites `user@outlook.com` to Gmail.
 
 ## Anonymous-to-registered linking
 
-The app calls `linkWithCredential` on the current anonymous user. Because the UID
-does not change:
+The app links the current anonymous user with `linkWithCredential` (email) or
+`linkWithProvider` (Google/GitHub). Because the UID does not change:
 
 - Previously authored posts keep the same `authorUid`.
 - Firestore profile favorites and pins remain attached to the same UID.
 - Local rows keyed by UID remain valid.
 - The sync coordinator queues a profile sync after linking.
 
-After linking, the Firebase ID token's `sign_in_provider` becomes `password`.
-Firestore rules use this provider value to distinguish registered users from
-anonymous guests, so refresh the token (or restart the app) if a write is
-unexpectedly denied immediately after linking.
+After linking, the Firebase ID token's `sign_in_provider` becomes `password`,
+`google.com` or `github.com`. Firestore rules use this provider value to
+distinguish registered users from anonymous guests. The gateway forces a token
+refresh after linking so writes made immediately afterwards use the updated
+provider claim.
 
 If the email is already used by another Firebase account, linking fails with
 `credential-already-in-use`. The app surfaces an authentication error; the user
@@ -137,8 +209,17 @@ local-only mode. With a project configured:
 2. Continue as local guest, favorite a guide, then register/link and confirm the
    favorite survives.
 3. Sign out and back in; confirm favorites and pin ordering survive.
-4. Try to update another account's command directly with the Firestore SDK; it
+4. Sign in with Google and with GitHub on a real device. Confirm the browser flow
+   returns to the app, the profile is created and a guide can be published.
+5. As an anonymous Firebase user, open **Create account** and link Google and
+   GitHub. Confirm the UID, favorites, pins and authored guides survive.
+6. Cancel the provider browser flow. Confirm no error banner is shown and the
+   form still works.
+7. Attempt each provider before enabling it in the console. Confirm the
+   "sign-in method is not enabled" message appears instead of a crash.
+8. Try to update another account's command directly with the Firestore SDK; it
    must be rejected.
-5. Delete an account and confirm authored guides, profile and local user rows are
+9. Delete an account and confirm authored guides, profile and local user rows are
    gone while public cached/seed guides remain.
-6. Remove the Firebase defines and confirm the app still opens in local-only mode.
+10. Remove the Firebase defines and confirm the app still opens in local-only
+    mode with the provider buttons hidden.

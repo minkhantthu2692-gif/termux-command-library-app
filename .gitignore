@@ -49,6 +49,9 @@ android/key.properties
 *.jks
 *.keystore
 *-service-account.json
+# Firebase Android client configuration is provisioned per environment and may
+# contain API keys. Download it from the Firebase console instead of committing.
+android/app/google-services.json
 firebase-debug.log
 firestore-debug.log
 node_modules/

@@ -1,5 +1,10 @@
 import '../../core/errors/app_exception.dart';
 
+/// External identity providers offered by the authentication screens. The data
+/// layer maps these to concrete Firebase providers so feature UI never imports
+/// Firebase Auth.
+enum AuthProviderKind { google, github }
+
 /// Authentication state exposed to the UI. Profile details live separately in
 /// [UserProfile]; this object only describes the identity/session.
 class AuthSession {
@@ -9,10 +14,16 @@ class AuthSession {
     required this.isAdmin,
     required this.isLocalOnly,
     this.email,
+    this.displayName,
   });
 
   final String uid;
   final String? email;
+
+  /// Name supplied by the identity provider, when available. Used only as a
+  /// fallback when creating the local profile; the editable nickname lives in
+  /// the profile document.
+  final String? displayName;
   final bool isAnonymous;
   final bool isAdmin;
 
@@ -31,12 +42,14 @@ class AuthSession {
   AuthSession copyWith({
     String? uid,
     String? email,
+    String? displayName,
     bool? isAnonymous,
     bool? isAdmin,
     bool? isLocalOnly,
   }) => AuthSession(
     uid: uid ?? this.uid,
     email: email ?? this.email,
+    displayName: displayName ?? this.displayName,
     isAnonymous: isAnonymous ?? this.isAnonymous,
     isAdmin: isAdmin ?? this.isAdmin,
     isLocalOnly: isLocalOnly ?? this.isLocalOnly,
@@ -47,13 +60,14 @@ class AuthSession {
       other is AuthSession &&
       other.uid == uid &&
       other.email == email &&
+      other.displayName == displayName &&
       other.isAnonymous == isAnonymous &&
       other.isAdmin == isAdmin &&
       other.isLocalOnly == isLocalOnly;
 
   @override
   int get hashCode =>
-      Object.hash(uid, email, isAnonymous, isAdmin, isLocalOnly);
+      Object.hash(uid, email, displayName, isAnonymous, isAdmin, isLocalOnly);
 }
 
 enum CloudAvailability { disabled, initializing, ready, unavailable }

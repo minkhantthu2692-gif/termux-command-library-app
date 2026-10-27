@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/app_tokens.dart';
-import '../../../shared/widgets/app_logo.dart';
 
-/// Shared frame for welcome/auth screens. It keeps forms centered, scrollable
-/// with the keyboard open, and visually consistent without nesting cards.
+/// Shared frame for authentication screens. It keeps forms centered, scrollable
+/// with the keyboard open, and visually consistent without nesting cards. The
+/// compact back button is the only chrome above the title, which keeps the
+/// focus on the form instead of a decorative banner.
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({
     super.key,
@@ -13,7 +14,6 @@ class AuthScaffold extends StatelessWidget {
     required this.child,
     this.showBack = true,
     this.footer,
-    this.header,
   });
 
   final String title;
@@ -21,7 +21,6 @@ class AuthScaffold extends StatelessWidget {
   final Widget child;
   final bool showBack;
   final Widget? footer;
-  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +60,6 @@ class AuthScaffold extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        header ?? const AppLogo(size: 54, showShadow: true),
-                        const SizedBox(height: AppSpacing.x6),
                         Text(title, style: texts.headlineMedium),
                         const SizedBox(height: AppSpacing.x2),
                         Text(

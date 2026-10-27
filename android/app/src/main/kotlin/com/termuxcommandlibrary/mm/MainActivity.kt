@@ -1,4 +1,4 @@
-package com.minkh.termux_command_library
+package com.termuxcommandlibrary.mm
 
 import android.Manifest
 import android.content.Intent
@@ -22,6 +22,7 @@ import io.flutter.plugin.common.MethodChannel
  */
 class MainActivity : FlutterActivity() {
     private val channelName = "dev.termuxlibrary/native"
+    private val hapticsChannelName = "dev.termuxlibrary/haptics"
     private val requestRunCommandPermissionCode = 7101
     private val termuxPackage = "com.termux"
     private val termuxRunPermission = "com.termux.permission.RUN_COMMAND"
@@ -29,6 +30,34 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        val haptics = HapticsController(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, hapticsChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "perform" -> {
+                        val timings = call.argument<List<Int>>("timings")
+                            ?.map { it.toLong() }
+                            ?.toLongArray()
+                        val amplitudes = call.argument<List<Int>>("amplitudes")?.toIntArray()
+                        if (
+                            timings == null ||
+                            timings.isEmpty() ||
+                            amplitudes == null ||
+                            amplitudes.size != timings.size
+                        ) {
+                            result.error(
+                                "invalid_haptic_pattern",
+                                "The haptic pattern is invalid.",
+                                null,
+                            )
+                            return@setMethodCallHandler
+                        }
+                        haptics.perform(timings, amplitudes)
+                        result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {

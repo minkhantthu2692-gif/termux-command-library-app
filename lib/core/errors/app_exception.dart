@@ -10,6 +10,8 @@ enum AppErrorCode {
   authWeakPassword,
   authTooManyRequests,
   authRecentLoginRequired,
+  authCancelled,
+  authProviderUnavailable,
   authAccountDeleted,
   permissionDenied,
   firebaseUnavailable,
@@ -60,7 +62,8 @@ class AppException implements Exception {
       code == AppErrorCode.authEmailInUse ||
       code == AppErrorCode.authWeakPassword ||
       code == AppErrorCode.authTooManyRequests ||
-      code == AppErrorCode.authRecentLoginRequired;
+      code == AppErrorCode.authRecentLoginRequired ||
+      code == AppErrorCode.authProviderUnavailable;
 
   AppException copyWith({AppErrorCode? code, String? message, Object? cause}) =>
       AppException(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,8 @@ import '../../app/providers.dart';
 import '../../app/settings/app_settings.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/ai_models.dart';
+import '../../data/services/haptics_service.dart';
+import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/section_header.dart';
 
 enum AiAvailability { loading, disabled, missingKey, missingModel, ready }
@@ -130,7 +134,10 @@ class AiSetupCard extends ConsumerWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: FilledButton.tonalIcon(
-                onPressed: () => context.push('/settings/ai'),
+                onPressed: () {
+                  unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                  context.push('/settings/ai');
+                },
                 icon: const Icon(Icons.settings_outlined, size: 18),
                 label: Text(
                   availability == AiAvailability.disabled
@@ -179,7 +186,10 @@ class AiComposerNotice extends ConsumerWidget {
         borderRadius: AppRadius.medium,
         child: InkWell(
           borderRadius: AppRadius.medium,
-          onTap: () => context.push('/settings/ai'),
+          onTap: () {
+            unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+            context.push('/settings/ai');
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.x3,

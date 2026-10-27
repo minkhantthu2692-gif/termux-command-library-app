@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +9,9 @@ import '../../../app/providers.dart';
 import '../../../core/design_system/app_tokens.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/validators.dart';
+import '../../../data/services/haptics_service.dart';
 import '../../../shared/utils/error_messages.dart';
+import '../../../shared/utils/ui_actions.dart';
 import 'widgets/auth_scaffold.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
@@ -142,20 +146,24 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     if (_loading) return;
     setState(() => _error = null);
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _loading = true);
     try {
       await ref
           .read(authRepositoryProvider)
           .sendPasswordReset(_emailController.text);
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       setState(() => _sent = true);
     } on AppException catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );
     } catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );

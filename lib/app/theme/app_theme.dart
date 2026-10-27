@@ -294,6 +294,10 @@ abstract final class AppTheme {
       ),
       tooltipTheme: TooltipThemeData(
         waitDuration: const Duration(milliseconds: 450),
+        // Tooltips use Flutter's built-in long-press feedback. It cannot
+        // express the app's intensity levels, so suppress it entirely when the
+        // user has turned vibration off instead of letting the platform buzz.
+        enableFeedback: settings.vibration != VibrationIntensity.off,
         decoration: BoxDecoration(
           color: dark ? const Color(0xFF2D3340) : const Color(0xFF2A2F3A),
           borderRadius: AppRadius.small,
@@ -376,81 +380,122 @@ abstract final class AppTheme {
     final base = brightness == Brightness.dark
         ? Typography.material2021().white
         : Typography.material2021().black;
-    return base
-        .copyWith(
-          displaySmall: base.displaySmall?.copyWith(
-            fontSize: 34,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.8,
-            height: 1.15,
-          ),
-          headlineLarge: base.headlineLarge?.copyWith(
-            fontSize: 30,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.6,
-            height: 1.2,
-          ),
-          headlineMedium: base.headlineMedium?.copyWith(
-            fontSize: 25,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.4,
-            height: 1.22,
-          ),
-          headlineSmall: base.headlineSmall?.copyWith(
-            fontSize: 21,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.25,
-            height: 1.28,
-          ),
-          titleLarge: base.titleLarge?.copyWith(
-            fontSize: 19,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.2,
-            height: 1.3,
-          ),
-          titleMedium: base.titleMedium?.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.1,
-            height: 1.35,
-          ),
-          titleSmall: base.titleSmall?.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            height: 1.35,
-          ),
-          bodyLarge: base.bodyLarge?.copyWith(
-            fontSize: 16,
-            height: 1.55,
-            letterSpacing: 0,
-          ),
-          bodyMedium: base.bodyMedium?.copyWith(
-            fontSize: 14,
-            height: 1.55,
-            letterSpacing: 0,
-          ),
-          bodySmall: base.bodySmall?.copyWith(
-            fontSize: 12.5,
-            height: 1.45,
-            letterSpacing: 0.05,
-          ),
-          labelLarge: base.labelLarge?.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.1,
-          ),
-          labelMedium: base.labelMedium?.copyWith(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.15,
-          ),
-          labelSmall: base.labelSmall?.copyWith(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.2,
-          ),
-        )
-        .apply(fontSizeFactor: scale.clamp(0.8, 1.35));
+    final theme = base.copyWith(
+      displayLarge: base.displayLarge?.copyWith(
+        fontSize: 40,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -1.0,
+        height: 1.12,
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        fontSize: 37,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.9,
+        height: 1.13,
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        fontSize: 34,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.8,
+        height: 1.15,
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        fontSize: 30,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.6,
+        height: 1.2,
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontSize: 25,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.4,
+        height: 1.22,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        fontSize: 21,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.25,
+        height: 1.28,
+      ),
+      titleLarge: base.titleLarge?.copyWith(
+        fontSize: 19,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
+        height: 1.3,
+      ),
+      titleMedium: base.titleMedium?.copyWith(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.1,
+        height: 1.35,
+      ),
+      titleSmall: base.titleSmall?.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        height: 1.35,
+      ),
+      bodyLarge: base.bodyLarge?.copyWith(
+        fontSize: 16,
+        height: 1.55,
+        letterSpacing: 0,
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        fontSize: 14,
+        height: 1.55,
+        letterSpacing: 0,
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        fontSize: 12.5,
+        height: 1.45,
+        letterSpacing: 0.05,
+      ),
+      labelLarge: base.labelLarge?.copyWith(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.1,
+      ),
+      labelMedium: base.labelMedium?.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.15,
+      ),
+      labelSmall: base.labelSmall?.copyWith(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.2,
+      ),
+    );
+
+    final factor = scale.isFinite ? scale.clamp(0.8, 1.35) : 1.0;
+    return TextTheme(
+      displayLarge: _scaled(theme.displayLarge, factor),
+      displayMedium: _scaled(theme.displayMedium, factor),
+      displaySmall: _scaled(theme.displaySmall, factor),
+      headlineLarge: _scaled(theme.headlineLarge, factor),
+      headlineMedium: _scaled(theme.headlineMedium, factor),
+      headlineSmall: _scaled(theme.headlineSmall, factor),
+      titleLarge: _scaled(theme.titleLarge, factor),
+      titleMedium: _scaled(theme.titleMedium, factor),
+      titleSmall: _scaled(theme.titleSmall, factor),
+      bodyLarge: _scaled(theme.bodyLarge, factor),
+      bodyMedium: _scaled(theme.bodyMedium, factor),
+      bodySmall: _scaled(theme.bodySmall, factor),
+      labelLarge: _scaled(theme.labelLarge, factor),
+      labelMedium: _scaled(theme.labelMedium, factor),
+      labelSmall: _scaled(theme.labelSmall, factor),
+    );
+  }
+
+  /// Applies the user's font-size preference to a single style.
+  ///
+  /// [TextTheme.apply] asserts that every style has an explicit `fontSize`, and
+  /// Material's 2021 typography leaves several entries unsized, which made any
+  /// non-default font scale crash the app on the next launch. Scaling per style
+  /// keeps unsized entries untouched and cannot brick startup.
+  static TextStyle? _scaled(TextStyle? style, double factor) {
+    final size = style?.fontSize;
+    if (style == null || size == null) return style;
+    return style.copyWith(fontSize: size * factor);
   }
 }
 

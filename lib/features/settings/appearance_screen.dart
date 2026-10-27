@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,8 +7,10 @@ import '../../app/localization/generated/app_localizations.dart';
 import '../../app/providers.dart';
 import '../../app/settings/app_settings.dart';
 import '../../core/design_system/app_tokens.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_page.dart';
+import '../../shared/widgets/haptic_slider.dart';
 import '../../shared/widgets/settings_tiles.dart';
 
 /// Appearance is intentionally a single, live-previewed surface: theme, accent,
@@ -81,8 +85,10 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                     ),
                   ],
                   selected: {settings.themeMode},
-                  onSelectionChanged: (selection) =>
-                      _save(settings.copyWith(themeMode: selection.first)),
+                  onSelectionChanged: (selection) {
+                    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                    _save(settings.copyWith(themeMode: selection.first));
+                  },
                 ),
               ),
             ],
@@ -101,8 +107,10 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                       accent: accent,
                       label: _accentLabel(l10n, accent.id),
                       selected: settings.accentId == accent.id,
-                      onTap: () =>
-                          _save(settings.copyWith(accentId: accent.id)),
+                      onTap: () {
+                        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                        _save(settings.copyWith(accentId: accent.id));
+                      },
                     ),
                 ],
               ),
@@ -142,7 +150,7 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                   children: [
                     Text('A', style: context.texts.bodySmall),
                     Expanded(
-                      child: Slider(
+                      child: HapticSlider(
                         value: _fontScale,
                         min: 0.85,
                         max: 1.3,
@@ -193,7 +201,7 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                         ),
                       ),
                       Expanded(
-                        child: Slider(
+                        child: HapticSlider(
                           value: _blurIntensity.clamp(0, 30),
                           min: 0,
                           max: 30,
@@ -216,6 +224,7 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
           const SizedBox(height: AppSpacing.x4),
           SettingsGroup(
             title: l10n.haptics,
+            description: l10n.vibrationPreviewHint,
             children: [
               SettingsValueTile(
                 title: l10n.vibrationIntensity,
@@ -269,7 +278,12 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
                   children: [
                     for (final font in AppFonts.all)
                       ListTile(
-                        onTap: () => Navigator.of(sheetContext).pop(font),
+                        onTap: () {
+                          unawaited(
+                            triggerHaptic(ref, cue: HapticCue.selection),
+                          );
+                          Navigator.of(sheetContext).pop(font);
+                        },
                         leading: Icon(
                           settings.fontFamilyId == font.id
                               ? Icons.radio_button_checked_rounded
@@ -339,7 +353,10 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
               trailing: settings.effectiveLanguageCode == 'en'
                   ? const Icon(Icons.check_rounded)
                   : null,
-              onTap: () => Navigator.of(sheetContext).pop('en'),
+              onTap: () {
+                unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                Navigator.of(sheetContext).pop('en');
+              },
             ),
             ListTile(
               leading: const Icon(Icons.translate_rounded),
@@ -347,7 +364,10 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
               trailing: settings.effectiveLanguageCode == 'my'
                   ? const Icon(Icons.check_rounded)
                   : null,
-              onTap: () => Navigator.of(sheetContext).pop('my'),
+              onTap: () {
+                unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                Navigator.of(sheetContext).pop('my');
+              },
             ),
             const SizedBox(height: AppSpacing.x4),
           ],
@@ -399,6 +419,9 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
       ),
     );
     if (selected != null && mounted) {
+      // Preview the selected level immediately so the intensity control has
+      // an audible/tactile effect before the sheet closes.
+      unawaited(triggerHaptic(ref, cue: HapticCue.toggle, intensity: selected));
       await _save(settings.copyWith(vibration: selected));
     }
   }

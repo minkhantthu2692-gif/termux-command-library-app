@@ -2,6 +2,11 @@
 /// so no user file ever needs to be uploaded.
 abstract final class AppAvatars {
   static const defaultId = 'orbit';
+
+  /// Shown for local-only profiles until the user picks a design. Appended
+  /// last so existing avatars keep their color indices.
+  static const localOnlyId = 'person';
+
   static const all = <String>[
     'orbit',
     'sprout',
@@ -11,6 +16,7 @@ abstract final class AppAvatars {
     'spark',
     'leaf',
     'pixel',
+    'person',
   ];
 
   static bool isValid(String id) => all.contains(id);
@@ -38,6 +44,13 @@ class UserProfile {
   final bool isLocalOnly;
 
   String get effectiveNickname => nickname.trim();
+
+  /// The avatar actually rendered for this profile. A local-only profile that
+  /// has not picked a design shows the human-figure avatar; an explicit choice
+  /// or any registered profile always keeps its own avatar.
+  String get displayAvatarId => isLocalOnly && avatarId == AppAvatars.defaultId
+      ? AppAvatars.localOnlyId
+      : avatarId;
 
   UserProfile copyWith({
     String? uid,

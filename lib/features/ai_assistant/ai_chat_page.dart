@@ -10,6 +10,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/ai_models.dart';
 import '../../data/services/ai/ai_prompts.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/app_formatters.dart';
 import '../../shared/utils/error_messages.dart';
 import '../../shared/utils/ui_actions.dart';
@@ -274,6 +275,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   }
 
   void _applySuggestion(String prompt) {
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     _input.text = prompt;
     _input.selection = TextSelection.collapsed(offset: prompt.length);
     _inputFocus.requestFocus();
@@ -282,6 +284,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   Future<void> _pickAttachment() async {
     if (_picking || _sending) return;
     final l10n = AppLocalizations.of(context);
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _picking = true);
     try {
       final attachment = await ref
@@ -295,6 +298,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
               attachment.content.length >
               AppConstants.aiMaxPromptAttachmentCharacters;
         });
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
         context.showSnack(l10n.attachmentAdded);
       }
     } catch (error) {
@@ -305,6 +309,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   }
 
   void _removeAttachment() {
+    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
     setState(() {
       _attachment = null;
       _attachmentTruncated = false;
@@ -343,6 +348,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final providerContent = _providerContent(text, attachment);
     final generation = ++_generation;
 
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() {
       _sending = true;
       _streamText = '';
@@ -395,6 +401,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
         }
         if (mounted) setState(() => _conversationId = null);
       }
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(() {
         _sending = false;
         _streamText = '';
@@ -507,6 +514,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
         onError: (Object error, StackTrace stack) {
           if (!mounted || generation != _generation) return;
           _subscription = null;
+          unawaited(triggerHaptic(ref, cue: HapticCue.error));
           setState(() {
             _sending = false;
             _streamText = '';
@@ -520,6 +528,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
           _subscription = null;
           final answer = buffer.toString().trim();
           if (answer.isEmpty) {
+            unawaited(triggerHaptic(ref, cue: HapticCue.error));
             setState(() {
               _sending = false;
               _streamText = '';
@@ -536,6 +545,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
               usage: usage,
             );
             if (!mounted || generation != _generation) return;
+            unawaited(triggerHaptic(ref, cue: HapticCue.success));
             setState(() {
               _sending = false;
               _streamText = '';
@@ -548,6 +558,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
             _scrollToBottom(force: true);
           } catch (error) {
             if (!mounted || generation != _generation) return;
+            unawaited(triggerHaptic(ref, cue: HapticCue.error));
             setState(() {
               _sending = false;
               _streamText = answer;
@@ -560,6 +571,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
       );
     } catch (error) {
       if (!mounted || generation != _generation) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(() {
         _sending = false;
         _error = localizeError(l10n, error);
@@ -570,6 +582,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
 
   Future<void> _stop() async {
     final l10n = AppLocalizations.of(context);
+    unawaited(triggerHaptic(ref, cue: HapticCue.warning));
     _generation++;
     await _subscription?.cancel();
     _subscription = null;
@@ -588,6 +601,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final conversationId = _conversationId;
     final providerContent = _lastProviderContent;
     if (conversationId == null || providerContent == null) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     final generation = ++_generation;
     setState(() {
       _sending = true;
@@ -612,6 +626,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   }
 
   Future<void> _startNewChat() async {
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     if (_sending) {
       await _stop();
     }

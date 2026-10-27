@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,13 +12,13 @@ import '../../../data/models/command_category.dart';
 import '../../../data/models/command_post.dart';
 import '../../../data/models/command_query.dart';
 import '../../../data/models/user_profile.dart';
+import '../../../data/services/haptics_service.dart';
 import '../../../shared/utils/app_formatters.dart';
 import '../../../shared/utils/category_visual.dart';
 import '../../../shared/utils/ui_actions.dart';
 import '../../../shared/widgets/avatar_bubble.dart';
 import '../../../shared/widgets/command_card.dart';
 import '../../../shared/widgets/section_header.dart';
-import '../../../shared/widgets/sync_status_badge.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -62,7 +64,8 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   _Header(
                     name: name.isEmpty ? l10n.guest : name,
-                    avatarId: profile?.avatarId ?? 'orbit',
+                    avatarId:
+                        profile?.displayAvatarId ?? AppAvatars.localOnlyId,
                     onProfile: () => context.go('/profile'),
                   ),
                   const SizedBox(height: AppSpacing.x5),
@@ -259,6 +262,7 @@ class HomeScreen extends ConsumerWidget {
     }
     try {
       await ref.read(syncCoordinatorProvider).refresh();
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       if (context.mounted) context.showSnack(l10n.refreshed);
     } catch (error) {
       if (context.mounted) context.showErrorSnack(error);
@@ -289,11 +293,11 @@ class HomeScreen extends ConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context);
     final next = !preferences.isFavorite(command.id);
+    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
     try {
       await ref
           .read(commandRepositoryProvider)
           .setFavorite(session: session, commandId: command.id, favorite: next);
-      await triggerHaptic(ref);
       if (context.mounted) {
         context.showSnack(next ? l10n.favoritedSnack : l10n.unfavoritedSnack);
       }
@@ -311,11 +315,11 @@ class HomeScreen extends ConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context);
     final next = !preferences.isPinned(command.id);
+    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
     try {
       await ref
           .read(commandRepositoryProvider)
           .setPinned(session: session, commandId: command.id, pinned: next);
-      await triggerHaptic(ref);
       if (context.mounted) {
         context.showSnack(next ? l10n.pinnedSnack : l10n.unpinnedSnack);
       }
@@ -364,8 +368,6 @@ class _Header extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.x3),
-        const SyncStatusBadge(showTime: false),
-        const SizedBox(width: AppSpacing.x2),
         InkWell(
           customBorder: const CircleBorder(),
           onTap: onProfile,
@@ -648,7 +650,7 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
-class _ActionTile extends StatelessWidget {
+class _ActionTile extends ConsumerWidget {
   const _ActionTile({
     required this.icon,
     required this.label,
@@ -662,7 +664,7 @@ class _ActionTile extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Material(
       color: context.appColors.card,
       shape: RoundedRectangleBorder(
@@ -673,7 +675,10 @@ class _ActionTile extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: AppRadius.medium,
-        onTap: onTap,
+        onTap: () {
+          unawaited(triggerHaptic(ref, cue: HapticCue.tap));
+          onTap();
+        },
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.x3,

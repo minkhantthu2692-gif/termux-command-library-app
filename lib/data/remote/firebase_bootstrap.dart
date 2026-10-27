@@ -3,9 +3,10 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/errors/app_exception.dart';
 
-/// Firebase configuration comes from compile-time `--dart-define` values. This
-/// keeps the repository free of service-account files and makes local-only
-/// builds (including CI and tests) work without Firebase credentials.
+/// Firebase configuration for one project. Android builds normally resolve it
+/// from the (git-ignored) `google-services.json`; compile-time `--dart-define`
+/// values are supported for CI and other builds that do not bundle that file.
+/// Local-only builds and tests work without either source.
 class FirebaseConfig {
   const FirebaseConfig({
     required this.apiKey,
@@ -46,6 +47,17 @@ class FirebaseConfig {
     );
   }
 
+  /// Reads back the options the native Firebase SDK resolved, which is how a
+  /// build configured through `android/app/google-services.json` reports its
+  /// project without any `--dart-define` values.
+  factory FirebaseConfig.fromOptions(FirebaseOptions options) => FirebaseConfig(
+    apiKey: options.apiKey,
+    appId: options.appId,
+    messagingSenderId: options.messagingSenderId,
+    projectId: options.projectId,
+    authDomain: options.authDomain,
+  );
+
   FirebaseOptions toOptions() => FirebaseOptions(
     apiKey: apiKey,
     appId: appId,
@@ -78,24 +90,49 @@ class FirebaseRuntime {
 
 /// Initialises Firebase once. A missing or broken configuration degrades to the
 /// fully usable local-only mode instead of crashing the application.
+///
+/// Android builds can be configured either way:
+///
+///   * `android/app/google-services.json` (the standard Firebase setup, read by
+///     the native SDK), or
+///   * `--dart-define=FIREBASE_*` values, for builds that do not bundle the
+///     JSON (for example CI). If both sources exist, they must describe the
+///     same Firebase app; the native default app is resolved first and
+///     mismatched values make initialization fail.
 abstract final class FirebaseBootstrap {
+  /// Platforms whose native Firebase SDK can resolve app options from a bundled
+  /// configuration file when no `--dart-define` values are supplied.
+  static bool get _supportsNativeDefaults =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
   static Future<FirebaseRuntime> initialize() async {
     final config = FirebaseConfig.fromEnvironment();
-    if (config == null) return FirebaseRuntime.disabled;
+    final useNativeDefaults = config == null && _supportsNativeDefaults;
+    if (config == null && !useNativeDefaults) {
+      return FirebaseRuntime.disabled;
+    }
 
     try {
       if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp(options: config.toOptions());
+        // Passing null lets the Android SDK bootstrap from its bundled
+        // google-services configuration when no define values are supplied.
+        await Firebase.initializeApp(options: config?.toOptions());
       }
       return FirebaseRuntime(
         availability: FirebaseAvailability.ready,
-        config: config,
+        config: FirebaseConfig.fromOptions(Firebase.app().options),
       );
     } on FirebaseException catch (error) {
       debugPrint(
         'Firebase initialization failed (${error.code}). '
         'Continuing in local-only mode.',
       );
+      // Without build values the failure most likely means no
+      // google-services.json was processed, which is a supported local-only
+      // build rather than a configuration error the user can act on.
+      if (config == null) return FirebaseRuntime.disabled;
       return FirebaseRuntime(
         availability: FirebaseAvailability.unavailable,
         config: config,
@@ -109,6 +146,7 @@ abstract final class FirebaseBootstrap {
       debugPrint(
         'Firebase initialization failed. Continuing in local-only mode.',
       );
+      if (config == null) return FirebaseRuntime.disabled;
       return FirebaseRuntime(
         availability: FirebaseAvailability.unavailable,
         config: config,

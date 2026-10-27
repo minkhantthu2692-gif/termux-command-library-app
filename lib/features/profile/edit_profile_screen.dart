@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../app/providers.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../core/utils/validators.dart';
 import '../../data/models/user_profile.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/error_messages.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_page.dart';
@@ -45,6 +48,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.dispose();
   }
 
+  /// Mirrors [UserProfile.displayAvatarId] for the unsaved draft value, so the
+  /// preview matches what other screens will show after saving.
+  String _previewAvatarId(bool isLocalOnly) =>
+      isLocalOnly && _avatarId == AppAvatars.defaultId
+      ? AppAvatars.localOnlyId
+      : _avatarId;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -59,16 +69,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             Center(
               child: Column(
                 children: [
-                  AvatarBubble(avatarId: _avatarId, size: 92, showBorder: true),
+                  AvatarBubble(
+                    avatarId: _previewAvatarId(session.isLocalOnly),
+                    size: 92,
+                    showBorder: true,
+                  ),
                   TextButton(
                     onPressed: _saving
                         ? null
                         : () async {
+                            unawaited(triggerHaptic(ref, cue: HapticCue.tap));
                             final selected = await showAvatarPicker(
                               context,
                               selectedId: _avatarId,
                             );
                             if (selected != null && mounted) {
+                              unawaited(
+                                triggerHaptic(ref, cue: HapticCue.selection),
+                              );
                               setState(() => _avatarId = selected);
                             }
                           },
@@ -137,6 +155,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Future<void> _save() async {
     if (_saving) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _saving = true);
     try {
       await ref
@@ -147,6 +166,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             avatarId: _avatarId,
           );
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       context.showSnack(AppLocalizations.of(context).profileUpdated);
       context.pop();
     } catch (error) {

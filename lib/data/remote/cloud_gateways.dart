@@ -18,6 +18,18 @@ abstract interface class AuthGateway {
 
   Future<AuthSession> signIn({required String email, required String password});
 
+  /// Starts the provider's browser flow and signs in with Google or GitHub.
+  ///
+  /// When [linkAnonymous] is true and the current user is an anonymous Firebase
+  /// account, the provider is linked to that account instead of replacing it,
+  /// which preserves favorites, pins and authored guides. Linking fails with a
+  /// normal authentication error if the provider account already belongs to
+  /// another user; the UI then asks the user to sign in instead.
+  Future<AuthSession> signInWithProvider(
+    AuthProviderKind provider, {
+    bool linkAnonymous = false,
+  });
+
   /// Links an anonymous Firebase account to an email/password credential while
   /// preserving its UID and therefore its favorites, pins and posts.
   Future<AuthSession> linkAnonymousAccount({

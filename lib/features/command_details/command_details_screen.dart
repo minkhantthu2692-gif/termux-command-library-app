@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../../core/design_system/app_tokens.dart';
 import '../../core/utils/command_risk.dart';
 import '../../data/models/command_post.dart';
 import '../../data/models/user_profile.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/app_formatters.dart';
 import '../../shared/utils/category_visual.dart';
 import '../../shared/utils/ui_actions.dart';
@@ -264,9 +267,12 @@ class _DetailsView extends ConsumerWidget {
                   ],
                   const SizedBox(height: AppSpacing.x5),
                   OutlinedButton.icon(
-                    onPressed: () => context.push(
-                      '/assistant/chat?command=${Uri.encodeComponent(command.id)}',
-                    ),
+                    onPressed: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                      context.push(
+                        '/assistant/chat?command=${Uri.encodeComponent(command.id)}',
+                      );
+                    },
                     icon: const Icon(Icons.auto_awesome_rounded),
                     label: Text(l10n.explainWithAi),
                   ),
@@ -296,6 +302,7 @@ class _DetailsView extends ConsumerWidget {
     bool current,
   ) async {
     final l10n = AppLocalizations.of(context);
+    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
     try {
       await ref
           .read(commandRepositoryProvider)
@@ -304,7 +311,6 @@ class _DetailsView extends ConsumerWidget {
             commandId: command.id,
             favorite: !current,
           );
-      await triggerHaptic(ref);
       if (context.mounted) {
         context.showSnack(
           !current ? l10n.favoritedSnack : l10n.unfavoritedSnack,
@@ -321,6 +327,7 @@ class _DetailsView extends ConsumerWidget {
     bool current,
   ) async {
     final l10n = AppLocalizations.of(context);
+    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
     try {
       await ref
           .read(commandRepositoryProvider)
@@ -329,7 +336,6 @@ class _DetailsView extends ConsumerWidget {
             commandId: command.id,
             pinned: !current,
           );
-      await triggerHaptic(ref);
       if (context.mounted) {
         context.showSnack(!current ? l10n.pinnedSnack : l10n.unpinnedSnack);
       }
@@ -372,11 +378,15 @@ class _DetailsView extends ConsumerWidget {
       case _DetailAction.runAll:
         await _runAll(context, ref);
       case _DetailAction.askAi:
+        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
         context.push(
           '/assistant/chat?command=${Uri.encodeComponent(command.id)}',
         );
       case _DetailAction.edit:
-        if (canEdit) context.push('/command/${command.id}/edit');
+        if (canEdit) {
+          unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+          context.push('/command/${command.id}/edit');
+        }
       case _DetailAction.delete:
         if (!canEdit) return;
         final confirmed = await showConfirmDialog(
@@ -395,6 +405,7 @@ class _DetailsView extends ConsumerWidget {
                 commandId: command.id,
               );
           if (context.mounted) {
+            unawaited(triggerHaptic(ref, cue: HapticCue.success));
             context.showSnack(l10n.commandDeleted);
             context.pop();
           }

@@ -81,7 +81,10 @@ lib/shared/           reusable widgets and UI actions
 1. Initialize Flutter bindings.
 2. Initialize the Drift database and settings (creates a persistent local guest
    UID if none exists).
-3. Try to initialize Firebase from compile-time values.
+3. Try to initialize Firebase from the bundled
+   `android/app/google-services.json`; `--dart-define` values are the alternative
+   for builds that do not bundle that file. Supplying both requires them to
+   describe the same Firebase app.
 4. Install the bundled seed catalogue if its version is newer.
 5. Construct `AppDependencies`:
    - database
@@ -119,6 +122,21 @@ appDependenciesProvider
 The database is closed when the provider scope is disposed. The sync coordinator
 owns its listeners and timers and cancels both on dispose. AI provider HTTP clients
 are closed on dispose. Tests override the composition root with fakes.
+
+## Navigation and back behavior
+
+The four primary destinations live in a `StatefulShellRoute.indexedStack`, so
+each branch keeps its own stack and scroll/filter state. Detail, authentication
+and settings screens are registered on the root navigator and therefore cover
+the bottom navigation bar.
+
+A tab switch is not a root-navigator push, so the shell keeps a small in-memory
+history of visited branches in `lib/app/app_shell.dart`. Android back walks that
+history first; for example, after Home → Library → Assistant, back returns to
+Library and then Home. Back only leaves the app when there is no earlier tab.
+Quick Actions and other `context.go('/library')` shortcuts participate in the
+same history. A screen pushed on the root navigator, such as command details,
+still receives back normally before the shell is consulted.
 
 ## Immutable state
 
@@ -184,6 +202,13 @@ Detailed behavior: [Synchronization](synchronization.md).
 creation, guest linking, password reset, re-authentication, sign-out and account
 deletion. UI screens never call Firebase Auth directly.
 
+`AuthGateway` exposes provider sign-in as `signInWithProvider(AuthProviderKind)`
+instead of leaking Firebase types into the UI. Google and GitHub therefore share
+one code path, the repository can offer them on both the sign-in and account
+upgrade screens, and a future backend can implement the same method without
+touching the widgets. The Android implementation uses Firebase's hosted
+Custom Tab flow; the app does not depend on the `google_sign_in` SDK.
+
 Authorization is enforced in Firestore rules. The client also checks ownership for
 a better error message, but that is not the security boundary. Admin is an Auth
 custom claim, never a profile field.
@@ -230,6 +255,27 @@ See [Termux integration](termux-integration.md).
   fallback so Burmese remains readable when another Latin font is selected.
 - Nine bundled families plus the system default are available; font licenses are
   registered lazily in the app's license screen.
+
+## Haptics
+
+`lib/data/services/haptics_service.dart` is the only place that decides how a
+vibration feels. Feature code passes a semantic `HapticCue` (`selection`, `tap`,
+`toggle`, `success`, `warning`, `error`) and never a raw duration or amplitude.
+
+- Each cue has its own rhythm, so success and failure stay distinguishable even at
+  the same intensity.
+- `VibrationIntensity` scales both duration and amplitude. On Android the pattern
+  is sent as an explicit waveform over `dev.termuxlibrary/haptics` to
+  `HapticsController.kt`; devices without amplitude control still receive the
+  duration difference.
+- Other platforms and tests fall back to Flutter's standard `HapticFeedback`.
+- Off produces no pattern and never reaches the native channel. Tooltip
+  long-press feedback is also suppressed while Off is selected.
+- `HapticSlider` in `lib/shared/widgets/` emits one tick per discrete division
+  and throttles continuous sliders, so drag interactions do not flood the
+  vibrator.
+- Haptics are best-effort: a missing vibrator, OEM restriction or platform error
+  never blocks the action that triggered the cue.
 
 ## Error handling
 

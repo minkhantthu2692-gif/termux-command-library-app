@@ -2,7 +2,7 @@
 /// magic strings in repositories and UI code.
 abstract final class AppConstants {
   static const appName = 'Termux Command Library';
-  static const packageName = 'com.minkh.termux_command_library';
+  static const packageName = 'com.termuxcommandlibrary.mm';
 
   // Firestore collections. Firebase is used only for Auth and Firestore.
   static const commandsCollection = 'commands';
@@ -27,6 +27,7 @@ abstract final class AppConstants {
   // Profile limits. Firestore documents are capped at 1 MiB. These caps keep
   // the arrays comfortably below that limit and are documented in
   // docs/synchronization.md along with the migration path to collections.
+  static const maxNicknameLength = 40;
   static const maxFavoriteIds = 5000;
   static const maxPinnedIds = 200;
 

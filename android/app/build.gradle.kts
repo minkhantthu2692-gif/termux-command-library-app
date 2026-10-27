@@ -4,8 +4,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Firebase is connected through the standard, git-ignored
+// android/app/google-services.json. Applying the plugin conditionally keeps
+// local-only builds (CI, fresh clones) working when that file is absent.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
-    namespace = "com.minkh.termux_command_library"
+    namespace = "com.termuxcommandlibrary.mm"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.minkh.termux_command_library"
+        applicationId = "com.termuxcommandlibrary.mm"
         // Firebase Flutter plugins require Android 6+; we target 7+ (API 24)
         // for a modern, reproducible baseline.
         minSdk = 24

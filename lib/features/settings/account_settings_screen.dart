@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../app/providers.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/auth_models.dart';
 import '../../data/models/user_profile.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_note.dart';
 import '../../shared/widgets/app_page.dart';
@@ -45,7 +48,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             session: session,
             nickname: profile?.effectiveNickname ?? '',
             email: profile?.email ?? session.email ?? '',
-            avatarId: profile?.avatarId ?? AppAvatars.defaultId,
+            avatarId: profile?.displayAvatarId ?? AppAvatars.localOnlyId,
           ),
           const SizedBox(height: AppSpacing.x4),
           if (!cloudConfigured)
@@ -173,7 +176,10 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
       await ai.clearHistory();
       await ai.clearCache();
       ref.invalidate(cachedCommandCountProvider);
-      if (mounted) context.showSnack(l10n.clearDataSuccess);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.clearDataSuccess);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     } finally {
@@ -198,7 +204,10 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
           .read(profileRepositoryProvider)
           .clearLocalAccountData(uid: session.uid, localOnly: true);
       ref.invalidate(cachedCommandCountProvider);
-      if (mounted) context.showSnack(l10n.clearDataSuccess);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.clearDataSuccess);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     } finally {
@@ -218,7 +227,10 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     if (!confirmed) return;
     try {
       await ref.read(aiRepositoryProvider).clearHistory();
-      if (mounted) context.showSnack(l10n.aiHistoryCleared);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.aiHistoryCleared);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     }
@@ -238,6 +250,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     try {
       await ref.read(authRepositoryProvider).signOut();
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       context.showSnack(l10n.signedOutLocally);
       context.go('/home');
     } catch (error) {
@@ -268,6 +281,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     try {
       await ref.read(authRepositoryProvider).deleteAccount(password: password);
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       context.showSnack(l10n.accountDeleted);
       context.go('/home');
     } catch (error) {

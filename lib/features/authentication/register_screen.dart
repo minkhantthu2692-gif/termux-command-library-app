@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,9 +10,12 @@ import '../../../core/design_system/app_tokens.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/models/auth_models.dart';
+import '../../../data/services/haptics_service.dart';
 import '../../../shared/utils/error_messages.dart';
+import '../../../shared/utils/ui_actions.dart';
 import '../../../shared/widgets/avatar_bubble.dart';
 import 'auth_flow.dart';
+import 'widgets/auth_provider_buttons.dart';
 import 'widgets/auth_scaffold.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -35,7 +40,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscure = true;
   bool _obscureConfirm = true;
   bool _loading = false;
+  AuthProviderKind? _provider;
   String? _error;
+
+  bool get _busy => _loading || _provider != null;
 
   @override
   void dispose() {
@@ -76,7 +84,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
           ),
           TextButton(
-            onPressed: _loading ? null : () => context.pop(),
+            onPressed: _busy ? null : () => context.pop(),
             child: Text(l10n.signIn),
           ),
         ],
@@ -105,6 +113,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.x4),
                   child: AuthErrorBanner(message: _error!),
                 ),
+              if (cloudConfigured)
+                AuthProviderButtons(
+                  enabled: !_busy,
+                  busyProvider: _provider,
+                  onSelected: _continueWithProvider,
+                ),
               Center(
                 child: Column(
                   children: [
@@ -114,7 +128,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       showBorder: true,
                     ),
                     TextButton(
-                      onPressed: _loading ? null : _chooseAvatar,
+                      onPressed: _busy ? null : _chooseAvatar,
                       child: Text(l10n.chooseAvatar),
                     ),
                   ],
@@ -123,7 +137,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const SizedBox(height: AppSpacing.x2),
               TextFormField(
                 controller: _nicknameController,
-                enabled: !_loading,
+                enabled: !_busy,
                 textInputAction: TextInputAction.next,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
@@ -139,7 +153,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               TextFormField(
                 controller: _emailController,
                 focusNode: _emailFocus,
-                enabled: !_loading,
+                enabled: !_busy,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newUsername],
@@ -158,7 +172,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               TextFormField(
                 controller: _passwordController,
                 focusNode: _passwordFocus,
-                enabled: !_loading,
+                enabled: !_busy,
                 obscureText: _obscure,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newPassword],
@@ -169,7 +183,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
                     tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
-                    onPressed: () => setState(() => _obscure = !_obscure),
+                    onPressed: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+                      setState(() => _obscure = !_obscure);
+                    },
                     icon: Icon(
                       _obscure
                           ? Icons.visibility_outlined
@@ -207,7 +224,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               TextFormField(
                 controller: _confirmController,
                 focusNode: _confirmFocus,
-                enabled: !_loading,
+                enabled: !_busy,
                 obscureText: _obscureConfirm,
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.newPassword],
@@ -218,8 +235,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     tooltip: _obscureConfirm
                         ? l10n.showPassword
                         : l10n.hidePassword,
-                    onPressed: () =>
-                        setState(() => _obscureConfirm = !_obscureConfirm),
+                    onPressed: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+                      setState(() => _obscureConfirm = !_obscureConfirm);
+                    },
                     icon: Icon(
                       _obscureConfirm
                           ? Icons.visibility_outlined
@@ -243,7 +262,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: AppSpacing.x5),
               FilledButton(
-                onPressed: _loading || !cloudConfigured ? null : _submit,
+                onPressed: _busy || !cloudConfigured ? null : _submit,
                 child: _loading
                     ? const SizedBox(
                         width: 18,
@@ -260,16 +279,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _chooseAvatar() async {
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     final selected = await showAvatarPicker(context, selectedId: _avatarId);
     if (selected != null && mounted) {
+      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
       setState(() => _avatarId = selected);
     }
   }
 
   Future<void> _submit() async {
-    if (_loading) return;
+    if (_busy) return;
     setState(() => _error = null);
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _loading = true);
     try {
       final authRepository = ref.read(authRepositoryProvider);
@@ -296,19 +318,82 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
       }
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       await finishAuthFlow(context, ref, session, next: widget.next);
     } on AppException catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );
     } catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  /// Signs in with Google or GitHub. On the account-upgrade screen the provider
+  /// is linked to the anonymous UID so the collection survives, and any avatar
+  /// or nickname already chosen in the form is applied to the profile.
+  Future<void> _continueWithProvider(AuthProviderKind provider) async {
+    if (_busy) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
+    final linking = _linkingAnonymous;
+    setState(() {
+      _provider = provider;
+      _error = null;
+    });
+    try {
+      final session = await ref
+          .read(authRepositoryProvider)
+          .signInWithProvider(provider, linkAnonymous: linking);
+      if (linking) await _applyChosenProfile(session);
+      if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
+      await finishAuthFlow(context, ref, session, next: widget.next);
+    } on AppException catch (error) {
+      // Closing the browser or cancelling the account picker is not a failure
+      // the user needs to read about.
+      if (!mounted) return;
+      if (error.code != AppErrorCode.authCancelled) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.error));
+        setState(
+          () => _error = localizeError(AppLocalizations.of(context), error),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
+      setState(
+        () => _error = localizeError(AppLocalizations.of(context), error),
+      );
+    } finally {
+      if (mounted) setState(() => _provider = null);
+    }
+  }
+
+  /// Best-effort profile update after a successful link. The account is already
+  /// linked at this point, so a local failure must not block navigation.
+  Future<void> _applyChosenProfile(AuthSession session) async {
+    final nickname = _nicknameController.text.trim();
+    if (nickname.isEmpty || Validators.nicknameError(nickname) != null) {
+      return;
+    }
+    try {
+      await ref
+          .read(profileRepositoryProvider)
+          .updateProfile(
+            session: session,
+            nickname: nickname,
+            avatarId: _avatarId,
+          );
+    } catch (error) {
+      debugPrint('Could not apply the chosen profile after linking: $error');
     }
   }
 }

@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/design_system/app_tokens.dart';
+import '../../data/services/haptics_service.dart';
+import '../utils/ui_actions.dart';
 
 /// A headed group of settings rows. Rows sit in one surface instead of nesting
 /// a card per item, which keeps the settings screens calm and scannable.
@@ -73,7 +78,7 @@ class SettingsGroup extends StatelessWidget {
   }
 }
 
-class SettingsTile extends StatelessWidget {
+class SettingsTile extends ConsumerWidget {
   const SettingsTile({
     super.key,
     required this.title,
@@ -83,6 +88,7 @@ class SettingsTile extends StatelessWidget {
     this.onTap,
     this.destructive = false,
     this.enabled = true,
+    this.hapticCue = HapticCue.selection,
   });
 
   final String title;
@@ -93,20 +99,33 @@ class SettingsTile extends StatelessWidget {
   final bool destructive;
   final bool enabled;
 
+  /// Cue played before [onTap]. Set to null when a parent, such as a switch
+  /// row, already provides a more specific cue and must avoid a double pulse.
+  final HapticCue? hapticCue;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = context.scheme;
     final foreground = !enabled
         ? scheme.onSurface.withValues(alpha: 0.38)
         : destructive
         ? scheme.error
         : scheme.onSurface;
+    final tap = onTap;
     return Material(
       color: Colors.transparent,
       borderRadius: AppRadius.medium,
       child: InkWell(
         borderRadius: AppRadius.medium,
-        onTap: enabled ? onTap : null,
+        onTap: !enabled || tap == null
+            ? null
+            : () {
+                final cue = hapticCue;
+                if (cue != null) {
+                  unawaited(triggerHaptic(ref, cue: cue));
+                }
+                tap();
+              },
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.x3,
@@ -172,7 +191,7 @@ class SettingsTile extends StatelessWidget {
   }
 }
 
-class SettingsSwitchTile extends StatelessWidget {
+class SettingsSwitchTile extends ConsumerWidget {
   const SettingsSwitchTile({
     super.key,
     required this.title,
@@ -189,14 +208,25 @@ class SettingsSwitchTile extends StatelessWidget {
   final Widget? leading;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final change = onChanged;
+    void toggle(bool next) {
+      unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+      change?.call(next);
+    }
+
     return SettingsTile(
       title: title,
       subtitle: subtitle,
       leading: leading,
-      enabled: onChanged != null,
-      trailing: Switch(value: value ?? false, onChanged: onChanged),
-      onTap: onChanged == null ? null : () => onChanged!(!(value ?? false)),
+      enabled: change != null,
+      trailing: Switch(
+        value: value ?? false,
+        onChanged: change == null ? null : toggle,
+      ),
+      onTap: change == null ? null : () => toggle(!(value ?? false)),
+      // The switch and its row already share one toggle cue above.
+      hapticCue: null,
     );
   }
 }

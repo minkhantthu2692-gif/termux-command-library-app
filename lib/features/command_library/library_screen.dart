@@ -13,6 +13,7 @@ import '../../../data/models/command_category.dart';
 import '../../../data/models/command_post.dart';
 import '../../../data/models/command_query.dart';
 import '../../../data/models/user_profile.dart';
+import '../../../data/services/haptics_service.dart';
 import '../../../shared/utils/category_visual.dart';
 import '../../../shared/utils/ui_actions.dart';
 import '../../../shared/widgets/app_search_field.dart';
@@ -181,6 +182,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     selected: _tab,
                     showMine: session.canPublish,
                     onSelected: (tab) {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
                       setState(() {
                         _tab = tab;
                         _limit = AppConstants.pageSize;
@@ -196,8 +198,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     hasSearch: _search.trim().isNotEmpty,
                     onCategory: _pickCategory,
                     onSort: _pickSort,
-                    onDrafts: () =>
-                        setState(() => _includeDrafts = !_includeDrafts),
+                    onDrafts: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+                      setState(() => _includeDrafts = !_includeDrafts);
+                    },
                     onClear: _clearFilters,
                   ),
                   if (_search.trim().isNotEmpty) ...[
@@ -410,6 +414,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       builder: (context) => _CategorySheet(selectedId: _categoryId),
     );
     if (selected == null || !mounted) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     setState(() {
       _categoryId = selected == _allCategoriesValue ? null : selected;
       _limit = AppConstants.pageSize;
@@ -422,6 +427,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       builder: (context) => _SortSheet(selected: _sort),
     );
     if (selected == null || !mounted) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     setState(() {
       _sort = selected;
       _limit = AppConstants.pageSize;
@@ -429,6 +435,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   void _clearFilters() {
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     setState(() {
       _searchController.clear();
       _search = '';
@@ -448,6 +455,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
     try {
       await ref.read(syncCoordinatorProvider).refresh();
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       if (context.mounted) context.showSnack(l10n.refreshed);
     } catch (error) {
       if (context.mounted) context.showErrorSnack(error);
@@ -462,11 +470,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   ) async {
     final l10n = AppLocalizations.of(context);
     final next = !preferences.isFavorite(command.id);
+    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
     try {
       await ref
           .read(commandRepositoryProvider)
           .setFavorite(session: session, commandId: command.id, favorite: next);
-      await triggerHaptic(ref);
       if (context.mounted) {
         context.showSnack(next ? l10n.favoritedSnack : l10n.unfavoritedSnack);
       }
@@ -483,11 +491,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   ) async {
     final l10n = AppLocalizations.of(context);
     final next = !preferences.isPinned(command.id);
+    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
     try {
       await ref
           .read(commandRepositoryProvider)
           .setPinned(session: session, commandId: command.id, pinned: next);
-      await triggerHaptic(ref);
       if (context.mounted) {
         context.showSnack(next ? l10n.pinnedSnack : l10n.unpinnedSnack);
       }
@@ -526,7 +534,10 @@ class _LibraryHeader extends StatelessWidget {
             ],
           ),
         ),
-        const SyncStatusBadge(compact: true),
+        SizedBox.square(
+          dimension: AppSizes.minTapTarget,
+          child: Center(child: SyncStatusBadge(compact: true, iconSize: 24)),
+        ),
         IconButton(
           tooltip: l10n.refresh,
           onPressed: onRefresh,

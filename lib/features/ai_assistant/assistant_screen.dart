@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,8 @@ import '../../app/localization/generated/app_localizations.dart';
 import '../../app/providers.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/ai_models.dart';
+import '../../data/services/haptics_service.dart';
+import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_logo.dart';
 import '../../shared/widgets/app_note.dart';
 import '../../shared/widgets/section_header.dart';
@@ -60,7 +64,10 @@ class AssistantScreen extends ConsumerWidget {
                     ),
                     IconButton(
                       tooltip: l10n.chatHistory,
-                      onPressed: () => context.push('/ai/history'),
+                      onPressed: () {
+                        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                        context.push('/ai/history');
+                      },
                       icon: const Icon(Icons.history_rounded),
                     ),
                   ],
@@ -69,7 +76,10 @@ class AssistantScreen extends ConsumerWidget {
                 if (ready)
                   _AssistantHero(
                     modelName: selectedModel?.displayName ?? settings.aiModelId,
-                    onNewChat: () => context.push('/assistant/chat'),
+                    onNewChat: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                      context.push('/assistant/chat');
+                    },
                   )
                 else
                   const AiSetupCard(),
@@ -82,6 +92,7 @@ class AssistantScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.x3),
                   _SuggestionGrid(
                     onSelected: (prompt) {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
                       final location = Uri(
                         path: '/assistant/chat',
                         queryParameters: {'prompt': prompt},
@@ -94,7 +105,10 @@ class AssistantScreen extends ConsumerWidget {
                 SectionHeader(
                   title: l10n.recentConversations,
                   actionLabel: l10n.seeAll,
-                  onAction: () => context.push('/ai/history'),
+                  onAction: () {
+                    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                    context.push('/ai/history');
+                  },
                 ),
                 const SizedBox(height: AppSpacing.x3),
                 recent.when(
@@ -122,7 +136,12 @@ class AssistantScreen extends ConsumerWidget {
                         body: l10n.noConversationsBody,
                         actionLabel: ready ? l10n.newChat : null,
                         onAction: ready
-                            ? () => context.push('/assistant/chat')
+                            ? () {
+                                unawaited(
+                                  triggerHaptic(ref, cue: HapticCue.selection),
+                                );
+                                context.push('/assistant/chat');
+                              }
                             : null,
                         compact: true,
                       );
@@ -316,13 +335,13 @@ class _SuggestionCard extends StatelessWidget {
   }
 }
 
-class _ConversationList extends StatelessWidget {
+class _ConversationList extends ConsumerWidget {
   const _ConversationList({required this.conversations});
 
   final List<AiConversation> conversations;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.x2),
       decoration: BoxDecoration(
@@ -337,9 +356,12 @@ class _ConversationList extends StatelessWidget {
           for (var index = 0; index < conversations.length; index++) ...[
             AiConversationTile(
               conversation: conversations[index],
-              onTap: () => context.push(
-                '/assistant/chat?conversation=${Uri.encodeComponent(conversations[index].id)}',
-              ),
+              onTap: () {
+                unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                context.push(
+                  '/assistant/chat?conversation=${Uri.encodeComponent(conversations[index].id)}',
+                );
+              },
             ),
             if (index < conversations.length - 1)
               const SizedBox(height: AppSpacing.x1),

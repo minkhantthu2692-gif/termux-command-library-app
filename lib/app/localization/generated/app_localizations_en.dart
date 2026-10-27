@@ -175,6 +175,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Publish guides and sync your collection.';
 
   @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithGithub => 'Continue with GitHub';
+
+  @override
+  String get orContinueWithEmail => 'or continue with email';
+
+  @override
   String get email => 'Email';
 
   @override
@@ -402,7 +411,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudUnavailableBody =>
-      'The app is running in local-only mode. Browsing, favorites, pins, Termux and AI still work. Add Firebase values with --dart-define, then restart to enable accounts and publishing.';
+      'The app is running in local-only mode. Browsing, favorites, pins, Termux and AI still work. Add Firebase configuration (android/app/google-services.json) and rebuild to enable accounts and publishing.';
 
   @override
   String get firebaseSetupDocs => 'Firebase setup guide';
@@ -1124,6 +1133,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vibrationStrong => 'Strong';
 
   @override
+  String get vibrationPreviewHint =>
+      'Tap a level to preview it. Selection, success and warning cues each use a distinct rhythm.';
+
+  @override
   String get dataAndStorage => 'Data & storage';
 
   @override
@@ -1422,6 +1435,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorRecentLogin => 'Sign in again to confirm this change.';
+
+  @override
+  String get errorAuthCancelled => 'Sign-in was cancelled.';
+
+  @override
+  String get errorAuthProviderUnavailable =>
+      'This sign-in method is not enabled for this app yet.';
 
   @override
   String get errorPermissionDenied =>

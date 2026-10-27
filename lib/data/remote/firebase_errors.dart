@@ -6,6 +6,10 @@ import '../../core/errors/app_exception.dart';
 /// Converts SDK-specific failures into stable application error codes. Raw SDK
 /// messages can contain request details, so they are not surfaced in the UI.
 AppException mapFirebaseAuthError(Object error) {
+  // Repository/gateway code sometimes raises a stable AppException directly
+  // (for example when Firebase returns no user). Preserve it instead of
+  // flattening it to `unknown`.
+  if (error is AppException) return error;
   if (error is FirebaseAuthException) {
     final code = switch (error.code) {
       'invalid-email' => AppErrorCode.validation,
@@ -20,9 +24,14 @@ AppException mapFirebaseAuthError(Object error) {
       'too-many-requests' => AppErrorCode.authTooManyRequests,
       'requires-recent-login' => AppErrorCode.authRecentLoginRequired,
       'user-disabled' || 'user-token-expired' => AppErrorCode.authRequired,
+      'cancelled' ||
+      'canceled' ||
+      'web-context-cancelled' ||
+      'popup-closed-by-user' ||
+      'user-cancelled' => AppErrorCode.authCancelled,
       'network-request-failed' => AppErrorCode.network,
       'operation-not-allowed' ||
-      'admin-restricted-operation' => AppErrorCode.firebaseNotConfigured,
+      'admin-restricted-operation' => AppErrorCode.authProviderUnavailable,
       'user-mismatch' || 'provider-already-linked' => AppErrorCode.conflict,
       _ => AppErrorCode.unknown,
     };

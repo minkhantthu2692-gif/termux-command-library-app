@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../app/providers.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/auth_models.dart';
 import '../../data/models/user_profile.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/app_formatters.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_note.dart';
@@ -35,6 +38,7 @@ class ProfileScreen extends ConsumerWidget {
         if (cloudConfigured) {
           try {
             await ref.read(syncCoordinatorProvider).refresh();
+            unawaited(triggerHaptic(ref, cue: HapticCue.success));
           } catch (error) {
             if (context.mounted) context.showErrorSnack(error);
           }
@@ -64,7 +68,12 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       IconButton(
                         tooltip: l10n.settings,
-                        onPressed: () => context.push('/settings'),
+                        onPressed: () {
+                          unawaited(
+                            triggerHaptic(ref, cue: HapticCue.selection),
+                          );
+                          context.push('/settings');
+                        },
                         icon: const Icon(Icons.settings_outlined),
                       ),
                     ],
@@ -73,7 +82,8 @@ class ProfileScreen extends ConsumerWidget {
                   _ProfileHeader(
                     name: name.isEmpty ? l10n.guest : name,
                     email: profile?.email ?? session.email ?? '',
-                    avatarId: profile?.avatarId ?? AppAvatars.defaultId,
+                    avatarId:
+                        profile?.displayAvatarId ?? AppAvatars.localOnlyId,
                     role: _roleLabel(l10n, session),
                     memberSince: profile == null
                         ? null
@@ -81,7 +91,10 @@ class ProfileScreen extends ConsumerWidget {
                     isAdmin: session.isAdmin,
                     isAnonymous: session.isAnonymous,
                     isLocalOnly: session.isLocalOnly,
-                    onEdit: () => context.push('/profile/edit'),
+                    onEdit: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                      context.push('/profile/edit');
+                    },
                   ),
                   if (cloudConfigured && session.isAnonymous) ...[
                     const SizedBox(height: AppSpacing.x4),
@@ -90,7 +103,10 @@ class ProfileScreen extends ConsumerWidget {
                       message: l10n.anonymousExplanation,
                       tone: AppNoteTone.info,
                       actionLabel: l10n.upgradeAccount,
-                      onAction: () => context.push('/auth/register'),
+                      onAction: () {
+                        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                        context.push('/auth/register');
+                      },
                     ),
                   ] else if (!cloudConfigured) ...[
                     const SizedBox(height: AppSpacing.x4),
@@ -103,9 +119,18 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.x5),
                   _StatsRow(
                     stats: stats,
-                    onMine: () => context.go('/library?tab=mine'),
-                    onFavorites: () => context.go('/library?tab=favorites'),
-                    onPins: () => context.go('/library?tab=pinned'),
+                    onMine: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                      context.go('/library?tab=mine');
+                    },
+                    onFavorites: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                      context.go('/library?tab=favorites');
+                    },
+                    onPins: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                      context.go('/library?tab=pinned');
+                    },
                   ),
                   const SizedBox(height: AppSpacing.x6),
                   SettingsGroup(

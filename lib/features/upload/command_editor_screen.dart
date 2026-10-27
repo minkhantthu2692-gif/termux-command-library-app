@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +13,7 @@ import '../../core/design_system/app_tokens.dart';
 import '../../core/utils/validators.dart';
 import '../../data/models/command_category.dart';
 import '../../data/models/command_post.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/category_visual.dart';
 import '../../shared/utils/error_messages.dart';
 import '../../shared/utils/ui_actions.dart';
@@ -336,6 +339,7 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
                       ],
                       onChanged: (value) {
                         if (value == null) return;
+                        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
                         setState(() => _categoryId = value);
                         _markDirty();
                       },
@@ -370,6 +374,9 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
                         onMoveDown: () => _moveStep(index, index + 1),
                         onRemove: () => _removeStep(index),
                         onRunModeChanged: (mode) {
+                          unawaited(
+                            triggerHaptic(ref, cue: HapticCue.selection),
+                          );
                           setState(() => _steps[index].runMode = mode);
                           _markDirty();
                         },
@@ -449,11 +456,13 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
   }
 
   void _addStep() {
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _steps.add(_StepEditor(id: const Uuid().v4())));
     _markDirty();
   }
 
   void _removeStep(int index) {
+    unawaited(triggerHaptic(ref, cue: HapticCue.warning));
     final step = _steps.removeAt(index);
     step.dispose();
     setState(() {});
@@ -462,6 +471,7 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
 
   void _moveStep(int from, int to) {
     if (to < 0 || to >= _steps.length) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     setState(() {
       final step = _steps.removeAt(from);
       _steps.insert(to, step);
@@ -470,11 +480,13 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
   }
 
   void _addMetadata() {
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _metadata.add(_MetadataEditor()));
     _markDirty();
   }
 
   void _removeMetadata(int index) {
+    unawaited(triggerHaptic(ref, cue: HapticCue.warning));
     final entry = _metadata.removeAt(index);
     entry.dispose();
     setState(() {});
@@ -543,6 +555,7 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
       context.showSnack(l10n.commandNameRequired);
       return;
     }
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _saving = true);
     try {
       final saved = await ref
@@ -555,6 +568,7 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
                 ref.read(profileProvider).value?.effectiveNickname ?? '',
           );
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       setState(() => _dirty = false);
       context.showSnack(publish ? l10n.published : l10n.draftSaved);
       if (widget.isEditing) {
@@ -582,6 +596,7 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
   }
 
   void _openPreview() {
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     final l10n = AppLocalizations.of(context);
     final draft = _buildDraft();
     showModalBottomSheet<void>(
@@ -651,6 +666,7 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
   }
 
   Future<void> _openAiAssist() async {
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     final draft = _buildDraft();
     await showAiAssistSheet(
       context,

@@ -51,6 +51,7 @@ flutter:
   generate: true
 
   assets:
+    - assets/brand/
     - assets/data/
     - assets/docs/
     - assets/fonts/licenses/

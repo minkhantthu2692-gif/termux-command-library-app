@@ -69,7 +69,7 @@ abstract final class Validators {
     final name = value?.trim() ?? '';
     if (name.isEmpty) return 'required';
     if (name.length < 2) return 'tooShort';
-    if (name.length > 40) return 'tooLong';
+    if (name.length > AppConstants.maxNicknameLength) return 'tooLong';
     return null;
   }
 

@@ -12,6 +12,7 @@ IconData avatarIcon(String id) => switch (id) {
   'spark' => Icons.auto_awesome_rounded,
   'leaf' => Icons.spa_rounded,
   'pixel' => Icons.grid_view_rounded,
+  'person' => Icons.person_rounded,
   _ => Icons.blur_on_rounded,
 };
 

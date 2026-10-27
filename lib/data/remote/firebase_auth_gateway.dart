@@ -24,16 +24,20 @@ class FirebaseAuthGateway implements AuthGateway {
   AuthSession _syncSession(User user) => AuthSession(
     uid: user.uid,
     email: user.email,
+    displayName: user.displayName,
     isAnonymous: user.isAnonymous,
     isAdmin: false,
     isLocalOnly: false,
   );
 
-  Future<AuthSession?> _asyncSession(User? user) async {
+  Future<AuthSession?> _asyncSession(
+    User? user, {
+    bool forceRefreshToken = false,
+  }) async {
     if (user == null) return null;
     var isAdmin = false;
     try {
-      final token = await user.getIdTokenResult();
+      final token = await user.getIdTokenResult(forceRefreshToken);
       isAdmin = token.claims?['admin'] == true;
     } catch (_) {
       // A missing claim or a refresh hiccup must not prevent sign-in. Firestore
@@ -42,6 +46,7 @@ class FirebaseAuthGateway implements AuthGateway {
     return AuthSession(
       uid: user.uid,
       email: user.email,
+      displayName: user.displayName,
       isAnonymous: user.isAnonymous,
       isAdmin: isAdmin,
       isLocalOnly: false,
@@ -109,6 +114,36 @@ class FirebaseAuthGateway implements AuthGateway {
   }
 
   @override
+  Future<AuthSession> signInWithProvider(
+    AuthProviderKind provider, {
+    bool linkAnonymous = false,
+  }) async {
+    try {
+      final authProvider = switch (provider) {
+        AuthProviderKind.google => GoogleAuthProvider(),
+        AuthProviderKind.github => GithubAuthProvider()..addScope('user:email'),
+      };
+      final current = _auth.currentUser;
+      final UserCredential credential;
+      if (linkAnonymous && current != null && current.isAnonymous) {
+        credential = await current.linkWithProvider(authProvider);
+      } else {
+        credential = await _auth.signInWithProvider(authProvider);
+      }
+      final user = credential.user;
+      if (user == null) {
+        throw const AppException(AppErrorCode.authRequired);
+      }
+      // Linking changes the token's sign_in_provider claim, which Firestore
+      // rules check. Force one refresh so writes made right after the browser
+      // flow are not rejected with the old anonymous token.
+      return (await _asyncSession(user, forceRefreshToken: linkAnonymous))!;
+    } catch (error) {
+      throw mapFirebaseAuthError(error);
+    }
+  }
+
+  @override
   Future<AuthSession> linkAnonymousAccount({
     required String email,
     required String password,
@@ -127,7 +162,9 @@ class FirebaseAuthGateway implements AuthGateway {
       if (linked == null) {
         throw const AppException(AppErrorCode.authRequired);
       }
-      return (await _asyncSession(linked))!;
+      // The token's sign_in_provider changes from `anonymous` to `password`;
+      // refresh it so Firestore rules see the upgraded account immediately.
+      return (await _asyncSession(linked, forceRefreshToken: true))!;
     } catch (error) {
       throw mapFirebaseAuthError(error);
     }

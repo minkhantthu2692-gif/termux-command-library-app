@@ -2,16 +2,29 @@
 
 The application uses exactly two Firebase products:
 
-- **Authentication** for anonymous guests and email/password accounts.
+- **Authentication** for anonymous guests, email/password accounts and optional
+  Google/GitHub sign-in.
 - **Cloud Firestore** for public command guides and private user profiles.
 
 Firebase Storage is not used. Crashlytics, Analytics, Remote Config, Cloud
 Messaging and other Firebase products are not configured by this project.
 
-Firebase is configured at compile time from `--dart-define` values. No
-`google-services.json` and no service-account key are required by the Flutter
-app. If the values are missing or invalid, the app starts in **local-only mode**
-with SQLite and the bundled seed catalogue; it does not crash.
+Firebase is configured through the standard Android `google-services.json`
+file. The build processes `android/app/google-services.json` and the app calls
+`Firebase.initializeApp()` with no options, so the native SDK resolves the
+project automatically. `--dart-define` values are the alternative for CI or
+environments where the JSON cannot be bundled; do not supply both unless they
+describe the same Firebase app.
+
+The JSON file is **git-ignored** because it contains an Android client API key.
+Download it from the Firebase console on each machine that needs cloud access;
+do not commit it. No service-account key is required by the Flutter app. If the
+file is absent and no build values are supplied, the app starts in **local-only
+mode** with SQLite and the bundled seed catalogue; it does not crash.
+
+> **Current working copy:** project `termuxcommandlibrary`, Android package
+> `com.termuxcommandlibrary.mm`, configuration in
+> `android/app/google-services.json` (not committed).
 
 ---
 
@@ -46,19 +59,21 @@ for `FIREBASE_PROJECT_ID` and is also used by the CLI.
 2. Use the package name from `android/app/build.gradle.kts`:
 
    ```text
-   com.minkh.termux_command_library
+   com.termuxcommandlibrary.mm
    ```
 
-3. A nickname is optional. The debug SHA-1 is only needed for providers such as
-   Google Sign-In; email/password and Anonymous do not require it. Add release
-   SHA-1/SHA-256 values before enabling additional providers later.
-4. The console offers `google-services.json`. **This project does not read that
-   file**; you may skip it or keep it outside the repository. Configuration is
-   passed with `--dart-define` instead, which keeps the build reproducible and
-   makes local-only CI builds possible.
+3. A nickname is optional. Email/password and Anonymous do not require a
+   signing fingerprint. Google Sign-In does: add the debug and release/Play App
+   Signing SHA-1/SHA-256 values under **Project settings → Your apps → Android
+   app → Add fingerprint** before testing Google sign-in. Re-download
+   `google-services.json` after adding fingerprints or apps.
+4. Download `google-services.json` and place it at
+   `android/app/google-services.json`. It is listed in `.gitignore`; never commit
+   it. The Firebase Gradle plugin is applied automatically when the file exists
+   and is skipped for local-only builds when it is absent.
 
-Copy these values from **Project settings → General → Your apps → SDK setup and
-configuration**:
+The console's **SDK setup and configuration** page also shows the individual
+values. They can be supplied as compile-time overrides instead of the JSON file:
 
 | `--dart-define` name | Console value |
 | --- | --- |
@@ -68,9 +83,11 @@ configuration**:
 | `FIREBASE_PROJECT_ID` | `project_id` |
 | `FIREBASE_AUTH_DOMAIN` | `project_id.firebaseapp.com` (optional; derived if omitted) |
 
-These are Firebase **client identifiers**, not service-account credentials. They
-are normally shipped inside an app binary. Do not commit a service-account JSON
-file, and do not put server credentials in `--dart-define`.
+Use one source per build. If both are present they must describe the same
+Firebase app; the native default app is resolved first, so mismatched values
+make initialization fail and the app stays local-only. These are Firebase
+**client identifiers**, not service-account credentials. Do not commit a
+service-account JSON file, and do not put server credentials in `--dart-define`.
 
 ## 4. Enable Authentication
 
@@ -78,6 +95,11 @@ In **Authentication → Get started**:
 
 1. Enable **Email/Password**. Email link sign-in is not needed.
 2. Enable **Anonymous**.
+3. Optionally enable **Google** (requires SHA-1/SHA-256 fingerprints) and
+   **GitHub** (requires a GitHub OAuth App and its client ID/secret). Both are
+   optional; the app hides the provider buttons when Firebase is not configured
+   and reports a clear message when a provider is disabled. The full steps are
+   in [Firebase Authentication setup](firebase-auth-setup.md#google-sign-in-setup).
 
 No OTP, SMS, mandatory email verification or custom claims are required for
 normal use. Details: [Firebase Authentication setup](firebase-auth-setup.md).
@@ -129,6 +151,21 @@ settings in release builds. The Firestore emulator requires Java 11+.
 
 ## 7. Run the app with Firebase
 
+If `android/app/google-services.json` is in place, no flags are needed:
+
+```bash
+flutter run
+```
+
+The Gradle plugin turns the JSON into Android resources, and
+`FirebaseBootstrap` initialises the native default app from them, then reports
+the resolved project to the rest of the app.
+
+For CI, or to point a build at another project without bundling its JSON, pass
+the values explicitly instead of `google-services.json`. Do not mix a JSON file
+from one project with defines from another; mismatched values make
+initialization fail.
+
 PowerShell (one line per argument, backtick for continuation):
 
 ```powershell
@@ -151,9 +188,10 @@ flutter run \
   --dart-define=FIREBASE_AUTH_DOMAIN=YOUR_PROJECT_ID.firebaseapp.com
 ```
 
-All four of API key, app ID, sender ID and project ID are required for online
-mode; the auth domain is optional. When configured correctly, the start-up flow
-calls `Firebase.initializeApp` before the Riverpod graph is built.
+All four of API key, app ID, sender ID and project ID are required when using
+overrides; the auth domain is optional. When either source is configured
+correctly, the start-up flow calls `Firebase.initializeApp` before the Riverpod
+graph is built. When neither is present, the app stays in local-only mode.
 
 ## 8. Verify online mode
 

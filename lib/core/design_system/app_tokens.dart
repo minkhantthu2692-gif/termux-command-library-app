@@ -177,6 +177,7 @@ class AppColors extends ThemeExtension<AppColors> {
       Color(0xFF2D7D5B),
       Color(0xFF2B6CA3),
       Color(0xFF8B5E3C),
+      Color(0xFF5D6673),
     ],
   );
 
@@ -203,6 +204,7 @@ class AppColors extends ThemeExtension<AppColors> {
       Color(0xFF7FC9A7),
       Color(0xFF7CB3DE),
       Color(0xFFC7A385),
+      Color(0xFF9AA7B8),
     ],
   );
 

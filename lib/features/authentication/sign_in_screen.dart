@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,8 +10,11 @@ import '../../../core/design_system/app_tokens.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/models/auth_models.dart';
+import '../../../data/services/haptics_service.dart';
 import '../../../shared/utils/error_messages.dart';
+import '../../../shared/utils/ui_actions.dart';
 import 'auth_flow.dart';
+import 'widgets/auth_provider_buttons.dart';
 import 'widgets/auth_scaffold.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
@@ -28,7 +33,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _passwordFocus = FocusNode();
   bool _obscure = true;
   bool _loading = false;
+  AuthProviderKind? _provider;
   String? _error;
+
+  bool get _busy => _loading || _provider != null;
 
   @override
   void dispose() {
@@ -59,7 +67,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
               ),
               TextButton(
-                onPressed: _loading
+                onPressed: _busy
                     ? null
                     : () => context.push(
                         '/auth/register${widget.next == null ? '' : '?next=${Uri.encodeComponent(widget.next!)}'}',
@@ -97,9 +105,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.x4),
                   child: AuthErrorBanner(message: _error!),
                 ),
+              if (cloudConfigured)
+                AuthProviderButtons(
+                  enabled: !_busy,
+                  busyProvider: _provider,
+                  onSelected: _signInWithProvider,
+                ),
               TextFormField(
                 controller: _emailController,
-                enabled: !_loading,
+                enabled: !_busy,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
@@ -118,7 +132,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               TextFormField(
                 controller: _passwordController,
                 focusNode: _passwordFocus,
-                enabled: !_loading,
+                enabled: !_busy,
                 obscureText: _obscure,
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
@@ -127,7 +141,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
                     tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
-                    onPressed: () => setState(() => _obscure = !_obscure),
+                    onPressed: () {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+                      setState(() => _obscure = !_obscure);
+                    },
                     icon: Icon(
                       _obscure
                           ? Icons.visibility_outlined
@@ -146,7 +163,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: _loading
+                  onPressed: _busy
                       ? null
                       : () => context.push(
                           '/auth/reset${_emailController.text.trim().isEmpty ? '' : '?email=${Uri.encodeComponent(_emailController.text.trim())}'}',
@@ -156,7 +173,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
               const SizedBox(height: AppSpacing.x2),
               FilledButton(
-                onPressed: _loading || !cloudConfigured ? null : _submit,
+                onPressed: _busy || !cloudConfigured ? null : _submit,
                 child: _loading
                     ? const SizedBox(
                         width: 18,
@@ -168,7 +185,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               if (cloudConfigured) ...[
                 const SizedBox(height: AppSpacing.x3),
                 OutlinedButton.icon(
-                  onPressed: _loading ? null : _continueAnonymously,
+                  onPressed: _busy ? null : _continueAnonymously,
                   icon: const Icon(Icons.person_outline_rounded),
                   label: Text(l10n.continueAnonymously),
                 ),
@@ -189,9 +206,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _submit() async {
-    if (_loading) return;
+    if (_busy) return;
     setState(() => _error = null);
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() => _loading = true);
     try {
       final session = await ref
@@ -201,14 +219,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             password: _passwordController.text,
           );
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       await finishAuthFlow(context, ref, session, next: widget.next);
     } on AppException catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );
     } catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );
@@ -217,7 +238,44 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     }
   }
 
+  Future<void> _signInWithProvider(AuthProviderKind provider) async {
+    if (_busy) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
+    setState(() {
+      _provider = provider;
+      _error = null;
+    });
+    try {
+      final session = await ref
+          .read(authRepositoryProvider)
+          .signInWithProvider(provider);
+      if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
+      await finishAuthFlow(context, ref, session, next: widget.next);
+    } on AppException catch (error) {
+      // Closing the browser or cancelling the account picker is not a failure
+      // the user needs to read about.
+      if (!mounted) return;
+      if (error.code != AppErrorCode.authCancelled) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.error));
+        setState(
+          () => _error = localizeError(AppLocalizations.of(context), error),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
+      setState(
+        () => _error = localizeError(AppLocalizations.of(context), error),
+      );
+    } finally {
+      if (mounted) setState(() => _provider = null);
+    }
+  }
+
   Future<void> _continueAnonymously() async {
+    if (_busy) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() {
       _loading = true;
       _error = null;
@@ -227,14 +285,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           .read(authRepositoryProvider)
           .signInAnonymously();
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       await finishAuthFlow(context, ref, session, next: widget.next);
     } on AppException catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );
     } catch (error) {
       if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
       setState(
         () => _error = localizeError(AppLocalizations.of(context), error),
       );

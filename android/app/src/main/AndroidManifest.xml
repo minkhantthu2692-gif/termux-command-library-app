@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Firebase Authentication + Firestore require network access. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Optional haptic confirmation for navigation, toggles and sliders. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Required to ask Termux to run a command on the user's behalf. -->
     <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
 

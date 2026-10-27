@@ -9,6 +9,7 @@ import '../../app/providers.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/ai_models.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_search_field.dart';
 import '../../shared/widgets/section_header.dart';
@@ -91,8 +92,16 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
                           ? l10n.newChat
                           : l10n.clear,
                       onAction: _search.trim().isEmpty
-                          ? () => context.push('/assistant/chat')
+                          ? () {
+                              unawaited(
+                                triggerHaptic(ref, cue: HapticCue.selection),
+                              );
+                              context.push('/assistant/chat');
+                            }
                           : () {
+                              unawaited(
+                                triggerHaptic(ref, cue: HapticCue.selection),
+                              );
                               _searchController.clear();
                               setState(() => _search = '');
                             },
@@ -123,9 +132,14 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
                         child: AiConversationTile(
                           conversation: conversation,
                           showModel: true,
-                          onTap: () => context.push(
-                            '/assistant/chat?conversation=${Uri.encodeComponent(conversation.id)}',
-                          ),
+                          onTap: () {
+                            unawaited(
+                              triggerHaptic(ref, cue: HapticCue.selection),
+                            );
+                            context.push(
+                              '/assistant/chat?conversation=${Uri.encodeComponent(conversation.id)}',
+                            );
+                          },
                           trailing: IconButton(
                             tooltip: l10n.deleteConversation,
                             onPressed: () => _deleteConversation(conversation),
@@ -164,7 +178,10 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
     if (!confirmed) return;
     try {
       await ref.read(aiRepositoryProvider).deleteConversation(conversation.id);
-      if (mounted) context.showSnack(l10n.conversationDeleted);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.conversationDeleted);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     }
@@ -183,7 +200,10 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
     setState(() => _clearing = true);
     try {
       await ref.read(aiRepositoryProvider).clearHistory();
-      if (mounted) context.showSnack(l10n.aiHistoryCleared);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.aiHistoryCleared);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     } finally {

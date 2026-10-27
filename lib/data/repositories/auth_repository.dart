@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/utils/validators.dart';
 import '../local/database/daos/command_dao.dart';
@@ -93,16 +94,27 @@ class AuthRepository {
         return;
       }
       final email = session.email ?? '';
-      final prefix = email.contains('@') ? email.split('@').first : '';
       await _profileDao.ensureProfile(
         uid: session.uid,
-        nickname: session.isAnonymous ? '' : prefix,
+        nickname: session.isAnonymous ? '' : _profileNickname(session),
         email: email,
         isLocalOnly: false,
       );
     } catch (error) {
       debugPrint('Local profile bootstrap failed: $error');
     }
+  }
+
+  /// Prefers the provider-supplied display name and falls back to the local
+  /// part of the email. Long names are clipped to the profile field limit; the
+  /// user can always change the nickname later.
+  String _profileNickname(AuthSession session) {
+    final displayName = session.displayName?.trim() ?? '';
+    final candidate = displayName.isNotEmpty
+        ? displayName
+        : (session.email ?? '').split('@').first;
+    if (candidate.length <= AppConstants.maxNicknameLength) return candidate;
+    return candidate.substring(0, AppConstants.maxNicknameLength);
   }
 
   Future<AuthSession> signInAnonymously() async {
@@ -192,6 +204,34 @@ class AuthRepository {
       final session = await gateway.signIn(
         email: normalizedEmail,
         password: password,
+      );
+      await _ensureProfile(session);
+      await _syncDao.enqueue(
+        uid: session.uid,
+        type: PendingOperationType.profileSync,
+      );
+      return session;
+    } on AppException {
+      rethrow;
+    } catch (error) {
+      throw AppException(AppErrorCode.unknown, cause: error);
+    }
+  }
+
+  /// Completes a Google or GitHub sign-in that already happened in the browser
+  /// flow, then makes sure the local profile and its pending sync exist.
+  ///
+  /// [linkAnonymous] is used by the account-upgrade screen so an anonymous
+  /// Firebase UID keeps its favorites, pins and authored guides.
+  Future<AuthSession> signInWithProvider(
+    AuthProviderKind provider, {
+    bool linkAnonymous = false,
+  }) async {
+    final gateway = _requireGateway();
+    try {
+      final session = await gateway.signInWithProvider(
+        provider,
+        linkAnonymous: linkAnonymous,
       );
       await _ensureProfile(session);
       await _syncDao.enqueue(

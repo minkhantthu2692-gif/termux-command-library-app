@@ -23,8 +23,8 @@ Cloud Firestore when an account and network are available.
   confirmation and a destructive-command warning.
 - Favorite guides and pin guides in a user-defined order.
 - Upload, edit and delete your own guides; drafts are supported.
-- Sign in with email/password, continue as an anonymous guest, link a guest to a
-  registered account, reset a password and delete an account.
+- Sign in with email/password or Google/GitHub, continue as an anonymous guest,
+  link a guest to a registered account, reset a password and delete an account.
 - Work offline. Changes are queued locally and synchronized later.
 - Use an optional AI assistant with your own Groq API key (BYOK), including
   command explanations, title/description help and English/Myanmar translation.
@@ -93,17 +93,28 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-Without `--dart-define` values the app runs entirely from SQLite with the bundled
-starter catalogue. Authentication screens explain that an account requires
-Firebase configuration. This is the expected mode for UI work and tests.
+Without `google-services.json` and without `--dart-define` values the app runs
+entirely from SQLite with the bundled starter catalogue. Authentication screens
+explain that an account requires Firebase configuration. This is the expected
+mode for UI work and tests.
 
-## Enable Firebase
+## Connect Firebase
 
-1. Create a Firebase project and register the Android app with package
-   `com.minkh.termux_command_library`.
-2. Enable **Authentication → Sign-in method → Email/Password** and **Anonymous**.
-3. Create a Cloud Firestore database.
-4. Install the Firebase CLI, sign in, select the project and deploy the rules and
+The Android package is **`com.termuxcommandlibrary.mm`**. Firebase Auth and
+Firestore are connected through the standard Firebase Android configuration.
+
+1. In the Firebase console, register (or open) the Android app with that exact
+   package name.
+2. Download its `google-services.json` and place it at
+   `android/app/google-services.json`. The file is git-ignored; download it per
+   machine or CI secret instead of committing it.
+3. Enable **Authentication → Sign-in method → Email/Password** and **Anonymous**.
+   Optionally enable **Google** (add debug/release SHA-1 and SHA-256
+   fingerprints) and **GitHub** (create a GitHub OAuth App whose callback is
+   `https://<project-id>.firebaseapp.com/__/auth/handler`). See
+   [Firebase Authentication](docs/firebase-auth-setup.md) for the exact steps.
+4. Create a Cloud Firestore database.
+5. Install the Firebase CLI, sign in, select the project and deploy the rules and
    indexes in this repository:
 
    ```bash
@@ -112,20 +123,26 @@ Firebase configuration. This is the expected mode for UI work and tests.
    firebase deploy --only firestore:rules,firestore:indexes
    ```
 
-5. Build or run with the Firebase Android app values:
+6. Run `flutter run`. The app reads the project automatically from the processed
+   `google-services.json`.
 
-   ```bash
-   flutter run \
-     --dart-define=FIREBASE_API_KEY=... \
-     --dart-define=FIREBASE_APP_ID=... \
-     --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
-     --dart-define=FIREBASE_PROJECT_ID=... \
-     --dart-define=FIREBASE_AUTH_DOMAIN=...
-   ```
+For CI or environments where bundling the JSON is not possible, pass the same
+values as compile-time defines instead. Use one source per build: if both are
+present they must describe the same Firebase app, otherwise initialization
+fails and the app stays local-only.
 
-These values are public Firebase client identifiers, not service-account
-secrets. Still, keep environment-specific values out of Git where practical.
-**Never** commit a service-account JSON file.
+```bash
+flutter run \
+  --dart-define=FIREBASE_API_KEY=... \
+  --dart-define=FIREBASE_APP_ID=... \
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
+  --dart-define=FIREBASE_PROJECT_ID=... \
+  --dart-define=FIREBASE_AUTH_DOMAIN=...
+```
+
+These are public Firebase client identifiers, not service-account secrets. Keep
+`google-services.json` and environment-specific values out of Git. **Never**
+commit a service-account JSON file.
 
 Full instructions, including a Burmese walkthrough, are in
 [docs/burmese-setup.md](docs/burmese-setup.md) and
@@ -181,7 +198,8 @@ flutter test
 
 The suite covers validators, risk analysis, command models, the seed catalogue,
 Drift DAOs and persistence, offline synchronization, AI caching/history, Groq
-HTTP/SSE parsing, the Riverpod app shell and theme/locale propagation.
+HTTP/SSE parsing, authentication error mapping, the provider buttons, the
+Riverpod app shell and theme/locale propagation.
 
 ## Documentation
 

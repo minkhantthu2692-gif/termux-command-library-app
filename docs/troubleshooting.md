@@ -5,25 +5,29 @@
 **Symptom:** Sign-in says Firebase is not configured, the sync badge says
 local-only, but browsing works.
 
-**Cause:** One or more required `--dart-define` values were missing, or Firebase
-initialization failed.
+**Cause:** Neither Firebase configuration source was available, or
+initialization failed: `android/app/google-services.json` was missing/for a
+different package, and the `--dart-define` overrides were incomplete.
 
 **Check:**
 
-```bash
-flutter run --dart-define=FIREBASE_API_KEY=... \
-  --dart-define=FIREBASE_APP_ID=... \
-  --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
-  --dart-define=FIREBASE_PROJECT_ID=...
-```
+1. Confirm `android/app/google-services.json` exists, that its
+   `android_client_info.package_name` is `com.termuxcommandlibrary.mm`, and that
+   the package is registered in the Firebase console.
+2. If you are using overrides instead, all four of these must be present:
 
-- All four are required; the auth domain is optional.
-- Values are compile-time. Hot reload does not pick up new defines; restart the
-  app.
-- Make sure the Android app is registered under package
-  `com.minkh.termux_command_library`.
-- Check `flutter logs` for the generic Firebase initialization warning.
-- The app intentionally does not print credentials or raw Firebase errors.
+   ```bash
+   flutter run --dart-define=FIREBASE_API_KEY=... \
+     --dart-define=FIREBASE_APP_ID=... \
+     --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
+     --dart-define=FIREBASE_PROJECT_ID=...
+   ```
+
+   The auth domain is optional.
+3. Values are compile-time. Hot reload does not pick up new defines; restart the
+   app. Replacing `google-services.json` also requires a rebuild.
+4. Check `flutter logs` for the generic Firebase initialization warning.
+5. The app intentionally does not print credentials or raw Firebase errors.
 
 If you only need offline browsing, local-only mode is expected and supported.
 
@@ -63,17 +67,27 @@ around it by fetching unbounded collections in the client.
 
 | Error | Checks |
 | --- | --- |
-| `operation-not-allowed` | Email/Password or Anonymous provider is disabled in Firebase Auth |
+| `operation-not-allowed` | Email/Password, Anonymous, Google or GitHub provider is disabled in Firebase Auth |
 | `invalid-email` | Email syntax; a bare username is completed as `@gmail.com` |
 | `wrong-password` / `invalid-credential` | Credentials; use password reset |
 | `email-already-in-use` | Sign in instead of registering, or link from the anonymous account |
 | `weak-password` | Use at least 8 characters |
-| `credential-already-in-use` | The email belongs to another Firebase UID; sign in to that account. Different UIDs are not merged. |
+| `credential-already-in-use` | The email/provider account belongs to another Firebase UID; sign in to that account. Different UIDs are not merged. |
 | `requires-recent-login` | Re-authenticate with the current password before changing/deleting |
+| Google sign-in returns without signing in | Verify the app's debug/release SHA-1 and SHA-256 fingerprints in Firebase and re-download `google-services.json` |
+| GitHub sign-in fails with a redirect error | The GitHub OAuth App callback must be exactly `https://<project-id>.firebaseapp.com/__/auth/handler` |
+| GitHub account has no email | Keep the `user:email` scope request in the gateway; otherwise private-email accounts return no address |
+| Provider browser closes with no message | This is treated as a cancellation and is intentionally silent |
 
 Password reset emails require the device to receive email and the Firebase
 authorized-domain/template configuration to be valid. The app never handles OTP
 codes.
+
+Social sign-in opens Firebase's hosted flow in a Custom Tab. It requires a real
+device or emulator with a browser; it cannot complete inside a Flutter widget
+test. If the buttons are missing entirely, the build is in local-only mode and
+`android/app/google-services.json` (or the complete `--dart-define` set) is not
+being applied.
 
 ## Favorites or pins disappear
 
@@ -165,6 +179,22 @@ saved in history, only the file name. Do not attach secrets.
 - If a selected Latin font lacks Myanmar glyphs, Flutter falls back to Noto Sans
   Myanmar. Do not remove the fallback from the theme.
 - Test on a physical device; some OEM font overrides can behave differently.
+
+## Haptics are weak, identical, or absent
+
+- Check **Settings → Appearance → Haptics**. Off suppresses every app-managed
+  vibration, including slider ticks and tooltips.
+- Android's system touch-vibration setting and battery saver can override or mute
+  an app's vibration. Test with the system setting enabled.
+- Some devices have no amplitude control. Light, Medium and Strong then differ only
+  by duration, which is expected. Emulators often have no vibration hardware at
+  all.
+- The native channel is Android-only. Other platforms use Flutter's standard
+  `HapticFeedback`, which does not expose custom waveforms.
+- A slider emits one tick per discrete division; continuous sliders are throttled
+  to roughly 16 ticks per second rather than vibrating on every pixel.
+- Haptics are best-effort and never surface an error. If an action succeeds but
+  there is no vibration, verify the settings above before treating it as a bug.
 
 ## Theme/navigation bar colors look wrong
 

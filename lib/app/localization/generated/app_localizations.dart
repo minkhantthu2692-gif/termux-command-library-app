@@ -416,6 +416,24 @@ abstract class AppLocalizations {
   /// **'Publish guides and sync your collection.'**
   String get createAccountSubtitle;
 
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// No description provided for @continueWithGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with GitHub'**
+  String get continueWithGithub;
+
+  /// No description provided for @orContinueWithEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'or continue with email'**
+  String get orContinueWithEmail;
+
   /// No description provided for @email.
   ///
   /// In en, this message translates to:
@@ -845,7 +863,7 @@ abstract class AppLocalizations {
   /// No description provided for @cloudUnavailableBody.
   ///
   /// In en, this message translates to:
-  /// **'The app is running in local-only mode. Browsing, favorites, pins, Termux and AI still work. Add Firebase values with --dart-define, then restart to enable accounts and publishing.'**
+  /// **'The app is running in local-only mode. Browsing, favorites, pins, Termux and AI still work. Add Firebase configuration (android/app/google-services.json) and rebuild to enable accounts and publishing.'**
   String get cloudUnavailableBody;
 
   /// No description provided for @firebaseSetupDocs.
@@ -2186,6 +2204,12 @@ abstract class AppLocalizations {
   /// **'Strong'**
   String get vibrationStrong;
 
+  /// No description provided for @vibrationPreviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a level to preview it. Selection, success and warning cues each use a distinct rhythm.'**
+  String get vibrationPreviewHint;
+
   /// No description provided for @dataAndStorage.
   ///
   /// In en, this message translates to:
@@ -2737,6 +2761,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in again to confirm this change.'**
   String get errorRecentLogin;
+
+  /// No description provided for @errorAuthCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in was cancelled.'**
+  String get errorAuthCancelled;
+
+  /// No description provided for @errorAuthProviderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This sign-in method is not enabled for this app yet.'**
+  String get errorAuthProviderUnavailable;
 
   /// No description provided for @errorPermissionDenied.
   ///

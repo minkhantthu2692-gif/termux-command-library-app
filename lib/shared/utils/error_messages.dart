@@ -15,6 +15,8 @@ String localizeError(AppLocalizations l10n, Object error) {
     AppErrorCode.authWeakPassword => l10n.errorWeakPassword,
     AppErrorCode.authTooManyRequests => l10n.errorTooManyRequests,
     AppErrorCode.authRecentLoginRequired => l10n.errorRecentLogin,
+    AppErrorCode.authCancelled => l10n.errorAuthCancelled,
+    AppErrorCode.authProviderUnavailable => l10n.errorAuthProviderUnavailable,
     AppErrorCode.authAccountDeleted => l10n.errorAuthRequired,
     AppErrorCode.permissionDenied => l10n.errorPermissionDenied,
     AppErrorCode.firebaseUnavailable => l10n.errorFirebaseUnavailable,

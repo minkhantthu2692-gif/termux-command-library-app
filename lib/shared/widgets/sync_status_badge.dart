@@ -12,10 +12,12 @@ class SyncStatusBadge extends ConsumerWidget {
     super.key,
     this.compact = false,
     this.showTime = true,
+    this.iconSize = 14,
   });
 
   final bool compact;
   final bool showTime;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,7 +28,7 @@ class SyncStatusBadge extends ConsumerWidget {
     final palette = context.appColors;
 
     final (IconData icon, Color color, String label) = !cloud
-        ? (Icons.save_outlined, scheme.onSurfaceVariant, l10n.localOnly)
+        ? (Icons.cloud_off_rounded, scheme.onSurfaceVariant, l10n.localOnly)
         : status.phase == SyncPhase.error
         ? (Icons.cloud_off_rounded, scheme.error, l10n.syncError)
         : status.phase == SyncPhase.syncing
@@ -54,7 +56,7 @@ class SyncStatusBadge extends ConsumerWidget {
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: color),
+        Icon(icon, size: iconSize, color: color),
         if (!compact) ...[
           const SizedBox(width: AppSpacing.x1 + 2),
           Flexible(

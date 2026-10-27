@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../../core/design_system/app_tokens.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/utils/command_risk.dart';
 import '../../data/models/command_post.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/utils/url_actions.dart';
 import '../../shared/widgets/app_note.dart';
@@ -111,6 +114,7 @@ Future<bool> showTermuxRunFlow(
     );
     if (!context.mounted) return false;
     if (sent > 0) {
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
       context.showSnack(l10n.commandSentToTermux);
       return true;
     }
@@ -219,7 +223,7 @@ Future<void> showExternalAppsDialog(BuildContext context) async {
 
 const _termuxReleasesUrl = 'https://github.com/termux/termux-app/releases';
 
-class _RunConfirmSheet extends StatefulWidget {
+class _RunConfirmSheet extends ConsumerStatefulWidget {
   const _RunConfirmSheet({
     required this.label,
     required this.items,
@@ -233,10 +237,10 @@ class _RunConfirmSheet extends StatefulWidget {
   final bool defaultBackground;
 
   @override
-  State<_RunConfirmSheet> createState() => _RunConfirmSheetState();
+  ConsumerState<_RunConfirmSheet> createState() => _RunConfirmSheetState();
 }
 
-class _RunConfirmSheetState extends State<_RunConfirmSheet> {
+class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
   late bool _background = widget.defaultBackground;
   bool _acknowledged = false;
 
@@ -368,7 +372,10 @@ class _RunConfirmSheetState extends State<_RunConfirmSheet> {
                   title: Text(l10n.runBackground),
                   subtitle: Text(l10n.runBackgroundHelper),
                   value: _background,
-                  onChanged: (value) => setState(() => _background = value),
+                  onChanged: (value) {
+                    unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+                    setState(() => _background = value);
+                  },
                 ),
                 if (requiresAcknowledgement) ...[
                   const SizedBox(height: AppSpacing.x1),
@@ -376,8 +383,10 @@ class _RunConfirmSheetState extends State<_RunConfirmSheet> {
                     contentPadding: EdgeInsets.zero,
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _acknowledged,
-                    onChanged: (value) =>
-                        setState(() => _acknowledged = value ?? false),
+                    onChanged: (value) {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+                      setState(() => _acknowledged = value ?? false);
+                    },
                     title: Text(l10n.riskAcknowledge),
                   ),
                 ],
@@ -426,7 +435,17 @@ class _RunConfirmSheetState extends State<_RunConfirmSheet> {
                         child: FilledButton.icon(
                           onPressed: requiresAcknowledgement && !_acknowledged
                               ? null
-                              : () => Navigator.of(context).pop(_background),
+                              : () {
+                                  unawaited(
+                                    triggerHaptic(
+                                      ref,
+                                      cue: requiresAcknowledgement
+                                          ? HapticCue.warning
+                                          : HapticCue.tap,
+                                    ),
+                                  );
+                                  Navigator.of(context).pop(_background);
+                                },
                           icon: const Icon(Icons.play_arrow_rounded),
                           label: Text(l10n.confirmRun),
                         ),

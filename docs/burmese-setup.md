@@ -98,7 +98,7 @@ Analysis တွင် ပြဿနာမရှိဘဲ test အားလုံ�
 flutter run
 ```
 
-Firebase value မပေးထားလျှင် app သည် **local-only mode** ဖြင့်
+Firebase configuration မရှိလျှင် app သည် **local-only mode** ဖြင့်
 အလုပ်လုပ်မည်:
 
 - SQLite ထဲတွင် ပါဝင်သော seed guide ၅၂ ခုကို ဖတ်နိုင်သည်။
@@ -125,18 +125,29 @@ UI နှင့် အော့ဖ်လိုင်းလုပ်ဆောင�
 2. Package name ကို အတိအကျ ထည့်ပါ:
 
    ```text
-   com.minkh.termux_command_library
+   com.termuxcommandlibrary.mm
    ```
 
-3. Debug SHA-1 သည် Email/Password နှင့် Anonymous အတွက် မလိုအပ်ပါ။
-   နောင်တွင် Google Sign-In ထည့်မည်ဆိုလျှင် ထည့်ပါ။
-4. Console ပေးသော `google-services.json` ကို ဤ app မဖတ်ပါ။
-   Configuration ကို `--dart-define` ဖြင့် ပေးမည်။
+3. Google Sign-In အတွက် Debug နှင့် Release/Play App Signing
+   SHA-1/SHA-256 လက်ဗွေများကို **Project settings → Your apps → Android
+   app → Add fingerprint** တွင် ထည့်ပါ။ Email/Password နှင့် Anonymous
+   အတွက် လက်ဗွေ မလိုအပ်ပါ။ လက်ဗွေထည့်ပြီးနောက်
+   `google-services.json` ကို ပြန် download လုပ်ပါ။
+4. Console မှ ရရှိသော `google-services.json` ကို
+   `android/app/google-services.json` အဖြစ် ထည့်ပါ။ ဖိုင်ရှိလျှင်
+   Google Services Gradle plugin အလိုအလျောက် အလုပ်လုပ်ပြီး app က
+   Firebase project ကို အလိုအလျောက် ရှာတွေ့မည်။ ဤဖိုင်ကို
+   `.gitignore` တွင် ထည့်ထားသဖြင့် Git သို့ မတင်ပါ။
+   `--dart-define` ဖြင့်လည်း configuration ပေးနိုင်သည်။ နှစ်မျိုးလုံး
+   ရှိလျှင် တူညီသော Firebase app ဖြစ်ရမည်။
+
+လက်ရှိ working copy သည် project `termuxcommandlibrary` နှင့် package
+`com.termuxcommandlibrary.mm` အတွက် ချိတ်ဆက်ထားသည်။
 
 **လျှို့ဝှက်ချက်:** Firebase client value များ (apiKey, appId,
 senderId, projectId) သည် app binary ထဲတွင် ပါလေ့ရှိသော client
-identifier များဖြစ်သည်။ သို့သော် service-account JSON သည်
-လျှို့ဝှက်ချက်ဖြစ်ပြီး repository ထဲ လုံးဝ မထည့်ရပါ။
+identifier များဖြစ်သည်။ သို့သော် `google-services.json` နှင့်
+service-account JSON သည် repository ထဲ မထည့်ရပါ။
 
 ---
 
@@ -147,12 +158,44 @@ Firebase Console → **Authentication** → **Get started**:
 1. **Sign-in method → Email/Password** ကို **Enable** လုပ်ပါ။
    Email link ကို မလိုအပ်ပါ။
 2. **Anonymous** ကို **Enable** လုပ်ပါ။
-3. **Settings → Authorized domains** တွင် Firebase domain များ
+3. **Google** ကို **Enable** လုပ်ပါ။ Support email ရွေးပါ။ ထို့နောက်
+   **Project settings** တွင် Debug နှင့် Release SHA-1/SHA-256
+   လက်ဗွေများ ထည့်ပြီး `google-services.json` ကို ပြန် download
+   လုပ်ပါ။ လက်ဗွေမပါလျှင် Google ဖြင့် ဝင်ရောက်မရနိုင်ပါ။
+4. **GitHub** ကို **Enable** လုပ်ပါ။ GitHub တွင် **Settings → Developer
+   settings → OAuth Apps → New OAuth App** ဖြင့် app တစ်ခု ဖန်တီးပြီး
+   Authorization callback URL ကို အောက်ပါအတိုင်း ထည့်ပါ:
+
+   ```text
+   https://<project-id>.firebaseapp.com/__/auth/handler
+   ```
+
+   ရရှိသော **Client ID** နှင့် **Client secret** ကို Firebase ၏ GitHub
+   provider ထဲ ထည့်ပါ။ Client secret ကို app ထဲ၊ `--dart-define` ထဲ
+   သို့မဟုတ် Git ထဲ မထည့်ပါ။
+5. **Settings → Authorized domains** တွင် Firebase domain များ
    ပါဝင်ကြောင်း စစ်ပါ။
-4. **Templates** တွင် app အမည်နှင့် support email ကို ပြင်နိုင်သည်။
+6. **Templates** တွင် app အမည်နှင့် support email ကို ပြင်နိုင်သည်။
 
 ဤ app တွင် OTP၊ SMS verification သို့မဟုတ် မဖြစ်မနေ email
-verification အဆင့် မပါပါ။
+verification အဆင့် မပါပါ။ Google နှင့် GitHub သာ ပါဝင်ပြီး Apple
+သို့မဟုတ် Facebook မပါပါ။
+
+### Google/GitHub ဖြင့် ဝင်ရောက်ခြင်း
+
+- Sign-in နှင့် Create account မျက်နှာပြင်တွင် **Continue with Google**
+  နှင့် **Continue with GitHub** ခလုတ်များ ပြပါမည်။
+  `google-services.json` မရှိသော local-only build တွင် ခလုတ်များ
+  ပေါ်မည် မဟုတ်ပါ။
+- သာမန် Sign-in တွင် provider အကောင့်ကို ဝင်ရောက် သို့မဟုတ်
+  အသစ်ဖန်တီးမည်။ Create account တွင် လက်ရှိ anonymous Firebase
+  အကောင့်ရှိနေလျှင် provider ကို ထိုအကောင့်နှင့် link လုပ်မည်။
+  ထို့ကြောင့် UID၊ favorite၊ pin နှင့် သင့် guide များ မပျောက်ပါ။
+- Provider အကောင့်သည် အခြား Firebase UID နှင့် ချိတ်ထားပြီးဖြစ်လျှင်
+  link မရနိုင်ပါ။ App က ထိုအကောင့်ဖြင့် ဝင်ရောက်ရန် ပြမည်။
+  Firebase UID နှစ်ခုကို ပေါင်းစည်းခြင်း မလုပ်ပါ။
+- Browser tab ပိတ်ခြင်း သို့မဟုတ် အကောင့်ရွေးချယ်မှု ပယ်ဖျက်ခြင်းကို
+  error အဖြစ် မပြပါ။ ဖောင် ပြန်အသုံးပြုနိုင်ပါသည်။
 
 စာရင်းသွင်းရာတွင်:
 
@@ -221,8 +264,21 @@ Rules အကြောင်း အသေးစိတ်:
 
 ---
 
-## ၉။ Firebase value များဖြင့် App ကို Run လုပ်ခြင်း
+## ၉။ Firebase နှင့် ချိတ်ဆက်ပြီး App ကို Run လုပ်ခြင်း
 
+`android/app/google-services.json` ကို ထည့်ထားပြီးပါက flag မလိုအပ်ပါ:
+
+```bash
+flutter run
+```
+
+Gradle က JSON ကို Android resource အဖြစ် ပြောင်းပေးပြီး app က
+`Firebase.initializeApp()` မှတစ်ဆင့် project ကို အလိုအလျောက်
+ရှာတွေ့မည်။
+
+CI အတွက် သို့မဟုတ် JSON မပါသော build များတွင်
+`--dart-define` ဖြင့် ပေးနိုင်သည်။ JSON နှင့် define နှစ်မျိုးလုံး
+သုံးလျှင် တူညီသော project ဖြစ်ရမည်။
 Console ၏ **Project settings → General → Your apps** မှ အောက်ပါ
 value များကို ယူပါ:
 
@@ -257,8 +313,10 @@ flutter run \
 မှတ်ချက်:
 
 - Value များသည် compile-time ဖြစ်သည်။ Hot reload မလုပ်ပါနှင့်၊
-  app ကို ပြန်လည် run ပါ။
-- API key, app ID, sender ID, project ID လေးခု မရှိမဖြစ်လိုသည်။
+  app ကို ပြန်လည် run ပါ။ `google-services.json` ကို အစားထိုးလျှင်လည်း
+  ပြန် build လုပ်ရမည်။
+- `--dart-define` သုံးလျှင် API key, app ID, sender ID, project ID
+  လေးခု မရှိမဖြစ်လိုသည်။
 - တစ်ခုခု မှားလျှင် app သည် local-only mode သို့ ပြန်ကျပြီး
   အလုပ်ဆက်လုပ်နိုင်မည်။
 
@@ -353,7 +411,8 @@ Debug APK:
 flutter build apk --debug
 ```
 
-Firebase နှင့်အတူ:
+Firebase နှင့်အတူ: `google-services.json` ထည့်ထားလျှင် အပိုထည့်ရန်
+မလိုပါ။ CI အတွက် `--dart-define` ဖြင့် ပေးနိုင်သည်:
 
 ```bash
 flutter build apk --release \
@@ -414,10 +473,12 @@ Groq နှင့်အတူ:
 
 | ပြဿနာ | ဖြေရှင်းနည်း |
 | --- | --- |
-| Firebase မတပ်ဆင်ရသေးဟု ပြ | `--dart-define` လေးခု စစ်ပါ၊ app ကို ပြန် run ပါ |
+| Firebase မတပ်ဆင်ရသေးဟု ပြ | `android/app/google-services.json` နှင့် package name စစ်ပါ၊ သို့မဟုတ် `--dart-define` လေးခု စစ်ပါ၊ app ကို ပြန် run ပါ |
 | `PERMISSION_DENIED` | Rules deploy လုပ်ပါ၊ အကောင့်/owner/admin စစ်ပါ |
 | Index error | `firebase deploy --only firestore:indexes` လုပ်ပြီး စောင့်ပါ |
-| Sign-in မရ | Email/Password နှင့် Anonymous provider ဖွင့်ထားခြင်း စစ်ပါ |
+| Sign-in မရ | Email/Password၊ Anonymous၊ Google နှင့် GitHub provider ဖွင့်ထားခြင်း စစ်ပါ |
+| Google ဖြင့် ဝင်မရ | Debug/Release SHA-1/SHA-256 လက်ဗွေထည့်ပြီး `google-services.json` ပြန် download လုပ်ပါ |
+| GitHub redirect error | OAuth App callback သည် `https://<project-id>.firebaseapp.com/__/auth/handler` အတိအကျ ဖြစ်ရမည် |
 | Termux မတွေ့ | GitHub release မှ ပြန်တပ်ဆင်ပါ၊ Termux ကို တစ်ကြိမ်ဖွင့်ပါ |
 | Command မလုပ် | `allow-external-apps=true` နှင့် permission စစ်ပါ |
 | AI 401 | ကီး မှန်/မမှန်၊ revoke ဖြစ်/မဖြစ် စစ်ပါ |

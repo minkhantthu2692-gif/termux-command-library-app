@@ -42,9 +42,21 @@ useful for UI work, offline testing and Dart tests.
 
 ## Run with Firebase
 
-Pass the client configuration as compile-time defines. Do not add a
-`google-services.json` requirement to the app; `FirebaseBootstrap` reads these
-values directly.
+Place the Firebase Android configuration at `android/app/google-services.json`.
+The build applies the Google Services Gradle plugin when that file exists, and
+`FirebaseBootstrap` initialises the native default app from it. No flags are
+needed:
+
+```bash
+flutter run
+```
+
+The file is git-ignored (it contains an Android client API key). Without it, the
+app still builds and runs in local-only mode.
+
+For CI, or builds that do not bundle the JSON, pass the client values as
+compile-time defines. Use one source per build: if both are present they must
+describe the same Firebase app or initialization fails.
 
 PowerShell:
 
@@ -68,12 +80,12 @@ flutter run \
   --dart-define=FIREBASE_AUTH_DOMAIN=YOUR_PROJECT_ID.firebaseapp.com
 ```
 
-The auth domain is optional. All other values are required for online mode. If
-initialization fails, the app logs only a generic message and continues in
-local-only mode.
+The auth domain is optional. All other values are required for the override to
+apply. If initialization fails, the app logs only a generic message and continues
+in local-only mode.
 
-For repeatable local builds, put defines in a private script or IDE run
-configuration that is not committed. Do not store server credentials or a
+For repeatable local builds, keep the downloaded JSON or defines in a private
+location that is not committed. Do not store server credentials or a
 service-account JSON in the repository.
 
 ## Debug APK
@@ -88,7 +100,9 @@ Output:
 build/app/outputs/flutter-apk/app-debug.apk
 ```
 
-With Firebase defines, append the same `--dart-define` flags to `flutter build`.
+With `android/app/google-services.json` in place, no build flags are needed. If
+you use compile-time overrides instead, append the same `--dart-define` flags to
+`flutter build`.
 
 ## Release APK
 
@@ -137,11 +151,12 @@ Flutter can split by ABI to reduce APK size:
 flutter build apk --release --split-per-abi
 ```
 
-## Build without Firebase values
+## Build without Firebase
 
-No `--dart-define` is valid for CI and local development. The resulting app is a
-complete offline library; cloud sign-in and synchronization are unavailable. The
-UI must not crash or silently claim that cloud features are configured.
+Building without `android/app/google-services.json` and without `--dart-define`
+values is valid for CI and local development. The resulting app is a complete
+offline library; cloud sign-in and synchronization are unavailable. The UI must
+not crash or silently claim that cloud features are configured.
 
 ## Tests and analysis
 
@@ -159,6 +174,7 @@ Current coverage includes:
   persistence and conflict rules.
 - AI repository caching, history, model selection and provider errors.
 - Groq HTTP key validation, model parsing and SSE streaming.
+- Authentication error mapping and the Google/GitHub provider buttons.
 - App onboarding, shell navigation, theme and Myanmar locale propagation.
 
 Widget tests that use Drift must unmount the widget tree, pump the fake async

@@ -176,6 +176,15 @@ class AppLocalizationsMy extends AppLocalizations {
       'Guide များ တင်ပြီး သင့် collection ကို sync လုပ်ပါ။';
 
   @override
+  String get continueWithGoogle => 'Google ဖြင့် ဆက်လုပ်';
+
+  @override
+  String get continueWithGithub => 'GitHub ဖြင့် ဆက်လုပ်';
+
+  @override
+  String get orContinueWithEmail => 'သို့မဟုတ် အီးမေးလ်ဖြင့် ဆက်လုပ်';
+
+  @override
   String get email => 'အီးမေးလ်';
 
   @override
@@ -404,7 +413,7 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get cloudUnavailableBody =>
-      'App သည် ဒေသတွင်း mode တွင် လည်ပတ်နေသည်။ ကြည့်ရှုခြင်း၊ favorite၊ pin၊ Termux နှင့် AI အလုပ်လုပ်ပါသည်။ Firebase တန်ဖိုးများကို --dart-define ဖြင့် ထည့်ပြီး ပြန်စတင်ပါက အကောင့်နှင့် guide တင်ခြင်း ရနိုင်သည်။';
+      'App သည် ဒေသတွင်း mode တွင် လည်ပတ်နေသည်။ ကြည့်ရှုခြင်း၊ favorite၊ pin၊ Termux နှင့် AI အလုပ်လုပ်ပါသည်။ Firebase configuration (android/app/google-services.json) ထည့်ပြီး ပြန် build လုပ်ပါက အကောင့်နှင့် guide တင်ခြင်းကို အသုံးပြုနိုင်သည်။';
 
   @override
   String get firebaseSetupDocs => 'Firebase setup လမ်းညွှန်';
@@ -1133,6 +1142,10 @@ class AppLocalizationsMy extends AppLocalizations {
   String get vibrationStrong => 'ပြင်းထန်';
 
   @override
+  String get vibrationPreviewHint =>
+      'အဆင့်တစ်ခုကို နှိပ်ပြီး တုန်ခါမှုကို စမ်းသပ်ပါ။ ရွေးချယ်မှု၊ အောင်မြင်မှုနှင့် သတိပေးချက် တုန်ခါမှုများသည် မတူညီသော စည်းချက်များ ဖြစ်သည်။';
+
+  @override
   String get dataAndStorage => 'Data နှင့် သိုလှောင်မှု';
 
   @override
@@ -1434,6 +1447,13 @@ class AppLocalizationsMy extends AppLocalizations {
   @override
   String get errorRecentLogin =>
       'ဤပြောင်းလဲမှုကို အတည်ပြုရန် ထပ်မံ ဝင်ရောက်ပါ။';
+
+  @override
+  String get errorAuthCancelled => 'ဝင်ရောက်ခြင်းကို ပယ်ဖျက်ခဲ့သည်။';
+
+  @override
+  String get errorAuthProviderUnavailable =>
+      'ဤဝင်ရောက်နည်းကို အက်ပ်အတွက် မဖွင့်ရသေးပါ။';
 
   @override
   String get errorPermissionDenied =>

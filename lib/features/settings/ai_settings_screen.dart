@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../app/providers.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/ai_models.dart';
+import '../../data/services/haptics_service.dart';
 import '../../shared/utils/app_formatters.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/utils/url_actions.dart';
@@ -148,7 +151,12 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                           tooltip: _obscure
                               ? l10n.showPassword
                               : l10n.hidePassword,
-                          onPressed: () => setState(() => _obscure = !_obscure),
+                          onPressed: () {
+                            unawaited(
+                              triggerHaptic(ref, cue: HapticCue.toggle),
+                            );
+                            setState(() => _obscure = !_obscure);
+                          },
                           icon: Icon(
                             _obscure
                                 ? Icons.visibility_outlined
@@ -303,7 +311,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
       await ref.read(aiRepositoryProvider).saveApiKey(key);
       _keyController.clear();
       ref.invalidate(aiKeyPresentProvider);
-      if (mounted) context.showSnack(l10n.keySaved);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.keySaved);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     }
@@ -320,7 +331,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
       await ref
           .read(aiRepositoryProvider)
           .validateKey(key.isEmpty ? null : key);
-      if (mounted) setState(() => _testPassed = true);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        setState(() => _testPassed = true);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     } finally {
@@ -342,7 +356,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
       }
       await repo.fetchModels();
       ref.invalidate(aiModelsProvider);
-      if (mounted) context.showSnack(l10n.modelsFetched);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.modelsFetched);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     } finally {
@@ -371,7 +388,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
             .save(settings.copyWith(aiEnabled: false));
       }
       ref.invalidate(aiKeyPresentProvider);
-      if (mounted) context.showSnack(l10n.apiKeyRemoved);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.apiKeyRemoved);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     }
@@ -455,6 +475,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
       ),
     );
     if (selected == null || !mounted) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     try {
       await ref.read(aiRepositoryProvider).selectModel(selected.id);
       if (mounted) context.showSnack(l10n.modelSelected(selected.displayName));
@@ -503,6 +524,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
       ),
     );
     if (selected == null || !mounted) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     try {
       await ref
           .read(settingsControllerProvider.notifier)
@@ -520,7 +542,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     final l10n = AppLocalizations.of(context);
     try {
       await ref.read(aiRepositoryProvider).clearCache();
-      if (mounted) context.showSnack(l10n.aiCacheCleared);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.aiCacheCleared);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     }
@@ -538,7 +563,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     if (!confirmed) return;
     try {
       await ref.read(aiRepositoryProvider).clearHistory();
-      if (mounted) context.showSnack(l10n.aiHistoryCleared);
+      if (mounted) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.success));
+        context.showSnack(l10n.aiHistoryCleared);
+      }
     } catch (error) {
       if (mounted) context.showErrorSnack(error);
     }

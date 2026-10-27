@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/localization/generated/app_localizations.dart';
 import '../../app/providers.dart';
 import '../../app/settings/app_settings.dart';
+import '../../data/services/haptics_service.dart';
 import '../utils/error_messages.dart';
 
 extension AppSnackBars on BuildContext {
@@ -16,8 +19,30 @@ extension AppSnackBars on BuildContext {
   }
 
   void showErrorSnack(Object error) {
+    _triggerContextHaptic(this, cue: HapticCue.error);
     final l10n = AppLocalizations.of(this);
     showSnack(localizeError(l10n, error));
+  }
+}
+
+/// Fires a haptic from a non-Consumer context such as a dialog callback.
+///
+/// The app always runs inside a [ProviderScope]; the guard keeps standalone
+/// widget tests and the earliest startup errors from failing here.
+void _triggerContextHaptic(
+  BuildContext context, {
+  HapticCue cue = HapticCue.tap,
+  VibrationIntensity? intensity,
+}) {
+  try {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final selected =
+        intensity ?? container.read(settingsControllerProvider).vibration;
+    unawaited(
+      container.read(hapticsServiceProvider).trigger(selected, cue: cue),
+    );
+  } catch (_) {
+    // Haptics are optional feedback, never a prerequisite for an action.
   }
 }
 
@@ -48,7 +73,13 @@ Future<bool> showConfirmDialog(
                   foregroundColor: Theme.of(dialogContext).colorScheme.onError,
                 )
               : null,
-          onPressed: () => Navigator.of(dialogContext).pop(true),
+          onPressed: () {
+            _triggerContextHaptic(
+              dialogContext,
+              cue: destructive ? HapticCue.warning : HapticCue.tap,
+            );
+            Navigator.of(dialogContext).pop(true);
+          },
           child: Text(confirmLabel),
         ),
       ],
@@ -69,7 +100,10 @@ Future<void> copyWithFeedback(
     await ref.read(clipboardServiceProvider).copy(text);
     await ref
         .read(hapticsServiceProvider)
-        .trigger(ref.read(settingsControllerProvider).vibration);
+        .trigger(
+          ref.read(settingsControllerProvider).vibration,
+          cue: HapticCue.tap,
+        );
     if (context.mounted) {
       context.showSnack(message ?? l10n.copied);
     }
@@ -78,7 +112,13 @@ Future<void> copyWithFeedback(
   }
 }
 
-Future<void> triggerHaptic(WidgetRef ref) async {
+Future<void> triggerHaptic(
+  WidgetRef ref, {
+  HapticCue cue = HapticCue.tap,
+  VibrationIntensity? intensity,
+}) async {
   final AppSettings settings = ref.read(settingsControllerProvider);
-  await ref.read(hapticsServiceProvider).trigger(settings.vibration);
+  await ref
+      .read(hapticsServiceProvider)
+      .trigger(intensity ?? settings.vibration, cue: cue);
 }

@@ -109,6 +109,54 @@ void main() {
     await disposeApp(tester);
   });
 
+  testWidgets('back returns through the tab history instead of closing', (
+    tester,
+  ) async {
+    final dependencies = await buildDependencies(onboardingCompleted: true);
+    await tester.pumpWidget(buildApp(dependencies, FakeApiKeyStore()));
+    await tester.pumpAndSettle();
+
+    // Home -> Library -> back.
+    await tester.tap(find.text('Library'));
+    await tester.pumpAndSettle();
+    expect(find.text('Community library'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Quick actions'), findsOneWidget);
+
+    // Home -> Library -> Assistant, then back twice.
+    await tester.tap(find.text('Library'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assistant'));
+    await tester.pumpAndSettle();
+    expect(find.text('AI Assistant'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Community library'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Quick actions'), findsOneWidget);
+
+    // A Quick Action destination is also part of the back history. The home
+    // header has a second "Browse library" call to action, so target the one
+    // inside the quick-actions grid and bring it into view first.
+    final quickBrowse = find.text('Browse library').last;
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -180));
+    await tester.pumpAndSettle();
+    await tester.tap(quickBrowse);
+    await tester.pumpAndSettle();
+    expect(find.text('Community library'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Quick actions'), findsOneWidget);
+
+    await disposeApp(tester);
+  });
+
   testWidgets('theme and locale settings propagate to the running app', (
     tester,
   ) async {
