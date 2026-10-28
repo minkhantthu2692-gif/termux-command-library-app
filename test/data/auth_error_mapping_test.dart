@@ -13,6 +13,9 @@ void main() {
   AppErrorCode mapCode(String code) =>
       mapFirebaseAuthError(_TestAuthException(code)).code;
 
+  AppErrorCode mapProviderCode(String code) =>
+      mapProviderAuthError(_TestAuthException(code)).code;
+
   test('provider cancellations are not treated as failures', () {
     for (final code in [
       'cancelled',
@@ -36,11 +39,34 @@ void main() {
     );
   });
 
-  test('an existing provider account is reported as already in use', () {
-    expect(mapCode('credential-already-in-use'), AppErrorCode.authEmailInUse);
+  test(
+    'an existing email is reported as already in use for password flows',
+    () {
+      expect(mapCode('credential-already-in-use'), AppErrorCode.authEmailInUse);
+      expect(
+        mapCode('account-exists-with-different-credential'),
+        AppErrorCode.authEmailInUse,
+      );
+    },
+  );
+
+  test('provider email collisions are non-retryable account conflicts', () {
+    for (final code in [
+      'account-exists-with-different-credential',
+      'credential-already-in-use',
+    ]) {
+      final error = mapProviderAuthError(_TestAuthException(code));
+      expect(error.code, AppErrorCode.authProviderAccountExists, reason: code);
+      expect(error.retryable, isFalse, reason: code);
+    }
+  });
+
+  test('provider mapping leaves unrelated failures unchanged', () {
+    expect(mapProviderCode('network-request-failed'), AppErrorCode.network);
+    expect(mapProviderCode('cancelled'), AppErrorCode.authCancelled);
     expect(
-      mapCode('account-exists-with-different-credential'),
-      AppErrorCode.authEmailInUse,
+      mapProviderCode('operation-not-allowed'),
+      AppErrorCode.authProviderUnavailable,
     );
   });
 

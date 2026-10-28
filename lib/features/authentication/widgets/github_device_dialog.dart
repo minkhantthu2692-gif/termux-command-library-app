@@ -68,6 +68,7 @@ class GithubDeviceDialog extends StatefulWidget {
 class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
   GithubDeviceSignIn? _challenge;
   String? _error;
+  AppErrorCode? _errorCode;
   bool _starting = true;
   bool _failed = false;
   bool _cancelled = false;
@@ -101,6 +102,7 @@ class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
       _starting = true;
       _failed = false;
       _error = null;
+      _errorCode = null;
       _copied = false;
       _autoOpened = false;
       _openFailed = false;
@@ -143,6 +145,7 @@ class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
     setState(() {
       _starting = false;
       _failed = true;
+      _errorCode = error is AppException ? error.code : AppErrorCode.unknown;
       _error = localizeError(AppLocalizations.of(context), error);
     });
   }
@@ -182,6 +185,9 @@ class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final challenge = _challenge;
+    // An email collision is an account-model conflict: a new GitHub device
+    // code can never succeed, so only offer Cancel and hide the browser hint.
+    final canRetry = _errorCode != AppErrorCode.authProviderAccountExists;
     return AlertDialog(
       title: Text(l10n.githubDeviceTitle),
       content: ConstrainedBox(
@@ -245,13 +251,15 @@ class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
               ],
               if (_failed) ...[
                 AuthErrorBanner(message: _error ?? l10n.errorUnknown),
-                const SizedBox(height: AppSpacing.x2),
-                Text(
-                  l10n.githubDeviceOpenManually,
-                  style: context.texts.labelSmall?.copyWith(
-                    color: context.scheme.onSurfaceVariant,
+                if (canRetry) ...[
+                  const SizedBox(height: AppSpacing.x2),
+                  Text(
+                    l10n.githubDeviceOpenManually,
+                    style: context.texts.labelSmall?.copyWith(
+                      color: context.scheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
+                ],
               ],
             ],
           ),
@@ -259,7 +267,7 @@ class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
       ),
       actions: [
         TextButton(onPressed: _cancel, child: Text(l10n.cancel)),
-        if (_failed)
+        if (_failed && canRetry)
           FilledButton(onPressed: _start, child: Text(l10n.tryAgain)),
       ],
     );

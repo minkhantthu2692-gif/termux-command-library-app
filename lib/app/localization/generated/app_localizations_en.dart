@@ -1498,6 +1498,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This sign-in method is not enabled for this app yet.';
 
   @override
+  String get errorProviderAccountExists =>
+      'An account already exists for this email. Sign in with the method you used before instead. Connecting GitHub to that account needs provider linking, which this app does not support yet.';
+
+  @override
   String get errorPermissionDenied =>
       'Firestore denied this action. Check the security rules.';
 

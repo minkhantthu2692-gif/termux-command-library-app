@@ -1512,6 +1512,10 @@ class AppLocalizationsMy extends AppLocalizations {
       'ဤဝင်ရောက်နည်းကို အက်ပ်အတွက် မဖွင့်ရသေးပါ။';
 
   @override
+  String get errorProviderAccountExists =>
+      'ဤအီးမေးလ်အတွက် အကောင့် ရှိပြီးသားဖြစ်သည်။ ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ရောက်ပါ။ ထိုအကောင့်နှင့် GitHub ချိတ်ဆက်ရန် provider linking လိုအပ်ပြီး ဤအက်ပ်တွင် မပံ့ပိုးရသေးပါ။';
+
+  @override
   String get errorPermissionDenied =>
       'Firestore က ဤလုပ်ဆောင်ချက်ကို ငြင်းပယ်သည်။ Security rule များ စစ်ပါ။';
 

@@ -553,6 +553,7 @@
   "errorRecentLogin": "Sign in again to confirm this change.",
   "errorAuthCancelled": "Sign-in was cancelled.",
   "errorAuthProviderUnavailable": "This sign-in method is not enabled for this app yet.",
+  "errorProviderAccountExists": "An account already exists for this email. Sign in with the method you used before instead. Connecting GitHub to that account needs provider linking, which this app does not support yet.",
   "errorPermissionDenied": "Firestore denied this action. Check the security rules.",
   "errorFirebaseUnavailable": "Firebase is unavailable right now.",
   "errorFirebaseNotConfigured": "Firebase is not configured in this build.",

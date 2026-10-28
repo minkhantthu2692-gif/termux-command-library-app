@@ -17,6 +17,7 @@ String localizeError(AppLocalizations l10n, Object error) {
     AppErrorCode.authRecentLoginRequired => l10n.errorRecentLogin,
     AppErrorCode.authCancelled => l10n.errorAuthCancelled,
     AppErrorCode.authProviderUnavailable => l10n.errorAuthProviderUnavailable,
+    AppErrorCode.authProviderAccountExists => l10n.errorProviderAccountExists,
     AppErrorCode.authDeviceCodeExpired => l10n.githubDeviceExpired,
     AppErrorCode.authDeviceFlowDisabled => l10n.githubDeviceDisabled,
     AppErrorCode.authAccountDeleted => l10n.errorAuthRequired,

@@ -143,6 +143,12 @@ If GitHub still reports `device_flow_disabled`, the OAuth App is missing the
 - If the provider account is already attached to a different Firebase user, the
   link fails and the app reports that an account already exists. The user must
   sign in with the provider instead; two Firebase UIDs are never merged.
+- An email collision (`account-exists-with-different-credential`) is shown as a
+  non-retryable error in the GitHub dialog: the user must sign in with the method
+  that owns the email. Registered accounts cannot link GitHub in the current app.
+  See
+  [Troubleshooting › GitHub email already belongs to another account](troubleshooting.md#github-email-already-belongs-to-another-account)
+  for the available options and their security trade-offs.
 - Closing the browser tab or cancelling the account picker is treated as a
   cancellation, not an error, and leaves the form usable.
 - If a provider flow has not returned after 45 seconds, the screen suggests

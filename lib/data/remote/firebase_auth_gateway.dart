@@ -146,7 +146,7 @@ class FirebaseAuthGateway implements AuthGateway {
         ),
       };
     } catch (error) {
-      throw mapFirebaseAuthError(error);
+      throw mapProviderAuthError(error);
     }
   }
 
@@ -194,7 +194,7 @@ class FirebaseAuthGateway implements AuthGateway {
         linkAnonymous: linkAnonymous,
       );
     } catch (error) {
-      throw mapFirebaseAuthError(error);
+      throw mapProviderAuthError(error);
     }
   }
 

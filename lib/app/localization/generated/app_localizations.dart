@@ -2870,6 +2870,12 @@ abstract class AppLocalizations {
   /// **'This sign-in method is not enabled for this app yet.'**
   String get errorAuthProviderUnavailable;
 
+  /// No description provided for @errorProviderAccountExists.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists for this email. Sign in with the method you used before instead. Connecting GitHub to that account needs provider linking, which this app does not support yet.'**
+  String get errorProviderAccountExists;
+
   /// No description provided for @errorPermissionDenied.
   ///
   /// In en, this message translates to:

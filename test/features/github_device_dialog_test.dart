@@ -142,6 +142,39 @@ void main() {
     expect(await result, isNull);
   });
 
+  testWidgets('an email collision offers no retry', (tester) async {
+    final challenge = _FakeChallenge();
+    final result = await showDialogUnderTest(
+      tester,
+      start: () async => challenge.signIn,
+    );
+
+    challenge.result.completeError(
+      const AppException(AppErrorCode.authProviderAccountExists),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.text(
+        'An account already exists for this email. Sign in with the method you used before instead. Connecting GitHub to that account needs provider linking, which this app does not support yet.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Try again'), findsNothing);
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(
+      find.text('If the browser did not open, visit github.com/login/device.'),
+      findsNothing,
+    );
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(challenge.cancelled, isTrue);
+    expect(await result, isNull);
+  });
+
   testWidgets('shows a start failure and retries', (tester) async {
     final challenge = _FakeChallenge();
     var starts = 0;

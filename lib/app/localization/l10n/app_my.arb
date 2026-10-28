@@ -462,6 +462,7 @@
   "errorRecentLogin": "ဤပြောင်းလဲမှုကို အတည်ပြုရန် ထပ်မံ ဝင်ရောက်ပါ။",
   "errorAuthCancelled": "ဝင်ရောက်ခြင်းကို ပယ်ဖျက်ခဲ့သည်။",
   "errorAuthProviderUnavailable": "ဤဝင်ရောက်နည်းကို အက်ပ်အတွက် မဖွင့်ရသေးပါ။",
+  "errorProviderAccountExists": "ဤအီးမေးလ်အတွက် အကောင့် ရှိပြီးသားဖြစ်သည်။ ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ရောက်ပါ။ ထိုအကောင့်နှင့် GitHub ချိတ်ဆက်ရန် provider linking လိုအပ်ပြီး ဤအက်ပ်တွင် မပံ့ပိုးရသေးပါ။",
   "errorPermissionDenied": "Firestore က ဤလုပ်ဆောင်ချက်ကို ငြင်းပယ်သည်။ Security rule များ စစ်ပါ။",
   "errorFirebaseUnavailable": "Firebase ကို ယခု အသုံးမပြုနိုင်ပါ။",
   "errorFirebaseNotConfigured": "ဤ build တွင် Firebase မသတ်မှတ်ရသေးပါ။",

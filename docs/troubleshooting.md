@@ -72,7 +72,7 @@ around it by fetching unbounded collections in the client.
 | `wrong-password` / `invalid-credential` | Credentials; use password reset |
 | `email-already-in-use` | Sign in instead of registering, or link from the anonymous account |
 | `weak-password` | Use at least 8 characters |
-| `credential-already-in-use` | The email/provider account belongs to another Firebase UID; sign in to that account. Different UIDs are not merged. |
+| `credential-already-in-use` | The email/provider account belongs to another Firebase UID. Email/password flows show "already in use"; provider flows show a non-retryable account collision. Sign in with the existing method. Different UIDs are not merged. |
 | `requires-recent-login` | Re-authenticate with the current password before changing/deleting |
 | Google sign-in returns without signing in | Verify the app's debug/release SHA-1 and SHA-256 fingerprints in Firebase, confirm the Android OAuth client matches the signing certificate, then re-download `google-services.json` |
 | `missing initial state` / browser sessionStorage error | Not expected on current builds: Google uses the native picker and GitHub uses the device flow, so neither visits `/__/auth/handler`. Update the installed APK if this appears. |
@@ -80,6 +80,7 @@ around it by fetching unbounded collections in the client.
 | GitHub code expired | The device code is valid for about 15 minutes. Tap **Try again** in the dialog to request a new code. |
 | GitHub authorization denied | The user cancelled on GitHub. Start again and approve the OAuth app. |
 | GitHub account has no email | Keep the `read:user user:email` scope request in the device client; otherwise private-email accounts return no address |
+| GitHub email belongs to another account | The GitHub email already has a Firebase user from email/password or Google. The dialog shows the collision message and no **Try again**. Sign in with the original method, or use a GitHub account with an unregistered email. |
 | Provider flow closes with no message | This is treated as a cancellation and is intentionally silent |
 
 Password reset emails require the device to receive email and the Firebase
@@ -120,6 +121,26 @@ nothing happens after the code is entered.
    address manually. The app keeps polling while the dialog is open.
 6. Confirm the device has a working connection; the token poll retries transient
    failures three times before reporting a network error.
+
+### GitHub email already belongs to another account
+
+Firebase rejects the GitHub credential with
+`account-exists-with-different-credential` when the GitHub email is already
+attached to a different Firebase UID. This is not a device-flow failure and a
+new code cannot fix it, so the dialog hides **Try again** and explains the
+collision.
+
+Options, in order of safety:
+
+1. Sign in with the method that owns the email (email/password or Google). The
+   app does not currently offer provider linking for registered accounts.
+2. Use a GitHub account whose verified email is not registered in the project.
+3. Implement provider linking for signed-in accounts as a future feature.
+4. Enable **Link accounts that use the same email** in Firebase Authentication
+   settings. This merges accounts by email; because this app does not require
+   email verification, enabling it can let an attacker pre-register an address
+   and later take over a provider account. Do not enable it for production
+   without verified emails.
 
 ## Favorites or pins disappear
 
