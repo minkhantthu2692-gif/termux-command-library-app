@@ -187,6 +187,8 @@ Current coverage includes:
 - Command models, seed catalogue and seeding behavior.
 - Drift command/preference/settings/sync/AI DAOs, including file-backed
   persistence and conflict rules.
+- Admin edits preserving attribution, delete tombstones rejecting stale remote
+  snapshots, and queued upload/delete recovery.
 - AI repository caching, history, model selection and provider errors.
 - Groq HTTP key validation, model parsing and SSE streaming.
 - Authentication error mapping and the Google/GitHub provider buttons.
@@ -200,10 +202,11 @@ zone.
 Firebase rules tests and live Firebase/Groq end-to-end tests require external
 projects and are not run by `flutter test`.
 
-The Firestore rules tests run locally against the Firestore emulator with Node
-(Java only for the emulator itself); see
+The Dart suite currently passes **171 tests**, and the Firestore rules tests pass
+**26 cases** locally against the Firestore emulator with Node (Java only for the
+emulator itself). See
 [Security Rules › Emulator testing](security-rules.md#emulator-testing) for the
-exact command and the 25 covered cases.
+exact command.
 
 ## Continuous integration outline
 

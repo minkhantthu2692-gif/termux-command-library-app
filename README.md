@@ -7,10 +7,11 @@ Cloud Firestore when an account and network are available.
 
 > **Project status:** the application, local database, synchronization layer,
 > Firebase gateways, Groq provider abstraction, UI, tests and documentation are
-> implemented in this repository. Firebase and Groq credentials were **not**
-> provided, so cloud/AI end-to-end verification against a live project has not
-> been performed. The app deliberately starts in a fully usable local-only mode
-> until those values are configured.
+> implemented. A live Firebase project is configured, and authentication,
+> Firestore sync and admin edit/delete were verified on an Android device. Groq
+> live end-to-end verification has **not** been performed because the AI assistant
+> is optional and requires a user-supplied BYOK key. The app deliberately starts in
+> a fully usable local-only mode when no Firebase configuration is present.
 
 ---
 
@@ -205,7 +206,7 @@ Riverpod app shell and theme/locale propagation.
 
 | Document | Contents |
 | --- | --- |
-| [Burmese next steps](docs/burmese-next-steps.md) | What remains to make this build fully functional, in Myanmar language |
+| [Burmese next steps](docs/burmese-next-steps.md) | Verified status, remaining setup and device-test checklist, in Myanmar language |
 | [Burmese setup guide](docs/burmese-setup.md) | Complete setup walkthrough in Myanmar language |
 | [Firebase setup](docs/firebase-setup.md) | Project, Auth, Firestore, deployment |
 | [Firebase Authentication](docs/firebase-auth-setup.md) | Providers, flows, account linking and deletion |

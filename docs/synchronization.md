@@ -58,8 +58,11 @@ Listeners are created once per session and cancelled on sign-out/dispose. Sessio
 changes compare UID and local-only mode to avoid duplicate listeners.
 
 Listener changes are applied as upserts/removals to SQLite. Drift streams then
-notify the UI. A listener error sets the sync status to an error and schedules a
-bounded retry; it does not clear the local cache.
+notify the UI. Snapshot events are applied through a serialized async chain, so
+two events cannot finish out of order and let an older upsert overwrite a newer
+removal. Guide IDs with a queued delete, or deleted earlier in the session, are
+filtered out before an upsert is applied. A listener error sets the sync status to
+an error and schedules a bounded retry; it does not clear the local cache.
 
 ## Refresh
 
@@ -96,9 +99,10 @@ Local mutations while online enqueue a durable row in `pending_operations`:
 
 The queue is keyed by `(uid, type, entityId)`. Repeated toggles of the same
 favorite or pin collapse into one latest operation instead of growing without
-bound. Command upserts/deletes are keyed by command ID and processed in insertion
-order; if an edit is followed by a delete, both intents may be present and the
-final delete wins.
+bound. Command upserts and deletes are keyed by command ID. Queuing a delete
+removes any pending upsert for the same guide in one transaction, because the
+delete is the user's final intent; a later repair pass also refuses to re-queue an
+upsert while a delete row exists.
 
 Processing is serialized. Each operation:
 
@@ -173,15 +177,24 @@ follow the same update-first rule for the same reason.
 
 ### Deletions
 
-`deleteRemoteCommand` refuses to delete a local row that:
+A user-initiated delete is tombstoned locally:
 
-- is still pending sync, or
-- is a seed guide.
+1. `deletePost` writes a durable `commandDelete` row for the UID and removes any
+   pending `commandUpsert` for the same guide in one transaction.
+2. It removes the local row and any favorite/pin references.
+3. While the delete row exists, realtime snapshots and paged refreshes ignore that
+   guide ID, so a document captured before the delete cannot resurrect it locally.
+4. After the cloud delete succeeds the queue row is removed, and the ID is kept in
+   an in-memory `recentlyDeleted` set for the rest of the session. This blocks
+   late snapshots that were already in flight.
+5. Manual refresh re-applies all tombstones after its fetch and delete passes.
 
-A remote deletion removes an ordinary cached guide. A pending local edit survives
-until it is pushed, at which point the command is recreated (subject to Firestore
-rules and version). This is a deliberate "local intent wins until acknowledged"
-choice, not a tombstone-based merge.
+`deleteRemoteCommand` handles a deletion that originated on another device. It
+refuses to remove a local row that is still pending sync or is a seed guide. A
+pending local edit therefore survives until it is pushed, at which point the guide
+is recreated (subject to Firestore rules and version). This is deliberate:
+unacknowledged local edits win, while an explicit user delete is protected by its
+tombstone until the cloud delete is acknowledged.
 
 ### Favorites and pins
 
@@ -260,6 +273,11 @@ The repository's Dart tests cover:
 - equal versions using `updatedAt` as a tie-breaker,
 - `markSynced` not clearing a newer pending edit,
 - remote deletion preserving seeds and pending edits,
+- an admin edit of another author's guide preserving the original UID, nickname
+  and `createdAt`,
+- an admin repair pass re-queueing another author's pending guide,
+- a queued delete ignoring a stale remote snapshot,
+- a snapshot arriving after a completed delete not restoring the guide,
 - cache clearing preserving seeds/own posts/favorites/pending operations,
 - account deletion clearing only the author's non-seed posts,
 - queue collapse, ordering, retries, attempt counts and per-UID isolation,

@@ -111,6 +111,29 @@ being applied.
 - Do not clear app data to "fix" pending writes; that discards unsynced local
   changes. Use the visible retry/refresh path.
 
+## A deleted guide reappears
+
+- Update to the current build (`4d61128` or later). Older builds could restore a
+  deleted guide from a Firestore snapshot that was captured before the delete.
+- The current build writes a durable `commandDelete` row before removing the local
+  guide, ignores remote snapshots for tombstoned IDs, and re-applies tombstones
+  after refresh.
+- Check the sync badge. If a delete is still pending or failed, refresh once
+  connectivity returns; do not clear app data, which would discard the queued
+  delete.
+- If the document still exists in the Firebase console after a successful sync,
+  check that the signed-in UID owns the guide or has the admin claim.
+
+## Admin controls or the Admin badge are missing
+
+- Confirm the account has the custom claim `{"admin": true}`. See
+  [Admin configuration](admin-setup.md).
+- Claims are embedded in the ID token. Open **Settings → Account → Refresh
+  account type**, or sign out and in again. Restarting alone is not guaranteed to
+  refresh a still-valid cached token.
+- Firestore rules remain the authority. Hiding or showing a button is not the
+  security boundary.
+
 ## Termux is not detected
 
 - Install the official `com.termux` APK from GitHub releases, not the outdated Play

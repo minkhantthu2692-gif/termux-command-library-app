@@ -196,7 +196,9 @@ a realtime listener.
 
 Deletes are hard deletes. The app removes the author's cloud guides before
 deleting the Auth account. There is no soft-delete tombstone collection; a
-removed command is removed from local caches by the realtime listener.
+removed command is removed from local caches by the realtime listener. Locally, a
+queued `commandDelete` row acts as a temporary tombstone so a Firestore snapshot
+captured before the delete cannot restore the guide.
 
 ## 6. Emulator
 

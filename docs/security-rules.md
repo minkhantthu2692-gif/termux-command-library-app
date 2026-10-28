@@ -176,7 +176,7 @@ Use the Emulator UI or a rules-unit-testing harness to verify at least:
 13. A maximum-density guide (30 steps, 10 tags, 12 metadata entries) is accepted
     end to end; one step beyond the limit is rejected.
 
-The rules suite lives in `test/rules/rules.test.mjs` with 25 tests. Run it with:
+The rules suite lives in `test/rules/rules.test.mjs` with 26 tests. Run it with:
 
 ```bash
 # Requires Java on PATH. On Windows without a system JDK, point JAVA_HOME at a

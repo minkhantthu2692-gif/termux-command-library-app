@@ -193,6 +193,11 @@ The sync coordinator attaches when a Firebase session exists:
 - Retry with backoff for retryable failures.
 - Conflict rules in the DAO: pending local edits are not overwritten by remote
   snapshots; version/updatedAt determine remote acceptance.
+- Serialized realtime-event application and local delete tombstones, so a stale
+  snapshot cannot restore a guide that was just deleted.
+- Admin edits preserve the original author's UID, nickname and `createdAt`; the
+  sync repair pass covers pending guides regardless of author when the session is
+  an admin.
 
 Detailed behavior: [Synchronization](synchronization.md).
 

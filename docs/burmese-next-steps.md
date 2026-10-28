@@ -10,7 +10,7 @@
 | --- | --- |
 | စစ်ဆေးသည့်ရက်စွဲ | ၂၀၂၆ ခုနှစ်၊ အောက်တိုဘာ ၂၇ ရက် |
 | App version | `1.0.0+1` |
-| Commit | `main` branch (နောက်ဆုံး commit ကို GitHub တွင် ကြည့်ပါ) |
+| အတည်ပြုသည့် commit | `4d61128` (`main`) |
 | GitHub repository | <https://github.com/minkhantthu2692-gif/termux-command-library-app> |
 | Firebase project | `termuxcommandlibrary` |
 | Android package | `com.termuxcommandlibrary.mm` |
@@ -19,8 +19,10 @@
 
 ## ၀။ အနှစ်ချုပ် — ဘာလုပ်ရမည်ကို အရင်ကြည့်ပါ
 
-အောက်ပါအစီအစဉ်အတိုင်း လုပ်ပါ။ အပေါ်ဆုံးအဆင့်များကို မပြီးမချင်း
-app သည် "local-only" mode တွင်သာ ရှိနေမည်။
+အောက်ပါအစီအစဉ်သည် ဤ repository ၏ လက်ရှိ အခြေအနေကို ပြသည်။
+Firebase အဆင့်များ၊ build/install နှင့် admin edit/delete စမ်းသပ်မှုကို
+ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော Termux ပြင်ဆင်မှု၊ ရွေးချယ်နိုင်သော
+Groq ကီးနှင့် release keystore ကို ဆက်လုပ်ပါ။
 
 | အစီအစဉ် | လုပ်ငန်း | အခြေအနေ |
 | --- | --- | --- |
@@ -29,16 +31,17 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | ၃ | GitHub OAuth App ဖန်တီးခြင်း | ✅ ပြီး (provider ဖွင့်ပြီး) |
 | ၄ | Firestore Database ဖန်တီးခြင်း | ✅ ပြီး |
 | ၅ | Rules နှင့် Indexes deploy လုပ်ခြင်း | ✅ ပြီး (index များ READY) |
-| ၆ | ပြန် build လုပ်ပြီး စက်ထဲ ထည့်ခြင်း | 🟡 build ပြီး၊ install မရသေး |
-| ၇ | စက်ပေါ်တွင် စမ်းသပ်ခြင်း | ⬜ မရသေး |
+| ၆ | ပြန် build လုပ်ပြီး စက်ထဲ ထည့်ခြင်း | ✅ ပြီး (release APK ကို စက်ထဲ ထည့်ပြီး) |
+| ၇ | စက်ပေါ်တွင် စမ်းသပ်ခြင်း | ✅ အဓိက flow များ စစ်ပြီး (admin edit/delete အပါအဝင်) |
 | ၈ | Termux ပြင်ဆင်ခြင်း | ⬜ မရသေး |
 | ၉ | Groq API ကီး ထည့်ခြင်း | ⬜ ရွေးချယ်နိုင် |
-| ၁၀ | Admin custom claim သတ်မှတ်ခြင်း | ⬜ ရွေးချယ်နိုင် |
+| ၁၀ | Admin custom claim သတ်မှတ်ခြင်း | ✅ ပြီး (claim သတ်မှတ်ပြီး) |
 | ၁၁ | Release keystore ဖြင့် လက်မှတ်ထိုးခြင်း | ⬜ ဖြန့်ဝေမှသာ |
 
 > **အရေးကြီး:** Firebase ချိတ်ဆက်မှု (provider များ၊ Firestore၊ rules၊
-> indexes) ကို ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော စက်ပေါ်စမ်းသပ်မှု၊
-> Termux၊ Groq နှင့် release keystore ကို သင်ကိုယ်တိုင် လုပ်ရမည်။
+> indexes)၊ APK build/install နှင့် admin edit/delete စမ်းသပ်မှုကို
+> ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော Termux ပြင်ဆင်မှု၊ ရွေးချယ်နိုင်သော
+> Groq ကီးနှင့် release keystore ကို သင်ကိုယ်တိုင် လုပ်ရမည်။
 > လျှို့ဝှက် credential များကို chat ထဲ မပို့ပါနှင့်။
 
 ---
@@ -51,7 +54,8 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Test များ | ✅ ပြီး | `flutter test` — 154/154 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 171/171 အောင် |
+| Firestore rules tests | ✅ ပြီး | emulator တွင် 26/26 အောင် |
 | Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
 | Release APK build | ✅ ပြီး | `app-release.apk` (70.4 MB) — debug key ဖြင့် |
 | Native Kotlin haptics | ✅ compile အောင် | `HapticsController.class` APK ထဲ ပါဝင် |
@@ -63,15 +67,17 @@ app သည် "local-only" mode တွင်သာ ရှိနေမည်။
 | Google SHA-256 လက်ဗွေ | ⚠️ မစစ်ရသေး | JSON တွင် မပါပါ (ပုံမှန်)။ Console တွင် စစ်ပါ |
 | Firestore database | ✅ ရှိ | `(default)`၊ Firestore Native |
 | Rules နှင့် Indexes | ✅ deploy ပြီး | index နှစ်ခုလုံး `READY` |
+| စက်ပေါ် install/စမ်းသပ်မှု | ✅ ပြီး | Xiaomi `2312DRAABC` တွင် install ပြီး admin edit/delete စမ်းပြီး |
+| Admin custom claim | ✅ သတ်မှတ်ပြီး | Profile တွင် **Admin** ပြ၍ စစ်ပြီး |
 | Release signing | ❌ မပါ | လက်ရှိ release သည် debug key သုံးထား |
-| စက်ပေါ် စမ်းသပ်မှု | ❌ မရသေး | Android device မချိတ်ထား |
+| Termux ပြင်ဆင်မှု | ⬜ မရသေး | `allow-external-apps` နှင့် permission လိုအပ် |
 | Groq API ကီး | ❌ မရသေး | သင့်ကိုယ်ပိုင် ကီး ထည့်ရမည် |
 
 **အနှစ်ချုပ်:** code၊ ဒေသတွင်း (offline) အလုပ်လုပ်မှု၊ Firebase project
-ချိတ်ဆက်မှု၊ auth provider များ၊ Firestore rules/indexes နှင့် APK
-build များ အားလုံး ပြီးစီးထားသည်။ ကျန်သည်မှာ **စက်အစစ်ပေါ်တွင်
-အတည်ပြုခြင်း**၊ **Termux ပြင်ဆင်ခြင်း**၊ **Groq ကီး** နှင့်
-**release keystore** သာ ဖြစ်သည်။
+ချိတ်ဆက်မှု၊ auth provider များ၊ Firestore rules/indexes၊ APK build/install
+နှင့် စက်ပေါ်တွင် admin edit/delete စမ်းသပ်မှု အားလုံး ပြီးစီးထားသည်။
+ကျန်သည်မှာ **Termux ပြင်ဆင်ခြင်း**၊ ရွေးချယ်နိုင်သော **Groq ကီး**
+နှင့် ဖြန့်ဝေလိုမှသာ **release keystore** ဖြစ်သည်။
 
 ---
 
@@ -392,8 +398,14 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 
 ## ၈။ အဆင့် ၇ — စက်ပေါ်တွင် စမ်းသပ်ရန် စာရင်း
 
-အောက်ပါတို့ကို အစဉ်လိုက် စမ်းပါ။ တစ်ခုမအောင်လျှင်
-**အဆင့် ၁၅** (ပြဿနာဖြေရှင်းခြင်း) ကို ကြည့်ပါ။
+> **လက်ရှိ အခြေအနေ:** App ကို Android စက် (Xiaomi `2312DRAABC`) ထဲ
+> install ပြီး အောက်ပါတို့ကို အတည်ပြုပြီးဖြစ်သည် — Profile တွင်
+> **Admin** ပြခြင်း၊ အခြားသူ၏ guide ကို admin မှ ပြင်ခြင်း (version 2၊
+> မူရင်း author/`createdAt` ထိန်းသိမ်း) နှင့် ဖျက်ခြင်း (Firestore တွင်
+> မရှိတော့ခြင်း၊ refresh ပြီးနောက် ပြန်မပေါ်ခြင်း)။ အောက်ပါစာရင်းကို
+> ကျန်လုပ်ဆောင်ချက်များနှင့် နောက်တစ်ကြိမ် စမ်းသပ်ရာတွင် regression
+> checklist အဖြစ် ဆက်သုံးပါ။ တစ်ခုမအောင်လျှင် **အဆင့် ၁၅**
+> (ပြဿနာဖြေရှင်းခြင်း) ကို ကြည့်ပါ။
 
 ### ၈.၁ Authentication
 
@@ -442,6 +454,10 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 - [ ] ကိုယ်ပိုင် guide ကို တည်းဖြတ်၊ ဖျက်နိုင်သည်။
 - [ ] အခြားသူ၏ guide ကို တည်းဖြတ်ရန် ခလုတ် မပေါ်ပါ။
       (ပေါ်သော်လည်း Firestore rules က ငြင်းပယ်ရမည်။)
+- [x] Admin က အခြားသူ၏ guide ကို ပြင်လျှင် မူရင်း author UID/nickname
+      နှင့် `createdAt` မပျက်ပါ။ (စက်ပေါ်တွင် စစ်ပြီး)
+- [x] Guide ဖျက်ပြီးနောက် refresh သို့မဟုတ် realtime snapshot ကြောင့်
+      ပြန်မပေါ်ပါ။ (စက်ပေါ်တွင် စစ်ပြီး)
 
 ### ၈.၅ Termux
 
@@ -538,7 +554,12 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 
 ---
 
-## ၁၁။ အဆင့် ၁၀ — Admin သတ်မှတ်ခြင်း (ရွေးချယ်နိုင်)
+## ၁၁။ အဆင့် ၁၀ — Admin သတ်မှတ်ခြင်း (ဤ project တွင် ပြီး)
+
+> **လက်ရှိ အခြေအနေ:** ဤ Firebase project တွင် admin claim
+> (`{"admin": true}`) ကို သတ်မှတ်ပြီးဖြစ်သည်။ စက်ပေါ်တွင် Profile က
+> **Admin** ဟု ပြသည်ကို စစ်ဆေးပြီးဖြစ်သည်။ အခြား admin ထပ်ထည့်လိုမှသာ
+> အောက်ပါအဆင့်များကို လုပ်ပါ။
 
 Admin သည် profile field မဟုတ်ပါ။ Firebase Authentication ၏
 **custom claim** ဖြစ်သည်:
@@ -556,8 +577,13 @@ Firebase Admin SDK ဖြင့် သတ်မှတ်ရမည်။
    (Console → Authentication → Users)။
 2. Service account JSON ကို ဒေသတွင်း သိမ်းပါ (Git ထဲ **မထည့်ပါ**)။
 3. Admin SDK ဖြင့် `setCustomUserClaims(uid, { admin: true })` လုပ်ပါ။
-4. အသုံးပြုသူကို sign out/in ပြန်လုပ်ခိုင်းပါ (token အသစ် ရမည်)။
+4. အသုံးပြုသူက **Settings → Account → Refresh account type** ကို
+   နှိပ်ပါ သို့မဟုတ် sign out/in ပြန်လုပ်ပါ (token အသစ် ရမည်)။
 5. Firestore rules က `request.auth.token.admin == true` ကို စစ်မည်။
+
+Claim အသစ် သတ်မှတ်ပြီးနောက် app ကို restart လုပ်ရုံဖြင့်
+မလုံလောက်နိုင်ပါ။ **Refresh account type** သည် token ကို အတင်းပြန်ယူပြီး
+role အသစ်ကို UI နှင့် sync coordinator သို့ ချက်ချင်း ပို့သည်။
 
 အဆင့်ပြည့် script နှင့် ရှင်းလင်းချက်:
 [Admin configuration](admin-setup.md)။
@@ -592,6 +618,10 @@ release {
 >
 > ထို့ကြောင့် ဤ APK ကို စက်ထဲ ထည့်၍ စမ်းသပ်နိုင်သည်။
 > သို့သော် Google Play က လက်ခံမည် မဟုတ်ပါ။
+>
+> **လက်ရှိ စက်ပေါ် install:** release mode APK ကို Xiaomi `2312DRAABC`
+> တွင် install ပြီး admin edit/delete လုပ်ဆောင်ချက်များကို
+> စမ်းသပ်ပြီးဖြစ်သည်။ ဤ APK သည် ဖြန့်ဝေရန် မဟုတ်သေးပါ။
 
 ### ၁၂.၂ Keystore ဖန်တီးခြင်း
 
@@ -710,6 +740,8 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 | တုန်ခါမှု မရ | Off ရွေးထား/စက် မထောက်ပံ့ | Appearance → Haptics စစ်ပါ။ Emulator တွင် မရပါ |
 | တုန်ခါမှု အားနည်း | စက်၏ amplitude မထောက်ပံ့ | Light/Medium/Strong သည် duration ဖြင့်သာ ကွာနိုင်သည် — ပုံမှန်ဖြစ်သည် |
 | မြန်မာစာ မဖတ်နိုင် | Font fallback မရ | မြန်မာဘာသာ ရွေးပါ။ Bundled fallback font ကို မဖျက်ပါ |
+| Admin ဟု မပြ | Claim အသစ် မရ / token အိုနေသည် | Admin claim ရှိကြောင်း စစ်ပါ။ **Settings → Account → Refresh account type** နှိပ်ပါ သို့မဟုတ် sign out/in လုပ်ပါ |
+| ဖျက်ထားသော guide ပြန်ပေါ် | ဟောင်းသော build သို့မဟုတ် မပြီးသော delete queue | နောက်ဆုံး build သို့ update လုပ်ပါ။ Sync badge တွင် pending/error ရှိ/မရှိ စစ်ပြီး refresh လုပ်ပါ |
 | Release build crash | Debug key ဖြင့် လက်မှတ်ထိုး | ကိုယ်ပိုင် keystore ဖြင့် ပြန် build လုပ်ပါ |
 
 အသေးစိတ်: [Troubleshooting](troubleshooting.md)။
@@ -742,14 +774,16 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
    (index နှစ်ခုလုံး `READY`)
 3. SHA လက်ဗွေ — ✅ **SHA-1 ပြီး**၊ SHA-256 ကို Console တွင် စစ်ရန် ကျန်
 4. GitHub OAuth App — ✅ **ပြီး** (provider ဖွင့်ပြီး)
-5. စက်ပေါ်တွင် အဆင့် ၈ စာရင်းအတိုင်း စမ်းသပ်ခြင်း — ⬜ **မလုပ်ရသေး**
-   (Android device မချိတ်ထား)
+5. စက်ပေါ်တွင် install လုပ်ပြီး အဓိက flow များ စမ်းသပ်ခြင်း — ✅ **ပြီး**
+   (admin edit/delete၊ attribution ထိန်းသိမ်းမှု၊ delete ပြီးနောက်
+   ပြန်မပေါ်ခြင်းတို့ကို စစ်ပြီး)
 6. Termux ပြင်ဆင်ခြင်း — ⬜ **မလုပ်ရသေး**
 7. Release keystore — ⬜ **မလုပ်ရသေး** (Play Store ဖြန့်ဝေမှသာ)
 8. Groq API ကီး — ⬜ **ရွေးချယ်နိုင်** (BYOK)
 
-အထက်ပါ ၅ နှင့် ၆ ကို ပြီးလျှင် app သည် အသုံးပြုရန် အသင့် ဖြစ်မည်။
+အထက်ပါ ၆ ကို ပြီးလျှင် app သည် အသုံးပြုရန် အသင့် ဖြစ်မည်။
 Release ဖြန့်ဝေလိုမှသာ **အဆင့် ၁၁** (keystore) ကို ထပ်လုပ်ပါ။
+Admin claim ကို **အဆင့် ၁၀** တွင် သတ်မှတ်ပြီးဖြစ်သည်။
 
 ---
 
