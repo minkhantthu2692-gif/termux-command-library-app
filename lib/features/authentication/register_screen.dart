@@ -17,6 +17,7 @@ import '../../../shared/widgets/avatar_bubble.dart';
 import 'auth_flow.dart';
 import 'widgets/auth_provider_buttons.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/github_device_dialog.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key, this.next});
@@ -343,6 +344,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   /// is linked to the anonymous UID so the collection survives, and any avatar
   /// or nickname already chosen in the form is applied to the profile.
   Future<void> _continueWithProvider(AuthProviderKind provider) async {
+    if (provider == AuthProviderKind.github) {
+      return _continueWithGithub();
+    }
     if (_busy) return;
     unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     final linking = _linkingAnonymous;
@@ -361,6 +365,46 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } on AppException catch (error) {
       // Closing the browser or cancelling the account picker is not a failure
       // the user needs to read about.
+      if (!mounted) return;
+      if (error.code != AppErrorCode.authCancelled) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.error));
+        setState(
+          () => _error = localizeError(AppLocalizations.of(context), error),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
+      setState(
+        () => _error = localizeError(AppLocalizations.of(context), error),
+      );
+    } finally {
+      if (mounted) setState(() => _provider = null);
+    }
+  }
+
+  /// GitHub uses the device flow, so no Custom Tab state can be lost. On the
+  /// upgrade screen the provider is linked to the anonymous UID.
+  Future<void> _continueWithGithub() async {
+    if (_busy) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
+    final linking = _linkingAnonymous;
+    setState(() {
+      _provider = AuthProviderKind.github;
+      _error = null;
+    });
+    try {
+      final session = await showGithubDeviceSignInDialog(
+        context,
+        ref,
+        linkAnonymous: linking,
+      );
+      if (session == null) return;
+      if (linking) await _applyChosenProfile(session);
+      if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
+      await finishAuthFlow(context, ref, session, next: widget.next);
+    } on AppException catch (error) {
       if (!mounted) return;
       if (error.code != AppErrorCode.authCancelled) {
         unawaited(triggerHaptic(ref, cue: HapticCue.error));

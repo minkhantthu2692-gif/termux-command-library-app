@@ -12,6 +12,8 @@ enum AppErrorCode {
   authRecentLoginRequired,
   authCancelled,
   authProviderUnavailable,
+  authDeviceCodeExpired,
+  authDeviceFlowDisabled,
   authAccountDeleted,
   permissionDenied,
   firebaseUnavailable,

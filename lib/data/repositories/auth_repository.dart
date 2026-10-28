@@ -12,6 +12,7 @@ import '../local/database/daos/sync_dao.dart';
 import '../models/auth_models.dart';
 import '../models/user_profile.dart';
 import '../remote/cloud_gateways.dart';
+import '../remote/github_device_client.dart';
 
 /// Coordinates the Firebase identity with the on-device guest identity and
 /// local profile cache. Feature UI talks to this repository, not to Firebase.
@@ -24,13 +25,15 @@ class AuthRepository {
     required CommandDao commandDao,
     required SyncDao syncDao,
     required String localGuestUid,
+    GithubDeviceClient? githubDeviceClient,
   }) : _gateway = gateway,
        _cloud = cloud,
        _profileDao = profileDao,
        _preferenceDao = preferenceDao,
        _commandDao = commandDao,
        _syncDao = syncDao,
-       _localGuestUid = localGuestUid;
+       _localGuestUid = localGuestUid,
+       _githubDeviceClient = githubDeviceClient;
 
   final AuthGateway? _gateway;
   final CloudStore? _cloud;
@@ -39,6 +42,7 @@ class AuthRepository {
   final CommandDao _commandDao;
   final SyncDao _syncDao;
   final String _localGuestUid;
+  final GithubDeviceClient? _githubDeviceClient;
 
   /// Active `watchSessions()` listeners. A forced claim refresh must push the
   /// new role into those streams even though Firebase Auth does not emit an
@@ -274,6 +278,69 @@ class AuthRepository {
     try {
       final session = await gateway.signInWithProvider(
         provider,
+        linkAnonymous: linkAnonymous,
+      );
+      await _ensureProfile(session);
+      await _syncDao.enqueue(
+        uid: session.uid,
+        type: PendingOperationType.profileSync,
+      );
+      return session;
+    } on AppException {
+      rethrow;
+    } catch (error) {
+      throw AppException(AppErrorCode.unknown, cause: error);
+    }
+  }
+
+  /// Starts GitHub's OAuth device flow and returns the challenge the UI shows.
+  ///
+  /// The device code stays inside the client; only the short user code and the
+  /// verification URL reach the UI. [GithubDeviceSignIn.result] completes after
+  /// GitHub authorizes the app and Firebase accepts the token, and
+  /// [GithubDeviceSignIn.cancel] stops polling.
+  Future<GithubDeviceSignIn> startGithubDeviceSignIn({
+    bool linkAnonymous = false,
+  }) async {
+    final gateway = _requireGateway();
+    final client = _githubDeviceClient;
+    if (client == null) {
+      throw const AppException(AppErrorCode.authProviderUnavailable);
+    }
+    try {
+      final authorization = await client.start();
+      final result = _completeGithubDeviceSignIn(
+        authorization,
+        gateway,
+        linkAnonymous: linkAnonymous,
+      );
+      // A dialog that is dismissed while the first request is in flight may
+      // never await the result. Attach an error handler now so a late failure
+      // is not reported as an unhandled asynchronous error.
+      result.ignore();
+      return GithubDeviceSignIn(
+        userCode: authorization.userCode,
+        verificationUri: authorization.verificationUri,
+        expiresAt: authorization.expiresAt,
+        result: result,
+        cancel: authorization.cancel,
+      );
+    } on AppException {
+      rethrow;
+    } catch (error) {
+      throw AppException(AppErrorCode.unknown, cause: error);
+    }
+  }
+
+  Future<AuthSession> _completeGithubDeviceSignIn(
+    GithubDeviceAuthorization authorization,
+    AuthGateway gateway, {
+    required bool linkAnonymous,
+  }) async {
+    try {
+      final token = await authorization.waitForToken();
+      final session = await gateway.signInWithGithubAccessToken(
+        token.accessToken,
         linkAnonymous: linkAnonymous,
       );
       await _ensureProfile(session);

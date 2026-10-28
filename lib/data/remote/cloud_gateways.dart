@@ -18,10 +18,12 @@ abstract interface class AuthGateway {
 
   Future<AuthSession> signIn({required String email, required String password});
 
-  /// Signs in with Google or GitHub.
+  /// Signs in with Google.
   ///
-  /// Google uses the native account picker; GitHub uses Firebase's hosted
-  /// browser flow because its token exchange requires the OAuth client secret.
+  /// Google uses the native account picker. GitHub is deliberately not handled
+  /// here: it uses the OAuth device flow through
+  /// [signInWithGithubAccessToken], because Firebase's hosted browser handler
+  /// loses its OAuth state in some Android browsers.
   ///
   /// When [linkAnonymous] is true and the current user is an anonymous Firebase
   /// account, the provider is linked to that account instead of replacing it,
@@ -30,6 +32,17 @@ abstract interface class AuthGateway {
   /// another user; the UI then asks the user to sign in instead.
   Future<AuthSession> signInWithProvider(
     AuthProviderKind provider, {
+    bool linkAnonymous = false,
+  });
+
+  /// Completes a GitHub sign-in with an access token obtained from GitHub's
+  /// OAuth device flow.
+  ///
+  /// The token is exchanged for a Firebase credential immediately and is never
+  /// persisted or logged. [linkAnonymous] has the same UID-preserving behavior
+  /// as [signInWithProvider].
+  Future<AuthSession> signInWithGithubAccessToken(
+    String accessToken, {
     bool linkAnonymous = false,
   });
 

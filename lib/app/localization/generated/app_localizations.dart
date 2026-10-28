@@ -440,6 +440,78 @@ abstract class AppLocalizations {
   /// **'Still waiting for the browser? Finish signing in there, or go back and try again.'**
   String get providerSignInSlow;
 
+  /// No description provided for @githubDeviceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect GitHub'**
+  String get githubDeviceTitle;
+
+  /// No description provided for @githubDeviceInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this code on GitHub to finish signing in.'**
+  String get githubDeviceInstructions;
+
+  /// No description provided for @githubDeviceCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in code'**
+  String get githubDeviceCodeLabel;
+
+  /// No description provided for @githubDeviceStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Requesting a sign-in code…'**
+  String get githubDeviceStarting;
+
+  /// No description provided for @githubDeviceWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you to authorize on GitHub…'**
+  String get githubDeviceWaiting;
+
+  /// No description provided for @githubDeviceOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open GitHub'**
+  String get githubDeviceOpen;
+
+  /// No description provided for @githubDeviceOpenManually.
+  ///
+  /// In en, this message translates to:
+  /// **'If the browser did not open, visit github.com/login/device.'**
+  String get githubDeviceOpenManually;
+
+  /// No description provided for @githubDeviceOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the browser. Visit github.com/login/device manually.'**
+  String get githubDeviceOpenFailed;
+
+  /// No description provided for @githubDeviceCopyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get githubDeviceCopyCode;
+
+  /// No description provided for @githubDeviceCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied'**
+  String get githubDeviceCopied;
+
+  /// No description provided for @githubDeviceExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This code expired. Tap Try again for a new code.'**
+  String get githubDeviceExpired;
+
+  /// No description provided for @githubDeviceDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub sign-in is not available. The app owner must enable Device Flow in the GitHub OAuth app.'**
+  String get githubDeviceDisabled;
+
   /// No description provided for @email.
   ///
   /// In en, this message translates to:

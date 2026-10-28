@@ -137,8 +137,12 @@ class FirebaseAuthGateway implements AuthGateway {
         AuthProviderKind.google => await _signInWithGoogle(
           linkAnonymous: linkAnonymous,
         ),
-        AuthProviderKind.github => await _signInWithGithub(
-          linkAnonymous: linkAnonymous,
+        // GitHub uses the device flow and calls
+        // [signInWithGithubAccessToken] instead. Reject the hosted browser
+        // flow explicitly so it cannot be reintroduced by accident.
+        AuthProviderKind.github => throw const AppException(
+          AppErrorCode.authProviderUnavailable,
+          message: 'GitHub sign-in requires the device flow.',
         ),
       };
     } catch (error) {
@@ -162,23 +166,36 @@ class FirebaseAuthGateway implements AuthGateway {
     } else {
       credential = await _auth.signInWithCredential(firebaseCredential);
     }
-    return _completeProviderSignIn(credential, linkAnonymous: linkAnonymous);
+    return await _completeProviderSignIn(
+      credential,
+      linkAnonymous: linkAnonymous,
+    );
   }
 
-  /// GitHub still uses Firebase's hosted OAuth handler because GitHub's token
-  /// exchange requires the OAuth client secret, which must never ship in the
-  /// app. The handler is browser-based; the sign-in screen shows recovery
-  /// guidance if the browser does not return a result.
-  Future<AuthSession> _signInWithGithub({required bool linkAnonymous}) async {
-    final authProvider = GithubAuthProvider()..addScope('user:email');
-    final current = _auth.currentUser;
-    final UserCredential credential;
-    if (linkAnonymous && current != null && current.isAnonymous) {
-      credential = await current.linkWithProvider(authProvider);
-    } else {
-      credential = await _auth.signInWithProvider(authProvider);
+  /// GitHub's token comes from the OAuth device flow. Exchanging the device
+  /// code for an access token happens in [HttpGithubDeviceClient]; the client
+  /// secret stays in the Firebase console and never ships in the app.
+  @override
+  Future<AuthSession> signInWithGithubAccessToken(
+    String accessToken, {
+    bool linkAnonymous = false,
+  }) async {
+    try {
+      final firebaseCredential = GithubAuthProvider.credential(accessToken);
+      final current = _auth.currentUser;
+      final UserCredential credential;
+      if (linkAnonymous && current != null && current.isAnonymous) {
+        credential = await current.linkWithCredential(firebaseCredential);
+      } else {
+        credential = await _auth.signInWithCredential(firebaseCredential);
+      }
+      return await _completeProviderSignIn(
+        credential,
+        linkAnonymous: linkAnonymous,
+      );
+    } catch (error) {
+      throw mapFirebaseAuthError(error);
     }
-    return _completeProviderSignIn(credential, linkAnonymous: linkAnonymous);
   }
 
   Future<AuthSession> _completeProviderSignIn(

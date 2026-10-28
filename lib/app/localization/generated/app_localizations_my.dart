@@ -189,6 +189,48 @@ class AppLocalizationsMy extends AppLocalizations {
       'Browser တွင် စောင့်နေဆဲလား။ ထိုတွင် ဝင်ရောက်မှု ပြီးအောင်လုပ်ပါ၊ သို့မဟုတ် နောက်သို့ပြန်ပြီး ထပ်စမ်းပါ။';
 
   @override
+  String get githubDeviceTitle => 'GitHub ချိတ်ဆက်';
+
+  @override
+  String get githubDeviceInstructions =>
+      'ဝင်ရောက်မှု ပြီးရန် ဤကုဒ်ကို GitHub တွင် ထည့်ပါ။';
+
+  @override
+  String get githubDeviceCodeLabel => 'ဝင်ရောက်ရန် ကုဒ်';
+
+  @override
+  String get githubDeviceStarting => 'ဝင်ရောက်ရန် ကုဒ် တောင်းနေသည်…';
+
+  @override
+  String get githubDeviceWaiting =>
+      'GitHub တွင် ခွင့်ပြုချက် ပေးနေသည်ကို စောင့်နေသည်…';
+
+  @override
+  String get githubDeviceOpen => 'GitHub ဖွင့်';
+
+  @override
+  String get githubDeviceOpenManually =>
+      'Browser မပွင့်ခဲ့လျှင် github.com/login/device သို့ သွားပါ။';
+
+  @override
+  String get githubDeviceOpenFailed =>
+      'Browser ဖွင့်၍ မရပါ။ github.com/login/device သို့ ကိုယ်တိုင် သွားပါ။';
+
+  @override
+  String get githubDeviceCopyCode => 'ကုဒ် ကော်ပီ';
+
+  @override
+  String get githubDeviceCopied => 'ကုဒ် ကော်ပီပြီး';
+
+  @override
+  String get githubDeviceExpired =>
+      'ဤကုဒ် သက်တမ်းကုန်သွားသည်။ ကုဒ်အသစ်ရရန် ထပ်စမ်းပါကို နှိပ်ပါ။';
+
+  @override
+  String get githubDeviceDisabled =>
+      'GitHub ဝင်ရောက်မှု မရနိုင်ပါ။ အက်ပ်ပိုင်ရှင်က GitHub OAuth app တွင် Device Flow ကို ဖွင့်ရမည်။';
+
+  @override
   String get email => 'အီးမေးလ်';
 
   @override

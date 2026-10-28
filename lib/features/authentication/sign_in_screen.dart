@@ -16,6 +16,7 @@ import '../../../shared/utils/ui_actions.dart';
 import 'auth_flow.dart';
 import 'widgets/auth_provider_buttons.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/github_device_dialog.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key, this.next});
@@ -239,6 +240,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _signInWithProvider(AuthProviderKind provider) async {
+    if (provider == AuthProviderKind.github) {
+      return _signInWithGithub();
+    }
     if (_busy) return;
     unawaited(triggerHaptic(ref, cue: HapticCue.tap));
     setState(() {
@@ -255,6 +259,39 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     } on AppException catch (error) {
       // Closing the browser or cancelling the account picker is not a failure
       // the user needs to read about.
+      if (!mounted) return;
+      if (error.code != AppErrorCode.authCancelled) {
+        unawaited(triggerHaptic(ref, cue: HapticCue.error));
+        setState(
+          () => _error = localizeError(AppLocalizations.of(context), error),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.error));
+      setState(
+        () => _error = localizeError(AppLocalizations.of(context), error),
+      );
+    } finally {
+      if (mounted) setState(() => _provider = null);
+    }
+  }
+
+  /// GitHub uses the device flow instead of Firebase's hosted browser handler,
+  /// which fails with "missing initial state" in some Android browsers.
+  Future<void> _signInWithGithub() async {
+    if (_busy) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.tap));
+    setState(() {
+      _provider = AuthProviderKind.github;
+      _error = null;
+    });
+    try {
+      final session = await showGithubDeviceSignInDialog(context, ref);
+      if (!mounted || session == null) return;
+      unawaited(triggerHaptic(ref, cue: HapticCue.success));
+      await finishAuthFlow(context, ref, session, next: widget.next);
+    } on AppException catch (error) {
       if (!mounted) return;
       if (error.code != AppErrorCode.authCancelled) {
         unawaited(triggerHaptic(ref, cue: HapticCue.error));

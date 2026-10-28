@@ -70,6 +70,27 @@ class AuthSession {
       Object.hash(uid, email, displayName, isAnonymous, isAdmin, isLocalOnly);
 }
 
+/// A GitHub device-flow challenge that is ready to show in the UI.
+///
+/// [userCode] and [verificationUri] are safe to display. [result] completes
+/// once GitHub authorizes the app and Firebase accepts the token. [cancel]
+/// stops polling and is safe to call after completion.
+class GithubDeviceSignIn {
+  const GithubDeviceSignIn({
+    required this.userCode,
+    required this.verificationUri,
+    required this.expiresAt,
+    required this.result,
+    required this.cancel,
+  });
+
+  final String userCode;
+  final Uri verificationUri;
+  final DateTime expiresAt;
+  final Future<AuthSession> result;
+  final void Function() cancel;
+}
+
 enum CloudAvailability { disabled, initializing, ready, unavailable }
 
 class CloudStatus {

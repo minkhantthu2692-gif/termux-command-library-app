@@ -9,8 +9,8 @@
 | Register | Avatar, nickname, email, password and confirmation. |
 | Sign in | Email/password. |
 | Google sign-in | Native Google account picker through `google_sign_in` (Android Credential Manager). The ID token is exchanged with `signInWithCredential(GoogleAuthProvider.credential(...))`. Available below the email form on the sign-in and registration screens. |
-| GitHub sign-in | Firebase `signInWithProvider(GithubAuthProvider())` with the `user:email` scope in a Custom Tab. Available below the email form on the sign-in and registration screens. |
-| Link guest → provider | On the registration screen, the provider is linked to the current anonymous UID with `linkWithCredential` (Google) or `linkWithProvider` (GitHub), preserving UID, posts, favorites and pins. |
+| GitHub sign-in | GitHub OAuth **device flow**. The app shows a short code, opens `github.com/login/device` and polls for an access token, which is exchanged with `signInWithCredential(GithubAuthProvider.credential(...))`. No client secret ships in the app. Available below the email form on the sign-in and registration screens. |
+| Link guest → provider | On the registration screen, the provider is linked to the current anonymous UID with `linkWithCredential` (Google and GitHub), preserving UID, posts, favorites and pins. |
 | Password reset | Firebase reset email; no OTP or SMS step. |
 | Link guest → registered | The current anonymous UID is linked to email/password, preserving UID, posts, favorites and pins. |
 | Change password | Requires the current password (re-authentication) and a new password of at least 8 characters. |
@@ -92,34 +92,50 @@ flutter build apk --release \
    ```
 
    For the current project that is
-   `https://termuxcommandlibrary.firebaseapp.com/__/auth/handler`.
+   `https://termuxcommandlibrary.firebaseapp.com/__/auth/handler`. The device
+   flow does not use this callback, but GitHub still requires the field when the
+   OAuth App is created.
 3. Copy the **Client ID** and generate a **Client secret**.
 4. Firebase console → **Authentication → Sign-in method → GitHub → Enable** and
    paste both values. Save.
-5. The app requests the `user:email` scope, so GitHub accounts with a private
-   primary email still return an address to Firebase. Without this scope those
-   users sign in with a null email.
-6. The GitHub app can stay in development mode while testing. Only GitHub
+5. In the same GitHub OAuth App settings, tick **Enable Device Flow** and update
+   the app. This is required: without it GitHub answers
+   `device_flow_disabled` and the app shows a configuration error.
+6. The app requests the `read:user user:email` scopes, so GitHub accounts with a
+   private primary email still return an address to Firebase. Without
+   `user:email` those users sign in with a null email.
+7. The GitHub app can stay in development mode while testing. Only GitHub
    accounts added as testers can authorize it until the app is published.
 
-GitHub keeps Firebase's hosted OAuth flow because exchanging a GitHub
-authorization code requires the OAuth client secret, which must stay in the
-Firebase console and never ship in the app. The flow therefore still opens a
-Custom Tab and depends on browser storage. If Chrome reports
-`missing initial state`, close the tab and retry in a normal (non-private) tab;
-the app shows recovery guidance after 45 seconds. See
-[Troubleshooting](troubleshooting.md#google-or-github-sign-in-fails-in-the-browser).
+GitHub does **not** use Firebase's hosted OAuth handler. It uses GitHub's
+secret-less device flow:
 
-Do not put the GitHub client secret in the Flutter app, `--dart-define`, source
-control or documentation. It belongs only in the Firebase console.
+1. The app requests a one-time user code from GitHub.
+2. The user taps **Open GitHub**, enters the displayed code on
+   `github.com/login/device`, and approves the OAuth app.
+3. The app polls GitHub until it receives an access token.
+4. The token is passed to Firebase with `signInWithCredential` and is never
+   stored or logged.
+
+The device flow works in any Android browser, so it is not affected by browser
+session-storage partitioning or the `missing initial state` error. The app's
+public OAuth client ID is embedded in the build (it is not a secret). Override it
+for another environment with
+`--dart-define=GITHUB_CLIENT_ID=<client-id>`. The client secret must stay in the
+Firebase console and must never appear in the app, source control,
+`--dart-define`, logs or documentation.
+
+If GitHub still reports `device_flow_disabled`, the OAuth App is missing the
+**Enable Device Flow** checkbox; see
+[Troubleshooting](troubleshooting.md#github-device-flow-problems).
 
 ## Social sign-in behavior
 
 - Two compact icon buttons, Google and GitHub, appear **below** the email form
   on both authentication screens. Email/password remains the primary path. The
   buttons are hidden when the build is local-only (no Firebase configuration).
-- Google opens the native account picker. GitHub opens Firebase's hosted flow in
-  a Custom Tab.
+- Google opens the native account picker. GitHub opens a device-code dialog and
+  the browser; the app polls until the code is approved.
 - On **Sign in**, the provider creates or reuses a Firebase account. On
   **Create account**, if the current session is an anonymous Firebase user, the
   provider is linked to that UID so the existing collection and authored guides
@@ -237,12 +253,13 @@ local-only mode. With a project configured:
 3. Sign out and back in; confirm favorites and pin ordering survive.
 4. Sign in with Google and with GitHub on a real device. Google must open the
    native account picker without visiting `firebaseapp.com/__/auth/handler`;
-   GitHub must return from the Custom Tab. Confirm the profile is created and a
-   guide can be published.
+   GitHub must show a device code, open `github.com/login/device`, and finish
+   after the code is approved. Confirm the profile is created and a guide can be
+   published.
 5. As an anonymous Firebase user, open **Create account** and link Google and
    GitHub. Confirm the UID, favorites, pins and authored guides survive.
-6. Cancel the Google account picker and close the GitHub browser tab. Confirm no
-   error banner is shown and the form still works.
+6. Cancel the Google account picker and close the GitHub device dialog. Confirm
+   no error banner is shown and the form still works.
 7. Attempt each provider before enabling it in the console. Confirm the
    "sign-in method is not enabled" message appears instead of a crash.
 8. Try to update another account's command directly with the Firestore SDK; it

@@ -188,6 +188,47 @@ class AppLocalizationsEn extends AppLocalizations {
       'Still waiting for the browser? Finish signing in there, or go back and try again.';
 
   @override
+  String get githubDeviceTitle => 'Connect GitHub';
+
+  @override
+  String get githubDeviceInstructions =>
+      'Enter this code on GitHub to finish signing in.';
+
+  @override
+  String get githubDeviceCodeLabel => 'Sign-in code';
+
+  @override
+  String get githubDeviceStarting => 'Requesting a sign-in code…';
+
+  @override
+  String get githubDeviceWaiting => 'Waiting for you to authorize on GitHub…';
+
+  @override
+  String get githubDeviceOpen => 'Open GitHub';
+
+  @override
+  String get githubDeviceOpenManually =>
+      'If the browser did not open, visit github.com/login/device.';
+
+  @override
+  String get githubDeviceOpenFailed =>
+      'Could not open the browser. Visit github.com/login/device manually.';
+
+  @override
+  String get githubDeviceCopyCode => 'Copy code';
+
+  @override
+  String get githubDeviceCopied => 'Code copied';
+
+  @override
+  String get githubDeviceExpired =>
+      'This code expired. Tap Try again for a new code.';
+
+  @override
+  String get githubDeviceDisabled =>
+      'GitHub sign-in is not available. The app owner must enable Device Flow in the GitHub OAuth app.';
+
+  @override
   String get email => 'Email';
 
   @override

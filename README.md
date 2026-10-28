@@ -115,7 +115,8 @@ Firestore are connected through the standard Firebase Android configuration.
 3. Enable **Authentication → Sign-in method → Email/Password** and **Anonymous**.
    Optionally enable **Google** (add debug/release SHA-1 and SHA-256
    fingerprints) and **GitHub** (create a GitHub OAuth App whose callback is
-   `https://<project-id>.firebaseapp.com/__/auth/handler`). See
+   `https://<project-id>.firebaseapp.com/__/auth/handler`, then tick **Enable
+   Device Flow** in that app). See
    [Firebase Authentication](docs/firebase-auth-setup.md) for the exact steps.
 4. Create a Cloud Firestore database.
 5. Install the Firebase CLI, sign in, select the project and deploy the rules and

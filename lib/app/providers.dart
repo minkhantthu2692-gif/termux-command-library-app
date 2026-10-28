@@ -10,6 +10,7 @@ import '../../data/models/auth_models.dart';
 import '../../data/models/command_post.dart';
 import '../../data/models/command_query.dart';
 import '../../data/models/user_profile.dart';
+import '../../data/remote/github_device_client.dart';
 import '../../data/repositories/ai_repository.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/command_repository.dart';
@@ -92,7 +93,16 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
     commandDao: database.commandDao,
     syncDao: database.syncDao,
     localGuestUid: dependencies.initialSettings.localGuestUid,
+    githubDeviceClient: ref.watch(githubDeviceClientProvider),
   );
+});
+
+/// The GitHub device-flow client is only available when Firebase is
+/// configured, because the resulting token is exchanged for a Firebase
+/// credential. Overridable in tests to avoid real HTTP requests.
+final githubDeviceClientProvider = Provider<GithubDeviceClient?>((ref) {
+  if (!ref.watch(appDependenciesProvider).cloudConfigured) return null;
+  return HttpGithubDeviceClient();
 });
 
 final authSessionProvider = StreamProvider<AuthSession>((ref) {

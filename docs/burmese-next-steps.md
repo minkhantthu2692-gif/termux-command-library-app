@@ -54,7 +54,7 @@ Firebase အဆင့်များ၊ build/install နှင့် admin edit
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Dart tests | ✅ ပြီး | `flutter test` — 181/181 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 207/207 အောင် |
 | Firestore rules tests | ✅ ပြီး | emulator တွင် 29/29 အောင် |
 | Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
 | Release APK build | ✅ ပြီး | `app-release.apk` (71.1 MB) — debug key ဖြင့် |
@@ -137,12 +137,24 @@ error မဖြစ်နိုင်ပါ။ `google-services.json` ထဲမ�
    **Authentication → Sign-in method → GitHub** တွင် ထည့်ပါ။
 3. **Enable** ဖွင့်ပြီး **Save** နှိပ်ပါ။
 
-GitHub သည် Firebase hosted OAuth flow ကို ဆက်သုံးသည်။ အကြောင်းမှာ
-authorization code ကို token ပြောင်းရန် OAuth client secret လိုအပ်၍
-ထို secret ကို app ထဲ မထည့်ရသောကြောင့် ဖြစ်သည်။ ထို့ကြောင့် GitHub
-ဝင်ရောက်မှုတွင် browser (Custom Tab) လိုအပ်ပြီး ၄၅ စက္ကန့်ကျော်လျှင်
-app က browser တွင် ပြီးအောင်လုပ်ရန် သို့မဟုတ် နောက်သို့ပြန်ပြီး
-ထပ်စမ်းရန် အကြံပြုချက် ပြသည်။
+GitHub သည် Firebase ၏ hosted browser flow ကို **မသုံးတော့ပါ**။
+အစား GitHub ၏ **OAuth device flow** ကို သုံးသည်:
+
+1. App က GitHub မှ ကုဒ်တို (ဥပမာ `ABCD-1234`) တောင်းယူသည်။
+2. Dialog တွင် ကုဒ်ကို ပြပြီး `github.com/login/device` ကို ဖွင့်သည်။
+3. အသုံးပြုသူက ကုဒ်ထည့်ပြီး app ကို ခွင့်ပြုသည်။
+4. App က token ရသည်အထိ poll လုပ်ပြီး Firebase
+   `signInWithCredential` သို့ ပေးသည်။
+
+ထို token ကို သိမ်းမထားပါ၊ log မတင်ပါ။ App ထဲတွင် ပါဝင်သည်မှာ
+**public client ID** သာ ဖြစ်ပြီး client secret သည် Firebase Console
+တွင်သာ ရှိသည်။ Device flow သည် browser session storage ကို
+မမှီခိုသောကြောင့် Opera/Firefox ကဲ့သို့ browser များတွင်လည်း
+"missing initial state" error မဖြစ်ပါ။
+
+**လိုအပ်ချက်:** GitHub OAuth App တွင် **Enable Device Flow** ကို
+အမှန်ခြစ်ထားရမည်။ မထားလျှင် GitHub က `device_flow_disabled` ဟု
+ပြန်ပြီး app က ဖွင့်ထားရန် လမ်းညွှန်ချက် ပြသည်။
 
 ### ၂.၃ စစ်ဆေးရန်
 
@@ -241,9 +253,12 @@ keytool -list -v -alias upload -keystore android\upload-keystore.jks
 5. **Client ID** ကို ကူးယူပါ။
 6. **Generate a new client secret** နှိပ်ပြီး secret ကို ကူးယူပါ။
    (ဤစာမျက်နှာမှ ထွက်လျှင် ပြန်မမြင်ရပါ။)
-7. Firebase Console → **Authentication → Sign-in method → GitHub**
+7. ထို OAuth App ၏ settings တွင် **Enable Device Flow** ကို
+   အမှန်ခြစ်ပြီး **Update application** နှိပ်ပါ။
+   ဤအချက်မပါလျှင် app ၏ GitHub ဝင်ရောက်မှု မအောင်မြင်ပါ။
+8. Firebase Console → **Authentication → Sign-in method → GitHub**
    တွင် Client ID နှင့် Secret ကို ထည့်ပါ။
-8. **Enable** ဖွင့်ပြီး **Save** နှိပ်ပါ။
+9. **Enable** ဖွင့်ပြီး **Save** နှိပ်ပါ။
 
 > **လုံခြုံရေး:** Client secret ကို app ထဲ၊ `google-services.json` ထဲ၊
 > `--dart-define` ထဲ သို့မဟုတ် Git ထဲ **မထည့်ပါနှင့်**။
@@ -437,8 +452,9 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
       ပျက်သွားမည်။ Local cache ရှင်းခြင်းနှင့် မတူပါ။
 - [ ] Google ဖြင့် ဝင်နိုင်သည် (SHA ထည့်ပြီးမှ)။ Browser မလိုဘဲ native
       account picker ပွင့်သည်။
-- [ ] GitHub ဖြင့် ဝင်နိုင်သည် (OAuth App ဖန်တီးပြီးမှ)။ Browser မှ
-      ပြန်လာပြီး အကောင့်ဝင်သည်။
+- [ ] GitHub ဖြင့် ဝင်နိုင်သည် (OAuth App ဖန်တီးပြီး Device Flow
+      ဖွင့်ပြီးမှ)။ Dialog တွင် ကုဒ်ပေါ်လာပြီး GitHub တွင်
+      ခွင့်ပြုပြီးနောက် အကောင့်ဝင်သည်။
 
 ### ၈.၂ Synchronization
 
@@ -754,8 +770,10 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 | Sign-in ခလုတ် မပေါ် | Firebase မရှိ | `google-services.json` ထည့်ပြီး ပြန် build လုပ်ပါ |
 | `operation-not-allowed` | Provider မဖွင့်ထား | Console တွင် ထို provider ကို Enable လုပ်ပါ |
 | Google ဝင်မရ | SHA မထည့် / provider မဖွင့် / Android OAuth client မကိုက် | SHA-1/SHA-256 ထည့်ပြီး JSON ပြန် download လုပ်ပါ။ Authentication → Google ကို Enable ဖြစ်/မဖြစ် စစ်ပါ |
-| Browser တွင် "missing initial state" | Browser session storage ပျက် (GitHub hosted flow) | နောက်ဆုံး build သို့ update လုပ်ပါ (Google သည် native picker သုံးပြီ)။ GitHub အတွက် tab ပိတ်ပြီး ပုံမှန် tab ဖြင့် ပြန်စမ်းပါ။ Callback URL နှင့် authorized domain စစ်ပါ |
-| GitHub redirect error | Callback URL မမှန် | `https://termuxcommandlibrary.firebaseapp.com/__/auth/handler` အတိအကျ ဖြစ်ရမည် |
+| Browser တွင် "missing initial state" | ဟောင်းသော build (GitHub hosted flow) | နောက်ဆုံး build သို့ update လုပ်ပါ။ Google သည် native picker၊ GitHub သည် device flow သုံးပြီး `__/auth/handler` ကို မဖွင့်တော့ပါ |
+| `device_flow_disabled` | GitHub OAuth App တွင် Device Flow မဖွင့်ထား | GitHub → Settings → Developer settings → OAuth Apps → app ကို ရွေး → **Enable Device Flow** → Update application |
+| GitHub ကုဒ် သက်တမ်းကုန် | ကုဒ်ကို ၁၅ မိနစ်အတွင်း မသုံးခဲ့ | Dialog တွင် **Try again** နှိပ်ပြီး ကုဒ်အသစ် ယူပါ |
+| GitHub ခွင့်ပြုချက် ပယ်ခံ | GitHub တွင် Cancel နှိပ်ခဲ့ | ထပ်စမ်းပြီး app ကို ခွင့်ပြုပါ |
 | `PERMISSION_DENIED` | Rules deploy မလုပ် | `firebase deploy --only firestore:rules` လုပ်ပါ |
 | Index error | Index မပြီးသေး | Console → Indexes တွင် "Enabled" ဖြစ်သည်အထိ စောင့်ပါ |
 | Refresh တွင် error | Network သို့မဟုတ် index | အော့ဖ်လိုင်း browsing ဆက်လုပ်နိုင်သည်။ Network စစ်ပါ |
@@ -797,7 +815,8 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 2. Firestore database ဖန်တီးပြီး rules/indexes deploy လုပ်ခြင်း — ✅ **ပြီး**
    (index နှစ်ခုလုံး `READY`)
 3. SHA လက်ဗွေ — ✅ **SHA-1 ပြီး**၊ SHA-256 ကို Console တွင် စစ်ရန် ကျန်
-4. GitHub OAuth App — ✅ **ပြီး** (provider ဖွင့်ပြီး)
+4. GitHub OAuth App — ✅ **ပြီး** (provider ဖွင့်ပြီး)၊
+   **Enable Device Flow** ကို GitHub တွင် အမှန်ခြစ်ရန် ကျန်
 5. စက်ပေါ်တွင် install လုပ်ပြီး အဓိက flow များ စမ်းသပ်ခြင်း — ✅ **ပြီး**
    (admin edit/delete၊ attribution ထိန်းသိမ်းမှု၊ delete ပြီးနောက်
    ပြန်မပေါ်ခြင်းတို့ကို စစ်ပြီး)

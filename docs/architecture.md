@@ -207,25 +207,30 @@ Detailed behavior: [Synchronization](synchronization.md).
 creation, guest linking, password reset, re-authentication, sign-out and account
 deletion. UI screens never call Firebase Auth directly.
 
-`AuthGateway` exposes provider sign-in as `signInWithProvider(AuthProviderKind)`
-instead of leaking Firebase types into the UI, so the repository can offer
-providers on both the sign-in and account-upgrade screens and a future backend
-can implement the same method without touching the widgets.
+`AuthGateway` exposes provider sign-in without leaking Firebase types into the
+UI, so the repository can offer providers on both the sign-in and account-upgrade
+screens and a future backend can implement the same methods without touching the
+widgets.
 
-Google and GitHub share that contract but use different transport paths:
+Google and GitHub use different transport paths:
 
 - **Google** goes through `GoogleIdentityClient`, implemented with
   `google_sign_in` (Android Credential Manager). It returns an ID token, which
   `FirebaseAuthGateway` exchanges with `signInWithCredential`. This avoids
   Firebase's hosted `/__/auth/handler` page and its browser session-storage
   dependency.
-- **GitHub** still uses Firebase's hosted Custom Tab flow because GitHub's token
-  exchange requires the OAuth client secret, which must remain in the Firebase
-  console.
+- **GitHub** uses GitHub's OAuth device flow through `GithubDeviceClient`.
+  `HttpGithubDeviceClient` requests a short user code, polls
+  `github.com/login/oauth/access_token`, and returns the access token to
+  `AuthRepository`. `FirebaseAuthGateway.signInWithGithubAccessToken` then
+  exchanges it with `signInWithCredential` (or `linkWithCredential` for an
+  anonymous account). The device code and access token stay inside the data
+  layer and are never logged or persisted. Only the public OAuth client ID is
+  compiled into the app; the client secret remains in the Firebase console.
 
-The `google_sign_in` import is confined to `GoogleIdentityClient`, and
-`FirebaseAuthGateway` accepts an injected identity client so tests and future
-platforms can avoid a real platform channel.
+Both clients are injectable, so tests and future platforms can avoid real
+platform channels or HTTP requests. The rest of the app depends only on the
+provider-neutral gateway and repository contracts.
 
 Authorization is enforced in Firestore rules. The client also checks ownership for
 a better error message, but that is not the security boundary. Admin is an Auth

@@ -167,17 +167,22 @@ Firebase Console → **Authentication** → **Get started**:
    hosted browser handler ကို မဖွင့်ပါ။ `google-services.json` ထဲမှ
    Web OAuth client ကို အလိုအလျောက် ဖတ်သည်။
 4. **GitHub** ကို **Enable** လုပ်ပါ။ GitHub တွင် **Settings → Developer
-   settings → OAuth Apps → New OAuth App** ဖြင့် app တစ်ခု ဖန်တီးပြီး
+   settings → OAuth Apps → New OAuth App** ဖြင့် app တစ်ခု ဖန်တီးပါ။
    Authorization callback URL ကို အောက်ပါအတိုင်း ထည့်ပါ:
 
    ```text
    https://<project-id>.firebaseapp.com/__/auth/handler
    ```
 
+   ထို့နောက် ထို OAuth App ၏ settings တွင် **Enable Device Flow** ကို
+   အမှန်ခြစ်ပြီး **Update application** နှိပ်ပါ။
+
    ရရှိသော **Client ID** နှင့် **Client secret** ကို Firebase ၏ GitHub
    provider ထဲ ထည့်ပါ။ Client secret ကို app ထဲ၊ `--dart-define` ထဲ
-   သို့မဟုတ် Git ထဲ မထည့်ပါ။ GitHub သည် Firebase hosted flow ကို
-   သုံးသောကြောင့် ဝင်ရောက်ရာတွင် browser (Custom Tab) လိုအပ်သည်။
+   သို့မဟုတ် Git ထဲ မထည့်ပါ။ App သည် GitHub ၏ **device flow** ကို
+   သုံးသည်။ ထို့ကြောင့် browser လိုအပ်သော်လည်း browser session
+   storage ကို မမှီခိုပါ။ **Enable Device Flow** မပါလျှင် GitHub က
+   `device_flow_disabled` ဟု ပြန်ပါမည်။
 5. **Settings → Authorized domains** တွင် Firebase domain များ
    ပါဝင်ကြောင်း စစ်ပါ။
 6. **Templates** တွင် app အမည်နှင့် support email ကို ပြင်နိုင်သည်။
@@ -194,7 +199,8 @@ verification အဆင့် မပါပါ။ Google နှင့် GitHub �
   `google-services.json` မရှိသော local-only build တွင် ခလုတ်များ
   ပေါ်မည် မဟုတ်ပါ။
 - Google သည် native account picker ကို ဖွင့်သည်။ GitHub သည်
-  Firebase hosted flow ကို browser (Custom Tab) ဖြင့် ဖွင့်သည်။
+  ကုဒ်တိုတစ်ခု ပြပြီး `github.com/login/device` ကို browser တွင်
+  ဖွင့်ကာ ခွင့်ပြုချက် ရသည်အထိ စောင့်သည် (device flow)။
 - သာမန် Sign-in တွင် provider အကောင့်ကို ဝင်ရောက် သို့မဟုတ်
   အသစ်ဖန်တီးမည်။ Create account တွင် လက်ရှိ anonymous Firebase
   အကောင့်ရှိနေလျှင် provider ကို ထိုအကောင့်နှင့် link လုပ်မည်။
@@ -202,10 +208,10 @@ verification အဆင့် မပါပါ။ Google နှင့် GitHub �
 - Provider အကောင့်သည် အခြား Firebase UID နှင့် ချိတ်ထားပြီးဖြစ်လျှင်
   link မရနိုင်ပါ။ App က ထိုအကောင့်ဖြင့် ဝင်ရောက်ရန် ပြမည်။
   Firebase UID နှစ်ခုကို ပေါင်းစည်းခြင်း မလုပ်ပါ။
-- Google အကောင့်ရွေးချယ်မှု ပယ်ဖျက်ခြင်း သို့မဟုတ် GitHub browser
-  tab ပိတ်ခြင်းကို error အဖြစ် မပြပါ။ ဖောင် ပြန်အသုံးပြုနိုင်ပါသည်။
-- Provider လုပ်ဆောင်ချက် ၄၅ စက္ကန့်ကျော်လျှင် browser တွင် ဝင်ရောက်မှု
-  ပြီးအောင်လုပ်ရန် သို့မဟုတ် နောက်သို့ပြန်ပြီး ထပ်စမ်းရန်
+- Google အကောင့်ရွေးချယ်မှု ပယ်ဖျက်ခြင်း သို့မဟုတ် GitHub
+  dialog ကို ပိတ်ခြင်းကို error အဖြစ် မပြပါ။ ဖောင် ပြန်အသုံးပြုနိုင်ပါသည်။
+- Google provider လုပ်ဆောင်ချက် ၄၅ စက္ကန့်ကျော်လျှင် account picker
+  တွင် ပြီးအောင်လုပ်ရန် သို့မဟုတ် နောက်သို့ပြန်ပြီး ထပ်စမ်းရန်
   အကြံပြုချက် ပြသည်။
 
 စာရင်းသွင်းရာတွင်:
@@ -491,8 +497,9 @@ Groq နှင့်အတူ:
 | Index error | `firebase deploy --only firestore:indexes` လုပ်ပြီး စောင့်ပါ |
 | Sign-in မရ | Email/Password၊ Anonymous၊ Google နှင့် GitHub provider ဖွင့်ထားခြင်း စစ်ပါ |
 | Google ဖြင့် ဝင်မရ | Debug/Release SHA-1/SHA-256 လက်ဗွေထည့်ပြီး `google-services.json` ပြန် download လုပ်ပါ။ Android OAuth client နှင့် လက်မှတ် ကိုက်ညီမှုကို စစ်ပါ |
-| Browser တွင် "missing initial state" | နောက်ဆုံး build သို့ update လုပ်ပါ (Google သည် native picker သုံးပြီ)။ GitHub အတွက် tab ပိတ်ပြီး ပုံမှန် tab ဖြင့် ပြန်စမ်းပါ | |
-| GitHub redirect error | OAuth App callback သည် `https://<project-id>.firebaseapp.com/__/auth/handler` အတိအကျ ဖြစ်ရမည် |
+| Browser တွင် "missing initial state" | နောက်ဆုံး build သို့ update လုပ်ပါ (Google သည် native picker၊ GitHub သည် device flow သုံးပြီ) |
+| `device_flow_disabled` | GitHub OAuth App တွင် Device Flow မဖွင့်ထား | GitHub → Settings → Developer settings → OAuth Apps → **Enable Device Flow** → Update application |
+| GitHub ကုဒ် သက်တမ်းကုန် | ကုဒ်ကို အချိန်မီ မသုံးခဲ့ | Dialog တွင် **Try again** နှိပ်ပြီး ကုဒ်အသစ် ယူပါ |
 | Termux မတွေ့ | GitHub release မှ ပြန်တပ်ဆင်ပါ၊ Termux ကို တစ်ကြိမ်ဖွင့်ပါ |
 | Command မလုပ် | `allow-external-apps=true` နှင့် permission စစ်ပါ |
 | AI 401 | ကီး မှန်/မမှန်၊ revoke ဖြစ်/မဖြစ် စစ်ပါ |

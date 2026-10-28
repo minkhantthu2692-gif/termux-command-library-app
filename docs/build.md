@@ -191,8 +191,9 @@ Current coverage includes:
   snapshots, and queued upload/delete recovery.
 - AI repository caching, history, model selection and provider errors.
 - Groq HTTP key validation, model parsing and SSE streaming.
-- Authentication error mapping, native Google error mapping and the
-  Google/GitHub provider buttons.
+- Authentication error mapping, native Google error mapping, the GitHub device
+  client (pending, slow-down, denial, expiry, disabled flow, malformed responses
+  and cancellation) and the Google/GitHub provider buttons.
 - App onboarding, shell navigation, theme and Myanmar locale propagation.
 
 Widget tests that use Drift must unmount the widget tree, pump the fake async
@@ -203,7 +204,7 @@ zone.
 Firebase rules tests and live Firebase/Groq end-to-end tests require external
 projects and are not run by `flutter test`.
 
-The Dart suite currently passes **181 tests**, and the Firestore rules tests pass
+The Dart suite currently passes **207 tests**, and the Firestore rules tests pass
 **29 cases** locally against the Firestore emulator with Node (Java only for the
 emulator itself). See
 [Security Rules › Emulator testing](security-rules.md#emulator-testing) for the
