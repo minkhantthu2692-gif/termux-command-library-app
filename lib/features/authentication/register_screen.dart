@@ -113,12 +113,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.x4),
                   child: AuthErrorBanner(message: _error!),
                 ),
-              if (cloudConfigured)
-                AuthProviderButtons(
-                  enabled: !_busy,
-                  busyProvider: _provider,
-                  onSelected: _continueWithProvider,
-                ),
               Center(
                 child: Column(
                   children: [
@@ -271,6 +265,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       )
                     : Text(linking ? l10n.upgradeAccount : l10n.createAccount),
               ),
+              if (cloudConfigured) ...[
+                const SizedBox(height: AppSpacing.x6),
+                AuthProviderButtons(
+                  enabled: !_busy,
+                  busyProvider: _provider,
+                  onSelected: _continueWithProvider,
+                ),
+              ],
             ],
           ),
         ),

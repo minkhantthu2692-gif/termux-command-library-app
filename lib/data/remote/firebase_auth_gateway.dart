@@ -4,11 +4,14 @@ import '../../core/errors/app_exception.dart';
 import '../models/auth_models.dart';
 import 'cloud_gateways.dart';
 import 'firebase_errors.dart';
+import 'google_identity_client.dart';
 
 class FirebaseAuthGateway implements AuthGateway {
-  FirebaseAuthGateway(this._auth);
+  FirebaseAuthGateway(this._auth, {GoogleIdentityClient? googleIdentity})
+    : _googleIdentity = googleIdentity ?? GoogleSignInIdentityClient();
 
   final FirebaseAuth _auth;
+  final GoogleIdentityClient _googleIdentity;
 
   /// Last session resolved with token claims. The synchronous `currentSession`
   /// getter cannot await `getIdTokenResult`, but reusing the resolved session
@@ -130,28 +133,66 @@ class FirebaseAuthGateway implements AuthGateway {
     bool linkAnonymous = false,
   }) async {
     try {
-      final authProvider = switch (provider) {
-        AuthProviderKind.google => GoogleAuthProvider(),
-        AuthProviderKind.github => GithubAuthProvider()..addScope('user:email'),
+      return switch (provider) {
+        AuthProviderKind.google => await _signInWithGoogle(
+          linkAnonymous: linkAnonymous,
+        ),
+        AuthProviderKind.github => await _signInWithGithub(
+          linkAnonymous: linkAnonymous,
+        ),
       };
-      final current = _auth.currentUser;
-      final UserCredential credential;
-      if (linkAnonymous && current != null && current.isAnonymous) {
-        credential = await current.linkWithProvider(authProvider);
-      } else {
-        credential = await _auth.signInWithProvider(authProvider);
-      }
-      final user = credential.user;
-      if (user == null) {
-        throw const AppException(AppErrorCode.authRequired);
-      }
-      // Linking changes the token's sign_in_provider claim, which Firestore
-      // rules check. Force one refresh so writes made right after the browser
-      // flow are not rejected with the old anonymous token.
-      return (await _asyncSession(user, forceRefreshToken: linkAnonymous))!;
     } catch (error) {
       throw mapFirebaseAuthError(error);
     }
+  }
+
+  /// Uses the native Google account picker and exchanges its ID token for a
+  /// Firebase credential. This avoids the Firebase hosted browser flow that
+  /// fails with "missing initial state" when browser session storage is
+  /// partitioned or cleared.
+  Future<AuthSession> _signInWithGoogle({required bool linkAnonymous}) async {
+    final identity = await _googleIdentity.authenticate();
+    final firebaseCredential = GoogleAuthProvider.credential(
+      idToken: identity.idToken,
+    );
+    final current = _auth.currentUser;
+    final UserCredential credential;
+    if (linkAnonymous && current != null && current.isAnonymous) {
+      credential = await current.linkWithCredential(firebaseCredential);
+    } else {
+      credential = await _auth.signInWithCredential(firebaseCredential);
+    }
+    return _completeProviderSignIn(credential, linkAnonymous: linkAnonymous);
+  }
+
+  /// GitHub still uses Firebase's hosted OAuth handler because GitHub's token
+  /// exchange requires the OAuth client secret, which must never ship in the
+  /// app. The handler is browser-based; the sign-in screen shows recovery
+  /// guidance if the browser does not return a result.
+  Future<AuthSession> _signInWithGithub({required bool linkAnonymous}) async {
+    final authProvider = GithubAuthProvider()..addScope('user:email');
+    final current = _auth.currentUser;
+    final UserCredential credential;
+    if (linkAnonymous && current != null && current.isAnonymous) {
+      credential = await current.linkWithProvider(authProvider);
+    } else {
+      credential = await _auth.signInWithProvider(authProvider);
+    }
+    return _completeProviderSignIn(credential, linkAnonymous: linkAnonymous);
+  }
+
+  Future<AuthSession> _completeProviderSignIn(
+    UserCredential credential, {
+    required bool linkAnonymous,
+  }) async {
+    final user = credential.user;
+    if (user == null) {
+      throw const AppException(AppErrorCode.authRequired);
+    }
+    // Linking changes the token's sign_in_provider claim, which Firestore rules
+    // check. Force one refresh so writes made right after the provider flow are
+    // not rejected with the old anonymous token.
+    return (await _asyncSession(user, forceRefreshToken: linkAnonymous))!;
   }
 
   @override

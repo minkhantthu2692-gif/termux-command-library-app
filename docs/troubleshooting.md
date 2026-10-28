@@ -74,20 +74,57 @@ around it by fetching unbounded collections in the client.
 | `weak-password` | Use at least 8 characters |
 | `credential-already-in-use` | The email/provider account belongs to another Firebase UID; sign in to that account. Different UIDs are not merged. |
 | `requires-recent-login` | Re-authenticate with the current password before changing/deleting |
-| Google sign-in returns without signing in | Verify the app's debug/release SHA-1 and SHA-256 fingerprints in Firebase and re-download `google-services.json` |
+| Google sign-in returns without signing in | Verify the app's debug/release SHA-1 and SHA-256 fingerprints in Firebase, confirm the Android OAuth client matches the signing certificate, then re-download `google-services.json` |
+| `missing initial state` / browser sessionStorage error | GitHub uses Firebase's hosted browser flow. Update to the current build (Google now uses the native picker), close the tab and retry in a normal tab, and verify the OAuth callback URL |
 | GitHub sign-in fails with a redirect error | The GitHub OAuth App callback must be exactly `https://<project-id>.firebaseapp.com/__/auth/handler` |
 | GitHub account has no email | Keep the `user:email` scope request in the gateway; otherwise private-email accounts return no address |
-| Provider browser closes with no message | This is treated as a cancellation and is intentionally silent |
+| Provider flow closes with no message | This is treated as a cancellation and is intentionally silent |
 
 Password reset emails require the device to receive email and the Firebase
 authorized-domain/template configuration to be valid. The app never handles OTP
 codes.
 
-Social sign-in opens Firebase's hosted flow in a Custom Tab. It requires a real
-device or emulator with a browser; it cannot complete inside a Flutter widget
-test. If the buttons are missing entirely, the build is in local-only mode and
+Google sign-in uses the native Android account picker and does not visit
+Firebase's hosted handler, so browser session-storage errors do not affect it.
+GitHub still uses Firebase's hosted Custom Tab flow; it requires a real device or
+emulator with a browser and cannot complete inside a Flutter widget test. If the
+provider buttons are missing entirely, the build is in local-only mode and
 `android/app/google-services.json` (or the complete `--dart-define` set) is not
 being applied.
+
+## Google or GitHub sign-in fails in the browser
+
+**Symptom:** Chrome shows:
+
+```text
+Unable to process request due to missing initial state. This may happen if
+browser sessionStorage is inaccessible or accidentally cleared...
+```
+
+on `termuxcommandlibrary.firebaseapp.com/__/auth/handler`.
+
+**Cause:** Firebase's hosted OAuth handler keeps its state in browser session
+storage. Storage partitioning, private browsing, a cleared tab, or opening the
+handler in a different browser context can remove that state before the callback
+finishes. Google no longer uses this page, so the error should only affect
+GitHub on current builds.
+
+**Fix:**
+
+1. Update to the current build. Google sign-in now opens the native account
+   picker and never visits `/__/auth/handler`.
+2. For GitHub, close the browser tab, return to the app and start again in a
+   normal (not private/incognito) tab. The app shows a recovery hint after 45
+   seconds instead of hanging silently.
+3. Confirm the GitHub OAuth App callback is exactly
+   `https://<project-id>.firebaseapp.com/__/auth/handler`, with no trailing
+   slash or different domain.
+4. Confirm the Firebase project domain is listed under **Authentication →
+   Settings → Authorized domains**.
+5. If the browser still fails, go back and try again; once the flow finishes or
+   is closed, email/password works as usual. The GitHub OAuth app can also
+   be recreated and its client ID/secret re-entered in the Firebase console;
+   never put the secret in the app.
 
 ## Favorites or pins disappear
 

@@ -208,11 +208,24 @@ creation, guest linking, password reset, re-authentication, sign-out and account
 deletion. UI screens never call Firebase Auth directly.
 
 `AuthGateway` exposes provider sign-in as `signInWithProvider(AuthProviderKind)`
-instead of leaking Firebase types into the UI. Google and GitHub therefore share
-one code path, the repository can offer them on both the sign-in and account
-upgrade screens, and a future backend can implement the same method without
-touching the widgets. The Android implementation uses Firebase's hosted
-Custom Tab flow; the app does not depend on the `google_sign_in` SDK.
+instead of leaking Firebase types into the UI, so the repository can offer
+providers on both the sign-in and account-upgrade screens and a future backend
+can implement the same method without touching the widgets.
+
+Google and GitHub share that contract but use different transport paths:
+
+- **Google** goes through `GoogleIdentityClient`, implemented with
+  `google_sign_in` (Android Credential Manager). It returns an ID token, which
+  `FirebaseAuthGateway` exchanges with `signInWithCredential`. This avoids
+  Firebase's hosted `/__/auth/handler` page and its browser session-storage
+  dependency.
+- **GitHub** still uses Firebase's hosted Custom Tab flow because GitHub's token
+  exchange requires the OAuth client secret, which must remain in the Firebase
+  console.
+
+The `google_sign_in` import is confined to `GoogleIdentityClient`, and
+`FirebaseAuthGateway` accepts an injected identity client so tests and future
+platforms can avoid a real platform channel.
 
 Authorization is enforced in Firestore rules. The client also checks ownership for
 a better error message, but that is not the security boundary. Admin is an Auth

@@ -105,12 +105,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.x4),
                   child: AuthErrorBanner(message: _error!),
                 ),
-              if (cloudConfigured)
-                AuthProviderButtons(
-                  enabled: !_busy,
-                  busyProvider: _provider,
-                  onSelected: _signInWithProvider,
-                ),
               TextFormField(
                 controller: _emailController,
                 enabled: !_busy,
@@ -183,7 +177,13 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     : Text(l10n.signIn),
               ),
               if (cloudConfigured) ...[
-                const SizedBox(height: AppSpacing.x3),
+                const SizedBox(height: AppSpacing.x6),
+                AuthProviderButtons(
+                  enabled: !_busy,
+                  busyProvider: _provider,
+                  onSelected: _signInWithProvider,
+                ),
+                const SizedBox(height: AppSpacing.x4),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _continueAnonymously,
                   icon: const Icon(Icons.person_outline_rounded),

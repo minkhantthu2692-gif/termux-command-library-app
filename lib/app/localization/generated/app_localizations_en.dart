@@ -181,7 +181,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueWithGithub => 'Continue with GitHub';
 
   @override
-  String get orContinueWithEmail => 'or continue with email';
+  String get orContinueWith => 'Or continue with';
+
+  @override
+  String get providerSignInSlow =>
+      'Still waiting for the browser? Finish signing in there, or go back and try again.';
 
   @override
   String get email => 'Email';

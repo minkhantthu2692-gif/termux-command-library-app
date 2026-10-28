@@ -428,11 +428,17 @@ abstract class AppLocalizations {
   /// **'Continue with GitHub'**
   String get continueWithGithub;
 
-  /// No description provided for @orContinueWithEmail.
+  /// No description provided for @orContinueWith.
   ///
   /// In en, this message translates to:
-  /// **'or continue with email'**
-  String get orContinueWithEmail;
+  /// **'Or continue with'**
+  String get orContinueWith;
+
+  /// No description provided for @providerSignInSlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Still waiting for the browser? Finish signing in there, or go back and try again.'**
+  String get providerSignInSlow;
 
   /// No description provided for @email.
   ///

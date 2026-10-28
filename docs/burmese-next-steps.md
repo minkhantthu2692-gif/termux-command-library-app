@@ -8,9 +8,9 @@
 
 | အချက် | တန်ဖိုး |
 | --- | --- |
-| စစ်ဆေးသည့်ရက်စွဲ | ၂၀၂၆ ခုနှစ်၊ အောက်တိုဘာ ၂၇ ရက် |
+| စစ်ဆေးသည့်ရက်စွဲ | ၂၀၂၆ ခုနှစ်၊ အောက်တိုဘာ ၂၈ ရက် |
 | App version | `1.0.0+1` |
-| အတည်ပြုသည့် commit | `4d61128` (`main`) |
+| အတည်ပြုသည့် commit | `main` ၏ နောက်ဆုံး commit |
 | GitHub repository | <https://github.com/minkhantthu2692-gif/termux-command-library-app> |
 | Firebase project | `termuxcommandlibrary` |
 | Android package | `com.termuxcommandlibrary.mm` |
@@ -54,16 +54,17 @@ Groq ကီးနှင့် release keystore ကို ဆက်လုပ်�
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Dart tests | ✅ ပြီး | `flutter test` — 171/171 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 178/178 အောင် |
 | Firestore rules tests | ✅ ပြီး | emulator တွင် 26/26 အောင် |
 | Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
-| Release APK build | ✅ ပြီး | `app-release.apk` (70.4 MB) — debug key ဖြင့် |
+| Release APK build | ✅ ပြီး | `app-release.apk` (71.1 MB) — debug key ဖြင့် |
 | Native Kotlin haptics | ✅ compile အောင် | `HapticsController.class` APK ထဲ ပါဝင် |
 | GitHub push | ✅ ပြီး | `origin/main` |
 | Firebase project ချိတ်ဆက်မှု | ✅ ဖိုင် ရှိ | `google-services.json` package ကိုက်ညီ |
 | Firebase CLI | ✅ ဝင်ပြီး | `minkhantthu2692@gmail.com` |
 | Auth provider များ | ✅ ဖွင့်ပြီး | Email၊ Anonymous၊ Google၊ GitHub |
 | Google SHA-1 လက်ဗွေ | ✅ ပါပြီ | JSON ထဲတွင် Android OAuth client ပါပြီ |
+| Google ဝင်ရောက်မှု နည်းလမ်း | ✅ code ပြီး | Native account picker (`google_sign_in`) — browser မလိုပါ။ စက်တွင် စမ်းသပ်ရန် ကျန်။ |
 | Google SHA-256 လက်ဗွေ | ⚠️ မစစ်ရသေး | JSON တွင် မပါပါ (ပုံမှန်)။ Console တွင် စစ်ပါ |
 | Firestore database | ✅ ရှိ | `(default)`၊ Firestore Native |
 | Rules နှင့် Indexes | ✅ deploy ပြီး | index နှစ်ခုလုံး `READY` |
@@ -122,12 +123,26 @@ Groq ကီးနှင့် release keystore ကို ဆက်လုပ်�
 4. ထို့နောက် အောက်ပါ **အဆင့် ၂** တွင် SHA လက်ဗွေ ထည့်ပါ။
    SHA မပါဘဲ Google ဝင်ရောက်မှု မအောင်မြင်နိုင်ပါ။
 
+ဤ app တွင် Google ဝင်ရောက်မှုသည် **native Google account picker**
+(`google_sign_in`, Android Credential Manager) ကို သုံးသည်။ ထို့ကြောင့်
+Firebase ၏ `.../__/auth/handler` browser စာမျက်နှာကို မဖွင့်တော့ဘဲ
+browser session storage ပျက်ခြင်းကြောင့် ဖြစ်သော "missing initial state"
+error မဖြစ်နိုင်ပါ။ `google-services.json` ထဲမှ Web OAuth client
+(`client_type: 3`) ကို SDK က အလိုအလျောက် ဖတ်သည်။
+
 **GitHub** (GitHub ဖြင့် ဝင်လိုမှသာ)
 
 1. အောက်ပါ **အဆင့် ၃** တွင် OAuth App ကို အရင် ဖန်တီးပါ။
 2. ရရှိသော **Client ID** နှင့် **Client secret** ကို
    **Authentication → Sign-in method → GitHub** တွင် ထည့်ပါ။
 3. **Enable** ဖွင့်ပြီး **Save** နှိပ်ပါ။
+
+GitHub သည် Firebase hosted OAuth flow ကို ဆက်သုံးသည်။ အကြောင်းမှာ
+authorization code ကို token ပြောင်းရန် OAuth client secret လိုအပ်၍
+ထို secret ကို app ထဲ မထည့်ရသောကြောင့် ဖြစ်သည်။ ထို့ကြောင့် GitHub
+ဝင်ရောက်မှုတွင် browser (Custom Tab) လိုအပ်ပြီး ၄၅ စက္ကန့်ကျော်လျှင်
+app က browser တွင် ပြီးအောင်လုပ်ရန် သို့မဟုတ် နောက်သို့ပြန်ပြီး
+ထပ်စမ်းရန် အကြံပြုချက် ပြသည်။
 
 ### ၂.၃ စစ်ဆေးရန်
 
@@ -420,8 +435,10 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
       link လုပ်နိုင်သည်။ Link ပြီးနောက် favorite/pin မပျောက်ပါ။
 - [ ] Account delete လုပ်နိုင်သည်။ ကိုယ်ပိုင် public guide များ
       ပျက်သွားမည်။ Local cache ရှင်းခြင်းနှင့် မတူပါ။
-- [ ] Google ဖြင့် ဝင်နိုင်သည် (SHA ထည့်ပြီးမှ)။
-- [ ] GitHub ဖြင့် ဝင်နိုင်သည် (OAuth App ဖန်တီးပြီးမှ)။
+- [ ] Google ဖြင့် ဝင်နိုင်သည် (SHA ထည့်ပြီးမှ)။ Browser မလိုဘဲ native
+      account picker ပွင့်သည်။
+- [ ] GitHub ဖြင့် ဝင်နိုင်သည် (OAuth App ဖန်တီးပြီးမှ)။ Browser မှ
+      ပြန်လာပြီး အကောင့်ဝင်သည်။
 
 ### ၈.၂ Synchronization
 
@@ -606,7 +623,7 @@ release {
 
 ဤအခြေအနေဖြင့် ဖြန့်ဝေ၍ မရပါ။ သင့်ကိုယ်ပိုင် keystore လိုသည်။
 
-> **လက်ရှိ build:** `app-release.apk` (70.4 MB) ကို ထုတ်ပြီးဖြစ်သည်။
+> **လက်ရှိ build:** `app-release.apk` (71.1 MB) ကို ထုတ်ပြီးဖြစ်သည်။
 > ၎င်းသည် release mode ဖြင့် compile ထားသော်လည်း **debug key** ဖြင့်
 > လက်မှတ်ထိုးထားသည်။ `apksigner` ဖြင့် စစ်ဆေးပြီး လက်ဗွေနှစ်ခုလုံး
 > Firebase တွင် ထည့်ထားသည့် တန်ဖိုးများနှင့် ကိုက်ညီသည်:
@@ -730,7 +747,8 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 | App က "local-only" ဟု ပြ | Firebase initialize မဖြစ် | `google-services.json` ရှိ/မရှိ၊ package name ကိုက်/မကိုက် စစ်ပါ။ ဖိုင်အသစ်ဖြင့် **ပြန် build** လုပ်ပါ |
 | Sign-in ခလုတ် မပေါ် | Firebase မရှိ | `google-services.json` ထည့်ပြီး ပြန် build လုပ်ပါ |
 | `operation-not-allowed` | Provider မဖွင့်ထား | Console တွင် ထို provider ကို Enable လုပ်ပါ |
-| Google ဝင်မရ | SHA မထည့် / provider မဖွင့် | SHA-1/SHA-256 ထည့်ပြီး JSON ပြန် download လုပ်ပါ။ Authentication → Google ကို Enable ဖြစ်/မဖြစ် စစ်ပါ |
+| Google ဝင်မရ | SHA မထည့် / provider မဖွင့် / Android OAuth client မကိုက် | SHA-1/SHA-256 ထည့်ပြီး JSON ပြန် download လုပ်ပါ။ Authentication → Google ကို Enable ဖြစ်/မဖြစ် စစ်ပါ |
+| Browser တွင် "missing initial state" | Browser session storage ပျက် (GitHub hosted flow) | နောက်ဆုံး build သို့ update လုပ်ပါ (Google သည် native picker သုံးပြီ)။ GitHub အတွက် tab ပိတ်ပြီး ပုံမှန် tab ဖြင့် ပြန်စမ်းပါ။ Callback URL နှင့် authorized domain စစ်ပါ |
 | GitHub redirect error | Callback URL မမှန် | `https://termuxcommandlibrary.firebaseapp.com/__/auth/handler` အတိအကျ ဖြစ်ရမည် |
 | `PERMISSION_DENIED` | Rules deploy မလုပ် | `firebase deploy --only firestore:rules` လုပ်ပါ |
 | Index error | Index မပြီးသေး | Console → Indexes တွင် "Enabled" ဖြစ်သည်အထိ စောင့်ပါ |

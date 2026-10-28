@@ -182,7 +182,11 @@ class AppLocalizationsMy extends AppLocalizations {
   String get continueWithGithub => 'GitHub ဖြင့် ဆက်လုပ်';
 
   @override
-  String get orContinueWithEmail => 'သို့မဟုတ် အီးမေးလ်ဖြင့် ဆက်လုပ်';
+  String get orContinueWith => 'သို့မဟုတ်';
+
+  @override
+  String get providerSignInSlow =>
+      'Browser တွင် စောင့်နေဆဲလား။ ထိုတွင် ဝင်ရောက်မှု ပြီးအောင်လုပ်ပါ၊ သို့မဟုတ် နောက်သို့ပြန်ပြီး ထပ်စမ်းပါ။';
 
   @override
   String get email => 'အီးမေးလ်';

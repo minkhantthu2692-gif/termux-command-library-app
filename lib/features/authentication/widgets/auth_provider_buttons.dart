@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/generated/app_localizations.dart';
@@ -5,14 +7,15 @@ import '../../../core/design_system/app_tokens.dart';
 import '../../../data/models/auth_models.dart';
 
 /// Google and GitHub entry points shared by the sign-in and registration
-/// screens. The email form stays directly below the divider, so an external
-/// provider that is not configured yet never blocks the primary flow.
-class AuthProviderButtons extends StatelessWidget {
+/// screens. They are deliberately compact, icon-only secondary actions placed
+/// below the email/password form, so the primary form remains the focus.
+class AuthProviderButtons extends StatefulWidget {
   const AuthProviderButtons({
     super.key,
     required this.enabled,
     required this.busyProvider,
     required this.onSelected,
+    this.slowHintDelay = const Duration(seconds: 45),
   });
 
   /// False while the screen is busy or cloud authentication is unavailable.
@@ -23,54 +26,124 @@ class AuthProviderButtons extends StatelessWidget {
 
   final ValueChanged<AuthProviderKind> onSelected;
 
+  /// How long to wait before suggesting recovery steps. Exposed so widget
+  /// tests do not have to wait for the production delay.
+  @visibleForTesting
+  final Duration slowHintDelay;
+
+  @override
+  State<AuthProviderButtons> createState() => _AuthProviderButtonsState();
+}
+
+class _AuthProviderButtonsState extends State<AuthProviderButtons> {
+  Timer? _slowHintTimer;
+  bool _showSlowHint = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncSlowHintTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant AuthProviderButtons oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.busyProvider != oldWidget.busyProvider ||
+        widget.slowHintDelay != oldWidget.slowHintDelay) {
+      _syncSlowHintTimer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _slowHintTimer?.cancel();
+    super.dispose();
+  }
+
+  void _syncSlowHintTimer() {
+    _slowHintTimer?.cancel();
+    _slowHintTimer = null;
+    _showSlowHint = false;
+    if (widget.busyProvider == null) return;
+
+    _slowHintTimer = Timer(widget.slowHintDelay, () {
+      if (!mounted || widget.busyProvider == null) return;
+      setState(() => _showSlowHint = true);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final busy = busyProvider != null;
+    final busy = widget.busyProvider != null;
+    final enabled = widget.enabled && !busy;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _ProviderButton(
-          provider: AuthProviderKind.google,
-          label: l10n.continueWithGoogle,
-          icon: const _GoogleMark(),
-          enabled: enabled && !busy,
-          busy: busyProvider == AuthProviderKind.google,
-          onSelected: onSelected,
-        ),
-        const SizedBox(height: AppSpacing.x3),
-        _ProviderButton(
-          provider: AuthProviderKind.github,
-          label: l10n.continueWithGithub,
-          icon: const _GithubMark(),
-          enabled: enabled && !busy,
-          busy: busyProvider == AuthProviderKind.github,
-          onSelected: onSelected,
-        ),
-        const SizedBox(height: AppSpacing.x5),
         Row(
           children: [
             const Expanded(child: Divider()),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x3),
-              child: Text(
-                l10n.orContinueWithEmail,
-                style: context.texts.labelSmall?.copyWith(
-                  color: context.scheme.onSurfaceVariant,
+            Flexible(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x3),
+                child: Text(
+                  l10n.orContinueWith,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: context.texts.labelSmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
             const Expanded(child: Divider()),
           ],
         ),
-        const SizedBox(height: AppSpacing.x5),
+        const SizedBox(height: AppSpacing.x4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _ProviderIconButton(
+              key: const ValueKey('auth_provider_google'),
+              provider: AuthProviderKind.google,
+              label: l10n.continueWithGoogle,
+              icon: const _GoogleMark(),
+              enabled: enabled,
+              busy: widget.busyProvider == AuthProviderKind.google,
+              onSelected: widget.onSelected,
+            ),
+            const SizedBox(width: AppSpacing.x3),
+            _ProviderIconButton(
+              key: const ValueKey('auth_provider_github'),
+              provider: AuthProviderKind.github,
+              label: l10n.continueWithGithub,
+              icon: const _GithubMark(),
+              enabled: enabled,
+              busy: widget.busyProvider == AuthProviderKind.github,
+              onSelected: widget.onSelected,
+            ),
+          ],
+        ),
+        if (_showSlowHint) ...[
+          const SizedBox(height: AppSpacing.x3),
+          Text(
+            l10n.providerSignInSlow,
+            textAlign: TextAlign.center,
+            style: context.texts.labelSmall?.copyWith(
+              color: context.scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ],
     );
   }
 }
 
-class _ProviderButton extends StatelessWidget {
-  const _ProviderButton({
+class _ProviderIconButton extends StatelessWidget {
+  const _ProviderIconButton({
+    super.key,
     required this.provider,
     required this.label,
     required this.icon,
@@ -88,28 +161,33 @@ class _ProviderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: enabled ? () => onSelected(provider) : null,
-      child: busy
-          ? const SizedBox(
-              width: AppIconSizes.sm,
-              height: AppIconSizes.sm,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                icon,
-                const SizedBox(width: AppSpacing.x3),
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        label: label,
+        child: SizedBox(
+          width: AppSizes.minTapTarget,
+          height: AppSizes.minTapTarget,
+          child: OutlinedButton(
+            onPressed: enabled ? () => onSelected(provider) : null,
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size.square(AppSizes.minTapTarget),
+              maximumSize: const Size.square(AppSizes.minTapTarget),
+              shape: const CircleBorder(),
             ),
+            child: busy
+                ? const SizedBox(
+                    width: AppIconSizes.sm,
+                    height: AppIconSizes.sm,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : icon,
+          ),
+        ),
+      ),
     );
   }
 }

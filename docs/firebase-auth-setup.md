@@ -8,9 +8,9 @@
 | Anonymous Firebase user | Created when the user chooses an online guest flow. The UID can later be upgraded by account linking. |
 | Register | Avatar, nickname, email, password and confirmation. |
 | Sign in | Email/password. |
-| Google sign-in | Firebase `signInWithProvider(GoogleAuthProvider())` in a Custom Tab. Available on the sign-in and registration screens. |
-| GitHub sign-in | Firebase `signInWithProvider(GithubAuthProvider())` with the `user:email` scope. Available on the sign-in and registration screens. |
-| Link guest → provider | On the registration screen, Google/GitHub is linked to the current anonymous UID with `linkWithProvider`, preserving UID, posts, favorites and pins. |
+| Google sign-in | Native Google account picker through `google_sign_in` (Android Credential Manager). The ID token is exchanged with `signInWithCredential(GoogleAuthProvider.credential(...))`. Available below the email form on the sign-in and registration screens. |
+| GitHub sign-in | Firebase `signInWithProvider(GithubAuthProvider())` with the `user:email` scope in a Custom Tab. Available below the email form on the sign-in and registration screens. |
+| Link guest → provider | On the registration screen, the provider is linked to the current anonymous UID with `linkWithCredential` (Google) or `linkWithProvider` (GitHub), preserving UID, posts, favorites and pins. |
 | Password reset | Firebase reset email; no OTP or SMS step. |
 | Link guest → registered | The current anonymous UID is linked to email/password, preserving UID, posts, favorites and pins. |
 | Change password | Requires the current password (re-authentication) and a new password of at least 8 characters. |
@@ -56,17 +56,29 @@ or provide an in-app upgrade path. This app already provides account linking.
 3. Add the signing fingerprints for every build you distribute. In **Project
    settings → Your apps → Android app → Add fingerprint**, add the debug
    SHA-1/SHA-256 and the release/Play App Signing SHA-1/SHA-256. Without them
-   Google sign-in fails on that build even though the console shows the provider
-   as enabled.
+   the native Google SDK cannot obtain an ID token, even though the console shows
+   the provider as enabled.
 4. Download the refreshed `google-services.json` after adding fingerprints or
    clients and replace `android/app/google-services.json`.
-5. Rebuild the app. The Web OAuth client in `google-services.json` is what the
-   Firebase Auth Custom Tab flow uses; no separate `google_sign_in` dependency is
-   required.
+5. Rebuild the app. The native SDK reads the Web OAuth client
+   (`client_type: 3`) from `google-services.json`; the Android OAuth client
+   (`client_type: 1`) must match the signing certificate. No server client ID
+   needs to be hard-coded.
 
-`GoogleAuthProvider()` uses Firebase's hosted flow, so the OAuth consent screen
-and redirect URI are managed by Firebase. No callback URL needs to be entered in
-the Google Cloud console for this flow.
+Google sign-in does **not** use Firebase's hosted `/__/auth/handler` redirect.
+It opens the Android account picker and sends the returned ID token to Firebase
+with `signInWithCredential`, so it is not affected by browser session-storage
+partitioning or the "missing initial state" error. The app depends on
+`google_sign_in` only inside `GoogleIdentityClient`; the rest of the app still
+uses the provider-neutral `AuthGateway` contract.
+
+If you build without `google-services.json` (for example an iOS or CI build),
+pass the Web OAuth client explicitly:
+
+```bash
+flutter build apk --release \
+  --dart-define=GOOGLE_SERVER_CLIENT_ID=<web-client-id>.apps.googleusercontent.com
+```
 
 ## GitHub sign-in setup
 
@@ -90,14 +102,24 @@ the Google Cloud console for this flow.
 6. The GitHub app can stay in development mode while testing. Only GitHub
    accounts added as testers can authorize it until the app is published.
 
+GitHub keeps Firebase's hosted OAuth flow because exchanging a GitHub
+authorization code requires the OAuth client secret, which must stay in the
+Firebase console and never ship in the app. The flow therefore still opens a
+Custom Tab and depends on browser storage. If Chrome reports
+`missing initial state`, close the tab and retry in a normal (non-private) tab;
+the app shows recovery guidance after 45 seconds. See
+[Troubleshooting](troubleshooting.md#google-or-github-sign-in-fails-in-the-browser).
+
 Do not put the GitHub client secret in the Flutter app, `--dart-define`, source
 control or documentation. It belongs only in the Firebase console.
 
 ## Social sign-in behavior
 
-- The **Continue with Google** and **Continue with GitHub** buttons appear above
-  the email form on both authentication screens. They are hidden when the build
-  is local-only (no Firebase configuration).
+- Two compact icon buttons, Google and GitHub, appear **below** the email form
+  on both authentication screens. Email/password remains the primary path. The
+  buttons are hidden when the build is local-only (no Firebase configuration).
+- Google opens the native account picker. GitHub opens Firebase's hosted flow in
+  a Custom Tab.
 - On **Sign in**, the provider creates or reuses a Firebase account. On
   **Create account**, if the current session is an anonymous Firebase user, the
   provider is linked to that UID so the existing collection and authored guides
@@ -107,6 +129,9 @@ control or documentation. It belongs only in the Firebase console.
   sign in with the provider instead; two Firebase UIDs are never merged.
 - Closing the browser tab or cancelling the account picker is treated as a
   cancellation, not an error, and leaves the form usable.
+- If a provider flow has not returned after 45 seconds, the screen suggests
+  finishing sign-in in the browser or going back and trying again. The sign-in
+  future is not force-timed-out, so a late result is still handled correctly.
 - The provider display name seeds the local profile nickname when the profile is
   first created. The user can edit it later in Profile.
 - The email field is disabled while a provider flow is active to prevent two
@@ -136,8 +161,9 @@ explicit email address. It never rewrites `user@outlook.com` to Gmail.
 
 ## Anonymous-to-registered linking
 
-The app links the current anonymous user with `linkWithCredential` (email) or
-`linkWithProvider` (Google/GitHub). Because the UID does not change:
+The app links the current anonymous user with `linkWithCredential` (email) or,
+for providers, `linkWithCredential` (native Google ID token) and
+`linkWithProvider` (GitHub). Because the UID does not change:
 
 - Previously authored posts keep the same `authorUid`.
 - Firestore profile favorites and pins remain attached to the same UID.
@@ -209,12 +235,14 @@ local-only mode. With a project configured:
 2. Continue as local guest, favorite a guide, then register/link and confirm the
    favorite survives.
 3. Sign out and back in; confirm favorites and pin ordering survive.
-4. Sign in with Google and with GitHub on a real device. Confirm the browser flow
-   returns to the app, the profile is created and a guide can be published.
+4. Sign in with Google and with GitHub on a real device. Google must open the
+   native account picker without visiting `firebaseapp.com/__/auth/handler`;
+   GitHub must return from the Custom Tab. Confirm the profile is created and a
+   guide can be published.
 5. As an anonymous Firebase user, open **Create account** and link Google and
    GitHub. Confirm the UID, favorites, pins and authored guides survive.
-6. Cancel the provider browser flow. Confirm no error banner is shown and the
-   form still works.
+6. Cancel the Google account picker and close the GitHub browser tab. Confirm no
+   error banner is shown and the form still works.
 7. Attempt each provider before enabling it in the console. Confirm the
    "sign-in method is not enabled" message appears instead of a crash.
 8. Try to update another account's command directly with the Firestore SDK; it

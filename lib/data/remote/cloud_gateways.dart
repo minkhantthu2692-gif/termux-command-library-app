@@ -18,7 +18,10 @@ abstract interface class AuthGateway {
 
   Future<AuthSession> signIn({required String email, required String password});
 
-  /// Starts the provider's browser flow and signs in with Google or GitHub.
+  /// Signs in with Google or GitHub.
+  ///
+  /// Google uses the native account picker; GitHub uses Firebase's hosted
+  /// browser flow because its token exchange requires the OAuth client secret.
   ///
   /// When [linkAnonymous] is true and the current user is an anonymous Firebase
   /// account, the provider is linked to that account instead of replacing it,
