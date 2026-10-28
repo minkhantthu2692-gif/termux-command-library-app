@@ -13,6 +13,8 @@ enum AppErrorCode {
   authCancelled,
   authProviderUnavailable,
   authProviderAccountExists,
+  authProviderAlreadyLinked,
+  authProviderLinkedElsewhere,
   authDeviceCodeExpired,
   authDeviceFlowDisabled,
   authAccountDeleted,
@@ -67,7 +69,9 @@ class AppException implements Exception {
       code == AppErrorCode.authTooManyRequests ||
       code == AppErrorCode.authRecentLoginRequired ||
       code == AppErrorCode.authProviderUnavailable ||
-      code == AppErrorCode.authProviderAccountExists;
+      code == AppErrorCode.authProviderAccountExists ||
+      code == AppErrorCode.authProviderAlreadyLinked ||
+      code == AppErrorCode.authProviderLinkedElsewhere;
 
   AppException copyWith({AppErrorCode? code, String? message, Object? cause}) =>
       AppException(

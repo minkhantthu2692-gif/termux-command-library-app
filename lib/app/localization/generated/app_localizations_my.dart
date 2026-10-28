@@ -359,6 +359,27 @@ class AppLocalizationsMy extends AppLocalizations {
   String get accountDeleted => 'အကောင့်ကို ဖျက်ပြီးပါပြီ။';
 
   @override
+  String get connectedAccounts => 'ချိတ်ဆက်ထားသော အကောင့်များ';
+
+  @override
+  String get githubAccount => 'GitHub';
+
+  @override
+  String get githubConnectAction => 'ချိတ်ဆက်';
+
+  @override
+  String get githubConnectBody =>
+      'UID၊ favorite နှင့် guide များ မပြောင်းလဲဘဲ GitHub ကို ချိတ်ဆက်ပါ။';
+
+  @override
+  String get githubConnectedBody =>
+      'ချိတ်ဆက်ပြီးပါပြီ။ လက်ရှိနည်းလမ်းအပြင် GitHub ဖြင့်လည်း ဝင်နိုင်ပါသည်။';
+
+  @override
+  String get githubLinkSuccess =>
+      'GitHub ကို သင့်အကောင့်နှင့် ချိတ်ဆက်ပြီးပါပြီ။';
+
+  @override
   String get deleteAccount => 'အကောင့် ဖျက်';
 
   @override
@@ -1513,7 +1534,15 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get errorProviderAccountExists =>
-      'ဤအီးမေးလ်အတွက် အကောင့် ရှိပြီးသားဖြစ်သည်။ ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ရောက်ပါ။ ထိုအကောင့်နှင့် GitHub ချိတ်ဆက်ရန် provider linking လိုအပ်ပြီး ဤအက်ပ်တွင် မပံ့ပိုးရသေးပါ။';
+      'ဤအီးမေးလ်အတွက် အကောင့် ရှိပြီးသားဖြစ်သည်။ ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ပြီး Account settings မှ GitHub ကို ချိတ်ဆက်ပါ။';
+
+  @override
+  String get errorProviderAlreadyLinked =>
+      'ဤဝင်ရောက်နည်းကို သင့်အကောင့်နှင့် ချိတ်ဆက်ပြီးသားဖြစ်သည်။';
+
+  @override
+  String get errorProviderLinkedElsewhere =>
+      'ဤ GitHub အကောင့်ကို အခြားအကောင့်တစ်ခုနှင့် ချိတ်ဆက်ထားသည်။ ထိုအကောင့်ဖြင့် ဝင်ရောက်ပါ။';
 
   @override
   String get errorPermissionDenied =>

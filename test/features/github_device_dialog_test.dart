@@ -157,7 +157,7 @@ void main() {
 
     expect(
       find.text(
-        'An account already exists for this email. Sign in with the method you used before instead. Connecting GitHub to that account needs provider linking, which this app does not support yet.',
+        'An account already exists for this email. Sign in with the method you used before, then connect GitHub from Account settings.',
       ),
       findsOneWidget,
     );
@@ -173,6 +173,40 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(challenge.cancelled, isTrue);
     expect(await result, isNull);
+  });
+
+  testWidgets('terminal linking conflicts offer no retry', (tester) async {
+    const cases = [
+      (
+        AppErrorCode.authProviderAlreadyLinked,
+        'This sign-in method is already connected to your account.',
+      ),
+      (
+        AppErrorCode.authProviderLinkedElsewhere,
+        'This GitHub account is already linked to a different account. Sign in to that account instead.',
+      ),
+    ];
+
+    for (final (code, message) in cases) {
+      final challenge = _FakeChallenge();
+      final result = await showDialogUnderTest(
+        tester,
+        start: () async => challenge.signIn,
+      );
+
+      challenge.result.completeError(AppException(code));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(message), findsOneWidget, reason: '$code');
+      expect(find.text('Try again'), findsNothing, reason: '$code');
+      expect(find.text('Cancel'), findsOneWidget, reason: '$code');
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(await result, isNull, reason: '$code');
+    }
   });
 
   testWidgets('shows a start failure and retries', (tester) async {

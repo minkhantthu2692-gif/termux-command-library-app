@@ -28,7 +28,8 @@ Cloud Firestore when an account and network are available.
 - Favorite guides and pin guides in a user-defined order.
 - Upload, edit and delete your own guides; drafts are supported.
 - Sign in with email/password or Google/GitHub, continue as an anonymous guest,
-  link a guest to a registered account, reset a password and delete an account.
+  link a guest to a registered account, connect GitHub to an existing account
+  without changing its UID, reset a password and delete an account.
 - Work offline. Changes are queued locally and synchronized later.
 - Use an optional AI assistant with your own Groq API key (BYOK), including
   command explanations, title/description help and English/Myanmar translation.
@@ -203,8 +204,8 @@ flutter test
 
 The suite covers validators, risk analysis, command models, the seed catalogue,
 Drift DAOs and persistence, offline synchronization, AI caching/history, Groq
-HTTP/SSE parsing, authentication error mapping, the provider buttons, the
-Riverpod app shell and theme/locale propagation.
+HTTP/SSE parsing, authentication error mapping, provider linking, the provider
+buttons, the Riverpod app shell and theme/locale propagation.
 
 ## Documentation
 

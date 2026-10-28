@@ -5,6 +5,13 @@ import '../../core/errors/app_exception.dart';
 /// Firebase Auth.
 enum AuthProviderKind { google, github }
 
+/// Stable Firebase provider IDs exposed through [AuthSession.linkedProviders].
+abstract final class AuthProviderIds {
+  static const password = 'password';
+  static const google = 'google.com';
+  static const github = 'github.com';
+}
+
 /// Authentication state exposed to the UI. Profile details live separately in
 /// [UserProfile]; this object only describes the identity/session.
 class AuthSession {
@@ -15,6 +22,7 @@ class AuthSession {
     required this.isLocalOnly,
     this.email,
     this.displayName,
+    this.linkedProviders = const {},
   });
 
   final String uid;
@@ -30,8 +38,13 @@ class AuthSession {
   /// True when Firebase is unavailable and the session exists only on-device.
   final bool isLocalOnly;
 
+  /// Firebase provider IDs linked to this account, such as `password`,
+  /// `google.com` or `github.com`. Local-only sessions have no providers.
+  final Set<String> linkedProviders;
+
   bool get isRegistered => !isAnonymous;
   bool get canPublish => isRegistered;
+  bool get hasGithub => linkedProviders.contains(AuthProviderIds.github);
 
   String get roleLabelKey {
     if (isAdmin) return 'admin';
@@ -46,6 +59,7 @@ class AuthSession {
     bool? isAnonymous,
     bool? isAdmin,
     bool? isLocalOnly,
+    Set<String>? linkedProviders,
   }) => AuthSession(
     uid: uid ?? this.uid,
     email: email ?? this.email,
@@ -53,6 +67,7 @@ class AuthSession {
     isAnonymous: isAnonymous ?? this.isAnonymous,
     isAdmin: isAdmin ?? this.isAdmin,
     isLocalOnly: isLocalOnly ?? this.isLocalOnly,
+    linkedProviders: linkedProviders ?? this.linkedProviders,
   );
 
   @override
@@ -63,11 +78,25 @@ class AuthSession {
       other.displayName == displayName &&
       other.isAnonymous == isAnonymous &&
       other.isAdmin == isAdmin &&
-      other.isLocalOnly == isLocalOnly;
+      other.isLocalOnly == isLocalOnly &&
+      _sameProviders(other.linkedProviders, linkedProviders);
 
   @override
-  int get hashCode =>
-      Object.hash(uid, email, displayName, isAnonymous, isAdmin, isLocalOnly);
+  int get hashCode => Object.hash(
+    uid,
+    email,
+    displayName,
+    isAnonymous,
+    isAdmin,
+    isLocalOnly,
+    Object.hashAllUnordered(linkedProviders),
+  );
+}
+
+bool _sameProviders(Set<String> a, Set<String> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  return a.containsAll(b);
 }
 
 /// A GitHub device-flow challenge that is ready to show in the UI.

@@ -46,6 +46,13 @@ abstract interface class AuthGateway {
     bool linkAnonymous = false,
   });
 
+  /// Links GitHub to the signed-in registered account.
+  ///
+  /// The access token comes from the OAuth device flow. The current Firebase UID
+  /// is preserved, so favorites, pins and authored guides stay attached. Use
+  /// [signInWithGithubAccessToken] with `linkAnonymous: true` for guests.
+  Future<AuthSession> linkGithubAccessToken(String accessToken);
+
   /// Links an anonymous Firebase account to an email/password credential while
   /// preserving its UID and therefore its favorites, pins and posts.
   Future<AuthSession> linkAnonymousAccount({

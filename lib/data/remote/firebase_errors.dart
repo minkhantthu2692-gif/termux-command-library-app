@@ -49,11 +49,27 @@ AppException mapFirebaseAuthError(Object error) {
 /// conflicts, not failed attempts, so retrying the provider cannot help. The UI
 /// can use the distinct code to tell the user to sign in with the existing
 /// method instead.
-AppException mapProviderAuthError(Object error) {
-  if (error is FirebaseAuthException &&
-      (error.code == 'account-exists-with-different-credential' ||
-          error.code == 'credential-already-in-use')) {
-    return const AppException(AppErrorCode.authProviderAccountExists);
+///
+/// Set [linking] when the call attaches a provider to the signed-in user:
+/// `credential-already-in-use` then means the provider belongs to a different
+/// Firebase account, while `provider-already-linked` means this account already
+/// has it.
+AppException mapProviderAuthError(Object error, {bool linking = false}) {
+  if (error is FirebaseAuthException) {
+    switch (error.code) {
+      case 'provider-already-linked':
+        return const AppException(AppErrorCode.authProviderAlreadyLinked);
+      case 'credential-already-in-use':
+        return AppException(
+          linking
+              ? AppErrorCode.authProviderLinkedElsewhere
+              : AppErrorCode.authProviderAccountExists,
+        );
+      case 'email-already-in-use' when linking:
+        return const AppException(AppErrorCode.authProviderLinkedElsewhere);
+      case 'account-exists-with-different-credential':
+        return const AppException(AppErrorCode.authProviderAccountExists);
+    }
   }
   return mapFirebaseAuthError(error);
 }

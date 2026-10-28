@@ -301,6 +301,24 @@ class AuthRepository {
   /// [GithubDeviceSignIn.cancel] stops polling.
   Future<GithubDeviceSignIn> startGithubDeviceSignIn({
     bool linkAnonymous = false,
+  }) {
+    return _startGithubDeviceFlow(linkAnonymous: linkAnonymous);
+  }
+
+  /// Starts the device flow to connect GitHub to the signed-in registered
+  /// account. The Firebase UID is preserved, so favorites, pins and authored
+  /// guides stay attached.
+  Future<GithubDeviceSignIn> startGithubAccountLink() async {
+    final session = _gateway?.currentSession;
+    if (session == null || !session.isRegistered) {
+      throw const AppException(AppErrorCode.authRequired);
+    }
+    return _startGithubDeviceFlow(linkExisting: true);
+  }
+
+  Future<GithubDeviceSignIn> _startGithubDeviceFlow({
+    bool linkAnonymous = false,
+    bool linkExisting = false,
   }) async {
     final gateway = _requireGateway();
     final client = _githubDeviceClient;
@@ -313,6 +331,7 @@ class AuthRepository {
         authorization,
         gateway,
         linkAnonymous: linkAnonymous,
+        linkExisting: linkExisting,
       );
       // A dialog that is dismissed while the first request is in flight may
       // never await the result. Attach an error handler now so a late failure
@@ -335,19 +354,30 @@ class AuthRepository {
   Future<AuthSession> _completeGithubDeviceSignIn(
     GithubDeviceAuthorization authorization,
     AuthGateway gateway, {
-    required bool linkAnonymous,
+    bool linkAnonymous = false,
+    bool linkExisting = false,
   }) async {
     try {
       final token = await authorization.waitForToken();
-      final session = await gateway.signInWithGithubAccessToken(
-        token.accessToken,
-        linkAnonymous: linkAnonymous,
-      );
+      final session = linkExisting
+          ? await gateway.linkGithubAccessToken(token.accessToken)
+          : await gateway.signInWithGithubAccessToken(
+              token.accessToken,
+              linkAnonymous: linkAnonymous,
+            );
       await _ensureProfile(session);
-      await _syncDao.enqueue(
-        uid: session.uid,
-        type: PendingOperationType.profileSync,
-      );
+      if (linkExisting) {
+        // Firebase does not emit authStateChanges when a provider is linked to
+        // the current user, so publish the updated provider list explicitly.
+        for (final observer in List.of(_sessionObservers)) {
+          observer(session);
+        }
+      } else {
+        await _syncDao.enqueue(
+          uid: session.uid,
+          type: PendingOperationType.profileSync,
+        );
+      }
       return session;
     } on AppException {
       rethrow;

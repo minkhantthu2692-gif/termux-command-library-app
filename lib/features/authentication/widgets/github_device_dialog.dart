@@ -16,19 +16,24 @@ import 'auth_scaffold.dart';
 ///
 /// Returns the authenticated session, or null when the user cancels. Starting
 /// failures are handled inside the dialog so the user can retry without
-/// leaving the sign-in screen.
+/// leaving the sign-in screen. Set [linkExistingAccount] to connect GitHub to
+/// the signed-in registered account instead of signing in.
 Future<AuthSession?> showGithubDeviceSignInDialog(
   BuildContext context,
   WidgetRef ref, {
   bool linkAnonymous = false,
+  bool linkExistingAccount = false,
 }) {
+  assert(!(linkAnonymous && linkExistingAccount));
   final repository = ref.read(authRepositoryProvider);
+  final start = linkExistingAccount
+      ? repository.startGithubAccountLink
+      : () => repository.startGithubDeviceSignIn(linkAnonymous: linkAnonymous);
   return showDialog<AuthSession>(
     context: context,
     barrierDismissible: false,
     builder: (_) => GithubDeviceDialog(
-      start: () =>
-          repository.startGithubDeviceSignIn(linkAnonymous: linkAnonymous),
+      start: start,
       onCopyCode: (code) => ref.read(clipboardServiceProvider).copy(code),
       onOpenUri: _openGithubDevicePage,
     ),
@@ -150,6 +155,14 @@ class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
     });
   }
 
+  /// Account-model conflicts cannot be fixed by requesting another device code.
+  bool get _canRetry => switch (_errorCode) {
+    AppErrorCode.authProviderAccountExists ||
+    AppErrorCode.authProviderAlreadyLinked ||
+    AppErrorCode.authProviderLinkedElsewhere => false,
+    _ => true,
+  };
+
   void _maybeOpenBrowser() {
     final challenge = _challenge;
     if (_autoOpened || challenge == null) return;
@@ -185,9 +198,9 @@ class _GithubDeviceDialogState extends State<GithubDeviceDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final challenge = _challenge;
-    // An email collision is an account-model conflict: a new GitHub device
-    // code can never succeed, so only offer Cancel and hide the browser hint.
-    final canRetry = _errorCode != AppErrorCode.authProviderAccountExists;
+    // A terminal account-model conflict cannot succeed with a new device code,
+    // so only offer Cancel and hide the browser hint.
+    final canRetry = _canRetry;
     return AlertDialog(
       title: Text(l10n.githubDeviceTitle),
       content: ConstrainedBox(

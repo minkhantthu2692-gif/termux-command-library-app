@@ -227,6 +227,15 @@ Google and GitHub use different transport paths:
   anonymous account). The device code and access token stay inside the data
   layer and are never logged or persisted. Only the public OAuth client ID is
   compiled into the app; the client secret remains in the Firebase console.
+- **Connect GitHub to a registered account** reuses the same device flow.
+  `AuthRepository.startGithubAccountLink` requires a registered session and
+  `FirebaseAuthGateway.linkGithubAccessToken` calls `linkWithCredential` on the
+  current user. The UID is preserved, so favorites, pins and authored guides
+  stay attached. `AuthSession.linkedProviders` exposes Firebase provider IDs
+  (`password`, `google.com`, `github.com`) so the UI can show a connected state.
+  Firebase does not emit `authStateChanges` for provider linking, so the
+  repository publishes the updated session to its active `watchSessions`
+  listeners itself.
 
 Both clients are injectable, so tests and future platforms can avoid real
 platform channels or HTTP requests. The rest of the app depends only on the

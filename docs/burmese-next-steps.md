@@ -54,7 +54,7 @@ Firebase အဆင့်များ၊ build/install နှင့် admin edit
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Dart tests | ✅ ပြီး | `flutter test` — 210/210 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 219/219 အောင် |
 | Firestore rules tests | ✅ ပြီး | emulator တွင် 29/29 အောင် |
 | Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
 | Release APK build | ✅ ပြီး | `app-release.apk` (71.1 MB) — debug key ဖြင့် |
@@ -161,9 +161,25 @@ GitHub သည် Firebase ၏ hosted browser flow ကို **မသုံးတ
 GitHub မှ ရသော အီးမေးလ်ဖြင့် Firebase အကောင့် ရှိပြီးသားဖြစ်နေလျှင်
 Firebase က `account-exists-with-different-credential` ဖြင့် ငြင်းပယ်သည်။
 ထိုအခါ dialog တွင် **Try again** မပြဘဲ ရှင်းလင်းချက် ပြသည်။ ကုဒ်အသစ်
-ယူခြင်းက မကူညီပါ။ ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ပါ။
-ရွေးချယ်စရာများနှင့် လုံခြုံရေး သတိပေးချက်ကို
-`docs/troubleshooting.md` တွင် ကြည့်ပါ။
+ယူခြင်းက မကူညီပါ။ ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ပြီး အောက်ပါ
+နည်းဖြင့် GitHub ကို ချိတ်ဆက်ပါ။ ရွေးချယ်စရာများနှင့် လုံခြုံရေး
+သတိပေးချက်ကို `docs/troubleshooting.md` တွင် ကြည့်ပါ။
+
+**အကောင့်ရှိပြီးသားနှင့် GitHub ချိတ်ဆက်ခြင်း**
+
+1. ယခင်က သုံးခဲ့သော နည်းလမ်း (အီးမေးလ်/စကားဝှက် သို့မဟုတ် Google)
+   ဖြင့် ဝင်ပါ။
+2. **Account → Connected accounts → GitHub → Connect** ကို နှိပ်ပါ။
+3. Dialog တွင် ပြသော ကုဒ်ကို `github.com/login/device` တွင် ထည့်ပြီး
+   ခွင့်ပြုပါ။
+4. App က `linkWithCredential` ဖြင့် ချိတ်ဆက်သောကြောင့် UID၊ favorite၊
+   pin နှင့် သင့် guide များ မပြောင်းလဲပါ။ ချိတ်ဆက်ပြီးနောက် GitHub
+   ဖြင့်လည်း ထိုအကောင့်ကို ဝင်နိုင်ပါသည်။
+
+- `provider-already-linked` — GitHub ကို ဤအကောင့်နှင့် ချိတ်ပြီးသား။
+- `credential-already-in-use` / `email-already-in-use` (linking) —
+  ထို GitHub သည် အခြား Firebase အကောင့်နှင့် ချိတ်ထားသည်။
+  ထိုအကောင့်ဖြင့် ဝင်ပါ။
 
 ### ၂.၃ စစ်ဆေးရန်
 
@@ -782,7 +798,9 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 | Browser တွင် "missing initial state" | ဟောင်းသော build (GitHub hosted flow) | နောက်ဆုံး build သို့ update လုပ်ပါ။ Google သည် native picker၊ GitHub သည် device flow သုံးပြီး `__/auth/handler` ကို မဖွင့်တော့ပါ |
 | `device_flow_disabled` | GitHub OAuth App တွင် Device Flow မဖွင့်ထား | GitHub → Settings → Developer settings → OAuth Apps → app ကို ရွေး → **Enable Device Flow** → Update application |
 | GitHub ကုဒ် သက်တမ်းကုန် | ကုဒ်ကို ၁၅ မိနစ်အတွင်း မသုံးခဲ့ | Dialog တွင် **Try again** နှိပ်ပြီး ကုဒ်အသစ် ယူပါ |
-| GitHub အီးမေးလ်ဖြင့် အကောင့်ရှိပြီး | Firebase တွင် ထိုအီးမေးလ်ကို အခြားနည်းလမ်းဖြင့် သုံးထားသည် | **Try again** မပေါ်ပါ။ ယခင်နည်းလမ်းဖြင့် ဝင်ပါ။ အီးမေးလ် verification မပါဘဲ **Link accounts that use the same email** ဖွင့်ခြင်းသည် လုံခြုံရေးအန္တရာယ် ရှိသည် |
+| GitHub အီးမေးလ်ဖြင့် အကောင့်ရှိပြီး | Firebase တွင် ထိုအီးမေးလ်ကို အခြားနည်းလမ်းဖြင့် သုံးထားသည် | **Try again** မပေါ်ပါ။ ယခင်နည်းလမ်းဖြင့် ဝင်ပြီး **Account → Connected accounts → GitHub → Connect** ဖြင့် ချိတ်ဆက်ပါ။ အီးမေးလ် verification မပါဘဲ **Link accounts that use the same email** ဖွင့်ခြင်းသည် လုံခြုံရေးအန္တရာယ် ရှိသည် |
+| GitHub ကို ဤအကောင့်နှင့် ချိတ်ပြီးသား | `provider-already-linked` | ချိတ်ဆက်ထားသော အခြေအနေ ပြထားသည်။ ထပ်ချိတ်ရန် မလိုပါ |
+| GitHub သည် အခြားအကောင့်နှင့် ချိတ်ထားသည် | Linking တွင် `credential-already-in-use` / `email-already-in-use` | ထို GitHub ကို ပိုင်ဆိုင်သော Firebase အကောင့်ဖြင့် ဝင်ပါ |
 | GitHub ခွင့်ပြုချက် ပယ်ခံ | GitHub တွင် Cancel နှိပ်ခဲ့ | ထပ်စမ်းပြီး app ကို ခွင့်ပြုပါ |
 | `PERMISSION_DENIED` | Rules deploy မလုပ် | `firebase deploy --only firestore:rules` လုပ်ပါ |
 | Index error | Index မပြီးသေး | Console → Indexes တွင် "Enabled" ဖြစ်သည်အထိ စောင့်ပါ |

@@ -16,6 +16,7 @@ import '../../shared/widgets/app_page.dart';
 import '../../shared/widgets/avatar_bubble.dart';
 import '../../shared/widgets/settings_tiles.dart';
 import '../../shared/widgets/status_pill.dart';
+import '../authentication/widgets/github_device_dialog.dart';
 
 /// Account management intentionally separates local cache clearing, local guest
 /// removal, sign out, and permanent cloud-account deletion.
@@ -99,6 +100,35 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                 ),
             ],
           ),
+          if (cloudConfigured &&
+              session.isRegistered &&
+              !session.isLocalOnly) ...[
+            const SizedBox(height: AppSpacing.x4),
+            SettingsGroup(
+              title: l10n.connectedAccounts,
+              children: [
+                SettingsTile(
+                  leading: const Icon(Icons.link_rounded),
+                  title: l10n.githubAccount,
+                  subtitle: session.hasGithub
+                      ? l10n.githubConnectedBody
+                      : l10n.githubConnectBody,
+                  trailing: session.hasGithub
+                      ? Icon(
+                          Icons.check_circle_rounded,
+                          color: context.scheme.primary,
+                        )
+                      : Text(
+                          l10n.githubConnectAction,
+                          style: context.texts.labelLarge?.copyWith(
+                            color: context.scheme.primary,
+                          ),
+                        ),
+                  onTap: session.hasGithub || _busy ? null : _connectGithub,
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppSpacing.x4),
           SettingsGroup(
             title: l10n.dataAndStorage,
@@ -179,6 +209,18 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _connectGithub() async {
+    final l10n = AppLocalizations.of(context);
+    final result = await showGithubDeviceSignInDialog(
+      context,
+      ref,
+      linkExistingAccount: true,
+    );
+    if (!mounted || result == null) return;
+    unawaited(triggerHaptic(ref, cue: HapticCue.success));
+    context.showSnack(l10n.githubLinkSuccess);
   }
 
   Future<void> _clearLocalData() async {

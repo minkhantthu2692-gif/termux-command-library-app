@@ -72,7 +72,7 @@ around it by fetching unbounded collections in the client.
 | `wrong-password` / `invalid-credential` | Credentials; use password reset |
 | `email-already-in-use` | Sign in instead of registering, or link from the anonymous account |
 | `weak-password` | Use at least 8 characters |
-| `credential-already-in-use` | The email/provider account belongs to another Firebase UID. Email/password flows show "already in use"; provider flows show a non-retryable account collision. Sign in with the existing method. Different UIDs are not merged. |
+| `credential-already-in-use` | The email/provider account belongs to another Firebase UID. Email/password flows show "already in use"; provider sign-in shows a non-retryable account collision; provider linking shows "already linked to a different account". Sign in with the existing method. Different UIDs are not merged. |
 | `requires-recent-login` | Re-authenticate with the current password before changing/deleting |
 | Google sign-in returns without signing in | Verify the app's debug/release SHA-1 and SHA-256 fingerprints in Firebase, confirm the Android OAuth client matches the signing certificate, then re-download `google-services.json` |
 | `missing initial state` / browser sessionStorage error | Not expected on current builds: Google uses the native picker and GitHub uses the device flow, so neither visits `/__/auth/handler`. Update the installed APK if this appears. |
@@ -80,7 +80,9 @@ around it by fetching unbounded collections in the client.
 | GitHub code expired | The device code is valid for about 15 minutes. Tap **Try again** in the dialog to request a new code. |
 | GitHub authorization denied | The user cancelled on GitHub. Start again and approve the OAuth app. |
 | GitHub account has no email | Keep the `read:user user:email` scope request in the device client; otherwise private-email accounts return no address |
-| GitHub email belongs to another account | The GitHub email already has a Firebase user from email/password or Google. The dialog shows the collision message and no **Try again**. Sign in with the original method, or use a GitHub account with an unregistered email. |
+| GitHub email belongs to another account | The GitHub email already has a Firebase user from email/password or Google. The dialog shows the collision message and no **Try again**. Sign in with the original method, then connect GitHub from **Account → Connected accounts → GitHub → Connect**. |
+| GitHub is already connected | The signed-in account already has the GitHub provider; the account tile shows a connected state and disables **Connect**. |
+| GitHub belongs to a different account while linking | `credential-already-in-use` or `email-already-in-use` in link mode. Sign in to the Firebase account that owns that GitHub identity. |
 | Provider flow closes with no message | This is treated as a cancellation and is intentionally silent |
 
 Password reset emails require the device to receive email and the Firebase
@@ -132,15 +134,20 @@ collision.
 
 Options, in order of safety:
 
-1. Sign in with the method that owns the email (email/password or Google). The
-   app does not currently offer provider linking for registered accounts.
+1. Sign in with the method that owns the email (email/password or Google), then
+   open **Account → Connected accounts → GitHub → Connect**. The app links GitHub
+   to that UID, so favorites, pins and authored guides stay attached.
 2. Use a GitHub account whose verified email is not registered in the project.
-3. Implement provider linking for signed-in accounts as a future feature.
-4. Enable **Link accounts that use the same email** in Firebase Authentication
+3. Enable **Link accounts that use the same email** in Firebase Authentication
    settings. This merges accounts by email; because this app does not require
    email verification, enabling it can let an attacker pre-register an address
    and later take over a provider account. Do not enable it for production
    without verified emails.
+
+Linking errors are also terminal. `provider-already-linked` means this account
+already has GitHub. `credential-already-in-use` or `email-already-in-use` while
+linking means the GitHub identity belongs to a different Firebase account; sign
+in to that account instead.
 
 ## Favorites or pins disappear
 

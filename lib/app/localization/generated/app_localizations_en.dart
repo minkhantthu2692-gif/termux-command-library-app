@@ -356,6 +356,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeleted => 'Your account has been deleted.';
 
   @override
+  String get connectedAccounts => 'Connected accounts';
+
+  @override
+  String get githubAccount => 'GitHub';
+
+  @override
+  String get githubConnectAction => 'Connect';
+
+  @override
+  String get githubConnectBody =>
+      'Connect GitHub without changing your UID, favorites or guides.';
+
+  @override
+  String get githubConnectedBody =>
+      'Connected. You can sign in with GitHub as well as your current method.';
+
+  @override
+  String get githubLinkSuccess => 'GitHub connected to your account.';
+
+  @override
   String get deleteAccount => 'Delete account';
 
   @override
@@ -1499,7 +1519,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorProviderAccountExists =>
-      'An account already exists for this email. Sign in with the method you used before instead. Connecting GitHub to that account needs provider linking, which this app does not support yet.';
+      'An account already exists for this email. Sign in with the method you used before, then connect GitHub from Account settings.';
+
+  @override
+  String get errorProviderAlreadyLinked =>
+      'This sign-in method is already connected to your account.';
+
+  @override
+  String get errorProviderLinkedElsewhere =>
+      'This GitHub account is already linked to a different account. Sign in to that account instead.';
 
   @override
   String get errorPermissionDenied =>

@@ -13,8 +13,8 @@ void main() {
   AppErrorCode mapCode(String code) =>
       mapFirebaseAuthError(_TestAuthException(code)).code;
 
-  AppErrorCode mapProviderCode(String code) =>
-      mapProviderAuthError(_TestAuthException(code)).code;
+  AppErrorCode mapProviderCode(String code, {bool linking = false}) =>
+      mapProviderAuthError(_TestAuthException(code), linking: linking).code;
 
   test('provider cancellations are not treated as failures', () {
     for (final code in [
@@ -67,6 +67,38 @@ void main() {
     expect(
       mapProviderCode('operation-not-allowed'),
       AppErrorCode.authProviderUnavailable,
+    );
+  });
+
+  test('linking maps provider conflicts to terminal account errors', () {
+    for (final code in ['credential-already-in-use', 'email-already-in-use']) {
+      final error = mapProviderAuthError(
+        _TestAuthException(code),
+        linking: true,
+      );
+      expect(
+        error.code,
+        AppErrorCode.authProviderLinkedElsewhere,
+        reason: code,
+      );
+      expect(error.retryable, isFalse, reason: code);
+    }
+
+    final alreadyLinked = mapProviderAuthError(
+      _TestAuthException('provider-already-linked'),
+      linking: true,
+    );
+    expect(alreadyLinked.code, AppErrorCode.authProviderAlreadyLinked);
+    expect(alreadyLinked.retryable, isFalse);
+
+    // A sign-in collision is still an email conflict, not a linked-elsewhere
+    // error, even though both are terminal.
+    expect(
+      mapProviderCode(
+        'account-exists-with-different-credential',
+        linking: true,
+      ),
+      AppErrorCode.authProviderAccountExists,
     );
   });
 

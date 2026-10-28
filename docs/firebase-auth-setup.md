@@ -13,6 +13,7 @@
 | Link guest → provider | On the registration screen, the provider is linked to the current anonymous UID with `linkWithCredential` (Google and GitHub), preserving UID, posts, favorites and pins. |
 | Password reset | Firebase reset email; no OTP or SMS step. |
 | Link guest → registered | The current anonymous UID is linked to email/password, preserving UID, posts, favorites and pins. |
+| Connect GitHub to a registered account | **Account → Connected accounts → GitHub → Connect** starts the device flow and calls `linkWithCredential` on the signed-in user. The Firebase UID does not change, so favorites, pins and authored guides stay attached. |
 | Change password | Requires the current password (re-authentication) and a new password of at least 8 characters. |
 | Sign out | Returns to the local guest identity; local cache and seed content remain. |
 | Delete account | Re-authenticates, deletes authored cloud guides, profile, Auth user and local user rows. |
@@ -144,8 +145,9 @@ If GitHub still reports `device_flow_disabled`, the OAuth App is missing the
   link fails and the app reports that an account already exists. The user must
   sign in with the provider instead; two Firebase UIDs are never merged.
 - An email collision (`account-exists-with-different-credential`) is shown as a
-  non-retryable error in the GitHub dialog: the user must sign in with the method
-  that owns the email. Registered accounts cannot link GitHub in the current app.
+  non-retryable error in the GitHub dialog: sign in with the method that owns the
+  email, then use **Account → Connected accounts → GitHub → Connect** to attach
+  GitHub to that account. The UID, favorites, pins and guides are preserved.
   See
   [Troubleshooting › GitHub email already belongs to another account](troubleshooting.md#github-email-already-belongs-to-another-account)
   for the available options and their security trade-offs.
@@ -158,6 +160,30 @@ If GitHub still reports `device_flow_disabled`, the OAuth App is missing the
   first created. The user can edit it later in Profile.
 - The email field is disabled while a provider flow is active to prevent two
   concurrent sign-in attempts.
+
+### Connect GitHub to an existing account
+
+A user whose GitHub email is already registered with email/password or Google
+cannot sign in with GitHub as a new account. Instead:
+
+1. Sign in with the method that owns the email.
+2. Open **Account → Connected accounts**.
+3. Tap **Connect** next to GitHub.
+4. Enter the displayed code at `github.com/login/device` and approve the app.
+
+The app calls `linkWithCredential` on the current user, so the Firebase UID and
+all favorites, pins and authored guides are preserved. The GitHub provider then
+appears in the session's `linkedProviders` and the tile shows a connected state.
+Signing in with GitHub later opens the same account.
+
+Linking errors are terminal and do not offer **Try again**:
+
+- `provider-already-linked`: GitHub is already connected to this account.
+- `credential-already-in-use` / `email-already-in-use`: that GitHub identity
+  belongs to another Firebase account. Sign in to that account instead.
+
+Linking requires a registered (non-anonymous) session. Guests use the provider
+button on the registration screen, which links GitHub to the anonymous UID.
 
 ## Email handling
 

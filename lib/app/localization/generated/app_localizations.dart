@@ -758,6 +758,42 @@ abstract class AppLocalizations {
   /// **'Your account has been deleted.'**
   String get accountDeleted;
 
+  /// No description provided for @connectedAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected accounts'**
+  String get connectedAccounts;
+
+  /// No description provided for @githubAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub'**
+  String get githubAccount;
+
+  /// No description provided for @githubConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get githubConnectAction;
+
+  /// No description provided for @githubConnectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect GitHub without changing your UID, favorites or guides.'**
+  String get githubConnectBody;
+
+  /// No description provided for @githubConnectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected. You can sign in with GitHub as well as your current method.'**
+  String get githubConnectedBody;
+
+  /// No description provided for @githubLinkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub connected to your account.'**
+  String get githubLinkSuccess;
+
   /// No description provided for @deleteAccount.
   ///
   /// In en, this message translates to:
@@ -2873,8 +2909,20 @@ abstract class AppLocalizations {
   /// No description provided for @errorProviderAccountExists.
   ///
   /// In en, this message translates to:
-  /// **'An account already exists for this email. Sign in with the method you used before instead. Connecting GitHub to that account needs provider linking, which this app does not support yet.'**
+  /// **'An account already exists for this email. Sign in with the method you used before, then connect GitHub from Account settings.'**
   String get errorProviderAccountExists;
+
+  /// No description provided for @errorProviderAlreadyLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'This sign-in method is already connected to your account.'**
+  String get errorProviderAlreadyLinked;
+
+  /// No description provided for @errorProviderLinkedElsewhere.
+  ///
+  /// In en, this message translates to:
+  /// **'This GitHub account is already linked to a different account. Sign in to that account instead.'**
+  String get errorProviderLinkedElsewhere;
 
   /// No description provided for @errorPermissionDenied.
   ///

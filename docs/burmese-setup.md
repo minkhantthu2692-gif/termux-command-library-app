@@ -500,7 +500,7 @@ Groq နှင့်အတူ:
 | Browser တွင် "missing initial state" | နောက်ဆုံး build သို့ update လုပ်ပါ (Google သည် native picker၊ GitHub သည် device flow သုံးပြီ) |
 | `device_flow_disabled` | GitHub OAuth App တွင် Device Flow မဖွင့်ထား | GitHub → Settings → Developer settings → OAuth Apps → **Enable Device Flow** → Update application |
 | GitHub ကုဒ် သက်တမ်းကုန် | ကုဒ်ကို အချိန်မီ မသုံးခဲ့ | Dialog တွင် **Try again** နှိပ်ပြီး ကုဒ်အသစ် ယူပါ |
-| GitHub အီးမေးလ်ဖြင့် အကောင့်ရှိပြီး | GitHub ၏ အီးမေးလ်ကို အီးမေးလ်/စကားဝှက် သို့မဟုတ် Google အကောင့်က သုံးထားသည် | ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ပါ။ ဤအက်ပ်တွင် အကောင့်ရှိပြီးသား အသုံးပြုသူအတွက် GitHub ချိတ်ဆက်မှု မရှိသေးပါ။ Firebase ၏ **Link accounts that use the same email** ကို email verification မပါဘဲ ဖွင့်ခြင်းသည် လုံခြုံရေးအန္တရာယ် ရှိသည် |
+| GitHub အီးမေးလ်ဖြင့် အကောင့်ရှိပြီး | GitHub ၏ အီးမေးလ်ကို အီးမေးလ်/စကားဝှက် သို့မဟုတ် Google အကောင့်က သုံးထားသည် | ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ပြီး **Account → Connected accounts → GitHub → Connect** ဖြင့် ချိတ်ဆက်ပါ။ UID၊ favorite၊ pin နှင့် guide များ မပြောင်းလဲပါ။ Firebase ၏ **Link accounts that use the same email** ကို email verification မပါဘဲ ဖွင့်ခြင်းသည် လုံခြုံရေးအန္တရာယ် ရှိသည် |
 | Termux မတွေ့ | GitHub release မှ ပြန်တပ်ဆင်ပါ၊ Termux ကို တစ်ကြိမ်ဖွင့်ပါ |
 | Command မလုပ် | `allow-external-apps=true` နှင့် permission စစ်ပါ |
 | AI 401 | ကီး မှန်/မမှန်၊ revoke ဖြစ်/မဖြစ် စစ်ပါ |

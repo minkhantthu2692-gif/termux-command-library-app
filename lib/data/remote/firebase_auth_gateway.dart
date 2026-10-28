@@ -39,6 +39,7 @@ class FirebaseAuthGateway implements AuthGateway {
     isAnonymous: user.isAnonymous,
     isAdmin: false,
     isLocalOnly: false,
+    linkedProviders: _providerIds(user),
   );
 
   Future<AuthSession?> _asyncSession(
@@ -64,8 +65,12 @@ class FirebaseAuthGateway implements AuthGateway {
       isAnonymous: user.isAnonymous,
       isAdmin: isAdmin,
       isLocalOnly: false,
+      linkedProviders: _providerIds(user),
     );
   }
+
+  Set<String> _providerIds(User user) =>
+      user.providerData.map((info) => info.providerId).toSet();
 
   @override
   Future<AuthSession> signInAnonymously() async {
@@ -210,6 +215,28 @@ class FirebaseAuthGateway implements AuthGateway {
     // check. Force one refresh so writes made right after the provider flow are
     // not rejected with the old anonymous token.
     return (await _asyncSession(user, forceRefreshToken: linkAnonymous))!;
+  }
+
+  /// Links GitHub to the signed-in registered account without changing its UID,
+  /// so favorites, pins and authored guides stay attached.
+  ///
+  /// The access token comes from the device flow and is exchanged immediately;
+  /// it is never stored or logged. Anonymous accounts use
+  /// [signInWithGithubAccessToken] with `linkAnonymous: true` instead.
+  @override
+  Future<AuthSession> linkGithubAccessToken(String accessToken) async {
+    try {
+      final current = _auth.currentUser;
+      if (current == null || current.isAnonymous) {
+        throw const AppException(AppErrorCode.authRequired);
+      }
+      final credential = await current.linkWithCredential(
+        GithubAuthProvider.credential(accessToken),
+      );
+      return await _completeProviderSignIn(credential, linkAnonymous: false);
+    } catch (error) {
+      throw mapProviderAuthError(error, linking: true);
+    }
   }
 
   @override

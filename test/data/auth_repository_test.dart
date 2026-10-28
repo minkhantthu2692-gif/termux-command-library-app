@@ -210,6 +210,138 @@ void main() {
       expect(await db.profileDao.getProfile('github-1'), isNull);
     });
   });
+
+  group('GitHub account linking', () {
+    const registered = AuthSession(
+      uid: 'user-1',
+      email: 'user@example.com',
+      displayName: 'User',
+      isAnonymous: false,
+      isAdmin: false,
+      isLocalOnly: false,
+      linkedProviders: {AuthProviderIds.password},
+    );
+
+    late _GithubAuthGateway githubGateway;
+    late _FakeGithubDeviceClient client;
+    late Completer<GithubAccessToken> tokenCompleter;
+    late AuthRepository githubRepository;
+
+    setUp(() {
+      githubGateway = _GithubAuthGateway()..session = registered;
+      tokenCompleter = Completer<GithubAccessToken>();
+      client = _FakeGithubDeviceClient(
+        GithubDeviceAuthorization(
+          userCode: 'ABCD-1234',
+          verificationUri: Uri.parse('https://github.com/login/device'),
+          expiresAt: DateTime.utc(2026, 10, 28, 12, 15),
+          poll: () => tokenCompleter.future,
+          cancel: () {},
+        ),
+      );
+      githubRepository = AuthRepository(
+        gateway: githubGateway,
+        cloud: null,
+        profileDao: db.profileDao,
+        preferenceDao: db.preferenceDao,
+        commandDao: db.commandDao,
+        syncDao: db.syncDao,
+        localGuestUid: 'local-guest',
+        githubDeviceClient: client,
+      );
+    });
+
+    tearDown(() async {
+      await githubGateway.close();
+    });
+
+    test('requires a signed-in registered session', () async {
+      githubGateway.session = null;
+      await expectLater(
+        githubRepository.startGithubAccountLink(),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.authRequired,
+          ),
+        ),
+      );
+
+      githubGateway.session = const AuthSession(
+        uid: 'anon-1',
+        isAnonymous: true,
+        isAdmin: false,
+        isLocalOnly: false,
+      );
+      await expectLater(
+        githubRepository.startGithubAccountLink(),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.authRequired,
+          ),
+        ),
+      );
+      expect(client.starts, 0);
+    });
+
+    test('keeps the UID and publishes the linked provider', () async {
+      final sessions = <AuthSession>[];
+      final subscription = githubRepository.watchSessions().listen(
+        sessions.add,
+      );
+      await pumpEventQueue();
+
+      final link = await githubRepository.startGithubAccountLink();
+      expect(client.starts, 1);
+      expect(link.userCode, 'ABCD-1234');
+
+      tokenCompleter.complete(
+        const GithubAccessToken(accessToken: 'gho_test_token'),
+      );
+      final session = await link.result;
+      await pumpEventQueue();
+
+      expect(githubGateway.linkCalls, 1);
+      expect(githubGateway.receivedLinkToken, 'gho_test_token');
+      expect(session.uid, registered.uid);
+      expect(session.isRegistered, isTrue);
+      expect(session.hasGithub, isTrue);
+      // Firebase does not emit authStateChanges for provider linking, so the
+      // repository must publish the updated session itself.
+      expect(sessions.last.hasGithub, isTrue);
+      expect(await db.profileDao.getProfile(registered.uid), isNotNull);
+      // Linking changes no profile data, so it must not queue another sync.
+      expect(await db.syncDao.pendingCount(registered.uid), 0);
+
+      await subscription.cancel();
+    });
+
+    test('propagates a provider linked to another account', () async {
+      githubGateway.linkError = const AppException(
+        AppErrorCode.authProviderLinkedElsewhere,
+      );
+      final link = await githubRepository.startGithubAccountLink();
+
+      tokenCompleter.complete(
+        const GithubAccessToken(accessToken: 'gho_test_token'),
+      );
+
+      await expectLater(
+        link.result,
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.code,
+            'code',
+            AppErrorCode.authProviderLinkedElsewhere,
+          ),
+        ),
+      );
+      expect(await db.syncDao.pendingCount(registered.uid), 0);
+    });
+  });
 }
 
 class _RefreshAuthGateway implements AuthGateway {
@@ -236,15 +368,23 @@ class _RefreshAuthGateway implements AuthGateway {
 }
 
 class _GithubAuthGateway implements AuthGateway {
+  final _sessions = StreamController<AuthSession?>.broadcast();
+
+  AuthSession? session;
   String? receivedToken;
   bool? linkedAnonymous;
   AppException? error;
+  String? receivedLinkToken;
+  int linkCalls = 0;
+  AppException? linkError;
+
+  Future<void> close() => _sessions.close();
 
   @override
-  AuthSession? get currentSession => null;
+  AuthSession? get currentSession => session;
 
   @override
-  Stream<AuthSession?> watchSessions() => const Stream<AuthSession?>.empty();
+  Stream<AuthSession?> watchSessions() => _sessions.stream;
 
   @override
   Future<AuthSession> signInWithGithubAccessToken(
@@ -262,6 +402,19 @@ class _GithubAuthGateway implements AuthGateway {
       isAnonymous: false,
       isAdmin: false,
       isLocalOnly: false,
+    );
+  }
+
+  @override
+  Future<AuthSession> linkGithubAccessToken(String accessToken) async {
+    linkCalls++;
+    receivedLinkToken = accessToken;
+    final failure = linkError;
+    if (failure != null) throw failure;
+    final current = session;
+    if (current == null) throw const AppException(AppErrorCode.authRequired);
+    return current.copyWith(
+      linkedProviders: {...current.linkedProviders, AuthProviderIds.github},
     );
   }
 
