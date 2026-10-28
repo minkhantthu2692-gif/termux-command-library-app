@@ -29,7 +29,10 @@ you can run local-only with AI, or online sync without AI.
 7. Optionally open the help dialog/setup guide for cache and history controls.
 
 The app never hard-codes a model name. The list always comes from the provider,
-so new Groq models appear without an app update.
+so new Groq models appear without an app update. The picker only lists
+chat-capable models: an entry must accept text input, produce text output and not
+be a moderation classifier. Groq's speech, transcription and prompt-guard models
+are therefore hidden automatically, including models added after this release.
 
 ## 3. Where the key is stored
 
@@ -65,7 +68,9 @@ AiProvider
 - Models: `GET /models`
 - Chat: `POST /chat/completions` with `stream: true`
 - Timeout: 45 seconds
-- SSE `data:` frames, `[DONE]`, content deltas, usage metadata and finish reason.
+- SSE `data:` frames, `[DONE]`, content deltas, finish reason and usage metadata.
+  Live Groq streams deliver token usage in the final chunk's `x_groq.usage`
+  wrapper (not a top-level `usage` field), so both shapes are parsed.
 
 To add Gemini or another provider:
 
@@ -81,11 +86,26 @@ Do not put provider-specific HTTP code in widgets or repositories.
 ## 5. Models
 
 - Models are fetched dynamically and cached locally with a one-day TTL.
+- Only chat-capable models are listed. The filter uses the API's own capability
+  metadata (`input_modalities` must include `text`, `output_modalities` must
+  include `text`) plus a guard-model exclusion, so no chat allow-list is
+  hard-coded.
 - Inactive models (`active: false`) are marked unavailable.
 - The selected model ID is stored in local settings, not Firestore.
 - If a saved model disappears, the UI asks the user to choose another; it does not
   silently substitute a model.
 - Model context window metadata is displayed when provided.
+
+### Verified against the live API (2026-10-28)
+
+- `GET /models` returned 11 models; 4 passed the chat-capable filter
+  (`qwen/qwen3.8-27b`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`,
+  `allam-2-7b`). Speech, transcription and guard models were hidden.
+- `POST /chat/completions` with `stream: true` streamed content deltas and
+  `[DONE]`; the final chunk carried token usage under `x_groq.usage`.
+- On a real Android device, **Test key**, **Save key**, **Fetch models**, model
+  selection, a streamed answer, the local history entry and a cache hit were all
+  confirmed.
 
 ## 6. Chat, context and attachments
 

@@ -88,6 +88,91 @@ void main() {
       expect(models[1].active, isFalse);
     });
 
+    test('keeps only chat-capable models from real-world metadata', () async {
+      final provider = GroqAiProvider(
+        client: MockClient(
+          (request) async => http.Response(
+            jsonEncode({
+              'data': [
+                {
+                  'id': 'openai/gpt-oss-120b',
+                  'name': 'GPT OSS 120B',
+                  'owned_by': 'OpenAI',
+                  'context_window': 131072,
+                  'input_modalities': ['text'],
+                  'output_modalities': ['text'],
+                  'active': true,
+                },
+                {
+                  // Image input still includes text, so it stays available.
+                  'id': 'qwen/qwen3.8-27b',
+                  'name': 'Qwen/Qwen3.8-27B',
+                  'owned_by': 'Alibaba Cloud',
+                  'context_window': 131072,
+                  'input_modalities': ['text', 'image'],
+                  'output_modalities': ['text'],
+                  'active': true,
+                },
+                {
+                  'id': 'allam-2-7b',
+                  'name': 'ALLaM-2-7b',
+                  'context_window': 4096,
+                  'input_modalities': ['text'],
+                  'output_modalities': ['text'],
+                  'supported_features': ['json_mode'],
+                },
+                {
+                  'id': 'whisper-large-v3-turbo',
+                  'name': 'Whisper Large V3 Turbo',
+                  'context_window': 448,
+                  'input_modalities': ['audio'],
+                  'output_modalities': ['transcription'],
+                  'active': true,
+                },
+                {
+                  'id': 'canopylabs/orpheus-v1-english',
+                  'name': 'Canopy Labs Orpheus V1 English',
+                  'context_window': 4000,
+                  'input_modalities': ['text'],
+                  'output_modalities': ['speech'],
+                  'active': true,
+                },
+                {
+                  'id': 'meta-llama/llama-prompt-guard-2-86m',
+                  'owned_by': 'Meta',
+                  'context_window': 4096,
+                  'input_modalities': ['text'],
+                  'output_modalities': ['text'],
+                  'active': true,
+                },
+                {
+                  'id': 'openai/gpt-oss-safeguard-20b',
+                  'name': 'GPT OSS Safeguard 20B',
+                  'owned_by': 'OpenAI',
+                  'context_window': 131072,
+                  'input_modalities': ['text'],
+                  'output_modalities': ['text'],
+                  'active': true,
+                },
+              ],
+            }),
+            200,
+          ),
+        ),
+      );
+      addTearDown(provider.close);
+
+      final models = await provider.fetchModels('key');
+
+      expect(models.map((model) => model.id).toList(), [
+        'allam-2-7b',
+        'openai/gpt-oss-120b',
+        'qwen/qwen3.8-27b',
+      ]);
+      expect(models.first.contextWindow, 4096);
+      expect(models.first.providerId, 'groq');
+    });
+
     test('rejects malformed model payloads', () async {
       final provider = GroqAiProvider(
         client: MockClient(
@@ -167,6 +252,58 @@ void main() {
       expect(body['stream'], isTrue);
       expect(body['messages'], hasLength(1));
       expect(captured.headers['Authorization'], 'Bearer key');
+    });
+
+    test('parses usage from the x_groq wrapper on the final chunk', () async {
+      final provider = GroqAiProvider(
+        client: MockClient(
+          (request) async => http.Response(
+            _sse([
+              {
+                'choices': [
+                  {
+                    'delta': {'content': 'ok'},
+                  },
+                ],
+              },
+              {
+                'choices': [
+                  {'delta': <String, dynamic>{}, 'finish_reason': 'stop'},
+                ],
+                // Live Groq streams deliver usage through the x_groq wrapper
+                // without a top-level usage field.
+                'x_groq': {
+                  'usage': {
+                    'prompt_tokens': 5,
+                    'completion_tokens': 2,
+                    'total_tokens': 7,
+                  },
+                },
+              },
+              '[DONE]',
+            ]),
+            200,
+          ),
+        ),
+      );
+      addTearDown(provider.close);
+
+      final deltas = await provider
+          .streamChat(
+            apiKey: 'key',
+            modelId: 'model',
+            messages: const [
+              AiPromptMessage(role: AiMessageRole.user, content: 'Hi'),
+            ],
+          )
+          .toList();
+
+      expect(deltas.last.done, isTrue);
+      final usage = deltas.last.usage;
+      expect(usage, isNotNull);
+      expect(usage!.promptTokens, 5);
+      expect(usage.completionTokens, 2);
+      expect(usage.totalTokens, 7);
     });
 
     test('streams done after content when no finish reason is sent', () async {

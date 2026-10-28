@@ -332,9 +332,23 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
 
     final settings = ref.read(settingsControllerProvider);
     final models = ref.read(aiModelsProvider).value ?? const <AiModelInfo>[];
+    var keyAsync = ref.read(aiKeyPresentProvider);
+    if (keyAsync.isLoading) {
+      // The secure-storage read can still be in flight right after a setup
+      // change. Wait for the real answer instead of bouncing the user to
+      // settings for a state that is about to resolve.
+      try {
+        keyAsync = AsyncValue.data(await ref.read(aiKeyPresentProvider.future));
+      } catch (error) {
+        if (!mounted) return;
+        context.showErrorSnack(error);
+        return;
+      }
+      if (!mounted || _sending) return;
+    }
     final availability = resolveAiAvailability(
       settings: settings,
-      keyAsync: ref.read(aiKeyPresentProvider),
+      keyAsync: keyAsync,
       models: models,
     );
     if (availability != AiAvailability.ready) {

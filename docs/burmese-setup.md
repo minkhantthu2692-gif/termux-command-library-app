@@ -366,7 +366,9 @@ AI သည် ရွေးချယ်နိုင်သော လုပ်ဆေ
 2. App ထဲတွင် **Profile → Settings → AI Assistant** ကို ဖွင့်ပါ။
 3. ကီးကို ထည့်ပါ။
 4. **Test key** ကို နှိပ်ပါ။
-5. **Fetch models** ကို နှိပ်ပြီး model ရွေးပါ။
+5. **Fetch models** ကို နှိပ်ပြီး model ရွေးပါ။ Picker တွင် chat
+   အသုံးပြုနိုင်သော model များသာ ပြမည်။ Speech၊ transcription နှင့်
+   guard model များကို အလိုအလျောက် ဖျောက်ထားသည်။
 6. AI ကို ဖွင့်ပါ။
 
 လုံခြုံရေး:

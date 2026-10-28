@@ -21,8 +21,8 @@
 
 အောက်ပါအစီအစဉ်သည် ဤ repository ၏ လက်ရှိ အခြေအနေကို ပြသည်။
 Firebase အဆင့်များ၊ build/install နှင့် admin edit/delete စမ်းသပ်မှုကို
-ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော Termux ပြင်ဆင်မှု၊ ရွေးချယ်နိုင်သော
-Groq ကီးနှင့် release keystore ကို ဆက်လုပ်ပါ။
+ပြီးစီးထားပြီးဖြစ်သည်။ Groq AI ကိုလည်း စက်ပေါ်တွင် စမ်းသပ်ပြီးဖြစ်သည်။
+ကျန်ရှိသော Termux ပြင်ဆင်မှုနှင့် release keystore ကို ဆက်လုပ်ပါ။
 
 | အစီအစဉ် | လုပ်ငန်း | အခြေအနေ |
 | --- | --- | --- |
@@ -34,14 +34,14 @@ Groq ကီးနှင့် release keystore ကို ဆက်လုပ်�
 | ၆ | ပြန် build လုပ်ပြီး စက်ထဲ ထည့်ခြင်း | ✅ ပြီး (release APK ကို စက်ထဲ ထည့်ပြီး) |
 | ၇ | စက်ပေါ်တွင် စမ်းသပ်ခြင်း | ✅ အဓိက flow များ စစ်ပြီး (admin edit/delete အပါအဝင်) |
 | ၈ | Termux ပြင်ဆင်ခြင်း | ⬜ မရသေး |
-| ၉ | Groq API ကီး ထည့်ခြင်း | ⬜ ရွေးချယ်နိုင် |
+| ၉ | Groq API ကီး ထည့်ခြင်း | ✅ ပြီး (စက်ပေါ် စမ်းသပ်ပြီး) |
 | ၁၀ | Admin custom claim သတ်မှတ်ခြင်း | ✅ ပြီး (claim သတ်မှတ်ပြီး) |
 | ၁၁ | Release keystore ဖြင့် လက်မှတ်ထိုးခြင်း | ⬜ ဖြန့်ဝေမှသာ |
 
 > **အရေးကြီး:** Firebase ချိတ်ဆက်မှု (provider များ၊ Firestore၊ rules၊
-> indexes)၊ APK build/install နှင့် admin edit/delete စမ်းသပ်မှုကို
-> ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော Termux ပြင်ဆင်မှု၊ ရွေးချယ်နိုင်သော
-> Groq ကီးနှင့် release keystore ကို သင်ကိုယ်တိုင် လုပ်ရမည်။
+> indexes)၊ APK build/install၊ admin edit/delete စမ်းသပ်မှုနှင့် Groq AI
+> စမ်းသပ်မှုကို ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော Termux ပြင်ဆင်မှုနှင့်
+> release keystore ကို သင်ကိုယ်တိုင် လုပ်ရမည်။
 > လျှို့ဝှက် credential များကို chat ထဲ မပို့ပါနှင့်။
 
 ---
@@ -54,7 +54,7 @@ Groq ကီးနှင့် release keystore ကို ဆက်လုပ်�
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Dart tests | ✅ ပြီး | `flutter test` — 178/178 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 180/180 အောင် |
 | Firestore rules tests | ✅ ပြီး | emulator တွင် 26/26 အောင် |
 | Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
 | Release APK build | ✅ ပြီး | `app-release.apk` (71.1 MB) — debug key ဖြင့် |
@@ -72,13 +72,13 @@ Groq ကီးနှင့် release keystore ကို ဆက်လုပ်�
 | Admin custom claim | ✅ သတ်မှတ်ပြီး | Profile တွင် **Admin** ပြ၍ စစ်ပြီး |
 | Release signing | ❌ မပါ | လက်ရှိ release သည် debug key သုံးထား |
 | Termux ပြင်ဆင်မှု | ⬜ မရသေး | `allow-external-apps` နှင့် permission လိုအပ် |
-| Groq API ကီး | ❌ မရသေး | သင့်ကိုယ်ပိုင် ကီး ထည့်ရမည် |
+| Groq API ကီး | ✅ စမ်းပြီး | 2026-10-28 တွင် စက်ပေါ်၌ ကီး၊ model ရွေးချယ်မှု၊ stream အဖြေ၊ token နှင့် cache စမ်းပြီး |
 
 **အနှစ်ချုပ်:** code၊ ဒေသတွင်း (offline) အလုပ်လုပ်မှု၊ Firebase project
-ချိတ်ဆက်မှု၊ auth provider များ၊ Firestore rules/indexes၊ APK build/install
-နှင့် စက်ပေါ်တွင် admin edit/delete စမ်းသပ်မှု အားလုံး ပြီးစီးထားသည်။
-ကျန်သည်မှာ **Termux ပြင်ဆင်ခြင်း**၊ ရွေးချယ်နိုင်သော **Groq ကီး**
-နှင့် ဖြန့်ဝေလိုမှသာ **release keystore** ဖြစ်သည်။
+ချိတ်ဆက်မှု၊ auth provider များ၊ Firestore rules/indexes၊ APK build/install၊
+စက်ပေါ်တွင် admin edit/delete စမ်းသပ်မှုနှင့် Groq AI စမ်းသပ်မှု
+အားလုံး ပြီးစီးထားသည်။ ကျန်သည်မှာ **Termux ပြင်ဆင်ခြင်း** နှင့်
+ဖြန့်ဝေလိုမှသာ **release keystore** ဖြစ်သည်။
 
 ---
 
@@ -555,8 +555,14 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 2. App ထဲတွင် **Profile → Settings → AI Assistant** ကို ဖွင့်ပါ။
 3. ကီးကို ထည့်ပြီး **Save** နှိပ်ပါ။
 4. **Test key** ကို နှိပ်ပါ။ အောင်မြင်လျှင် အစိမ်းရောင် အခြေအနေ ပြမည်။
-5. **Fetch models** ကို နှိပ်ပြီး model တစ်ခု ရွေးပါ။
+5. **Fetch models** ကို နှိပ်ပြီး model တစ်ခု ရွေးပါ။ Picker တွင် chat
+   အသုံးပြုနိုင်သော model များသာ ပြမည် (speech၊ transcription နှင့်
+   guard model များ အလိုအလျောက် ဖျောက်ထားသည်)။
 6. **Enable AI** ကို ဖွင့်ပါ။
+
+> 2026-10-28 တွင် စက်ပေါ်၌ ကီး စစ်ဆေးခြင်း၊ model ရယူခြင်း၊ stream
+> အဖြေ၊ token အရေအတွက်၊ history နှင့် cache ကို စမ်းသပ်အောင်မြင်ပြီး
+> ဖြစ်သည်။
 
 လုံခြုံရေး:
 
@@ -797,7 +803,7 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
    ပြန်မပေါ်ခြင်းတို့ကို စစ်ပြီး)
 6. Termux ပြင်ဆင်ခြင်း — ⬜ **မလုပ်ရသေး**
 7. Release keystore — ⬜ **မလုပ်ရသေး** (Play Store ဖြန့်ဝေမှသာ)
-8. Groq API ကီး — ⬜ **ရွေးချယ်နိုင်** (BYOK)
+8. Groq API ကီး — ✅ **ပြီး** (2026-10-28 စက်ပေါ် စမ်းပြီး၊ BYOK)
 
 အထက်ပါ ၆ ကို ပြီးလျှင် app သည် အသုံးပြုရန် အသင့် ဖြစ်မည်။
 Release ဖြန့်ဝေလိုမှသာ **အဆင့် ၁၁** (keystore) ကို ထပ်လုပ်ပါ။

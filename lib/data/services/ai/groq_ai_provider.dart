@@ -65,6 +65,7 @@ class GroqAiProvider implements AiProvider {
         if (raw is! Map) continue;
         final id = raw['id']?.toString() ?? '';
         if (id.isEmpty) continue;
+        if (!_supportsChatCompletion(raw, id)) continue;
         final contextRaw =
             raw['context_window'] ??
             raw['context_length'] ??
@@ -158,7 +159,9 @@ class GroqAiProvider implements AiProvider {
           final code = error['code']?.toString() ?? '';
           throw _mapApiErrorCode(code);
         }
-        final usageRaw = json['usage'];
+        // Groq delivers usage in a `x_groq` wrapper on the final stream chunk
+        // in addition to (or instead of) a top-level `usage`.
+        final usageRaw = json['usage'] ?? ((json['x_groq'] as Map?)?['usage']);
         if (usageRaw is Map) {
           usage = AiUsage.fromJson(Map<String, dynamic>.from(usageRaw));
         }
@@ -258,4 +261,17 @@ class GroqAiProvider implements AiProvider {
   }
 
   void close() => _client.close();
+
+  /// Only text chat models belong in the assistant's model picker. Groq also
+  /// exposes transcription models with audio input, speech models with audio
+  /// output and moderation "guard" classifiers; all of them fail a normal chat
+  /// request. Capability metadata decides, so newly added chat models keep
+  /// flowing through without a hard-coded allow list.
+  bool _supportsChatCompletion(Map raw, String id) {
+    final inputs = raw['input_modalities'];
+    if (inputs is List && !inputs.contains('text')) return false;
+    final outputs = raw['output_modalities'];
+    if (outputs is List && !outputs.contains('text')) return false;
+    return !id.toLowerCase().contains('guard');
+  }
 }

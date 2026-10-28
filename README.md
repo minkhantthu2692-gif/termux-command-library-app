@@ -8,10 +8,13 @@ Cloud Firestore when an account and network are available.
 > **Project status:** the application, local database, synchronization layer,
 > Firebase gateways, Groq provider abstraction, UI, tests and documentation are
 > implemented. A live Firebase project is configured, and authentication,
-> Firestore sync and admin edit/delete were verified on an Android device. Groq
-> live end-to-end verification has **not** been performed because the AI assistant
-> is optional and requires a user-supplied BYOK key. The app deliberately starts in
-> a fully usable local-only mode when no Firebase configuration is present.
+> Firestore sync and admin edit/delete were verified on an Android device. The
+> Groq assistant was verified end-to-end on a real device on **2026-10-28** with a
+> user-supplied BYOK key: key validation, dynamic model discovery (chat-capable
+> models only), streamed answers, token usage, local history and cached responses
+> all work. The AI assistant remains optional and needs a BYOK key. The app
+> deliberately starts in a fully usable local-only mode when no Firebase
+> configuration is present.
 
 ---
 
