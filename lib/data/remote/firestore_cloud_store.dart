@@ -120,23 +120,39 @@ class FirestoreCloudStore implements CloudStore {
   }
 
   @override
-  Future<void> saveCommand(CommandPost command) async {
+  Future<void> saveCommand(
+    CommandPost command, {
+    bool remoteExists = false,
+  }) async {
     final doc = _commands.doc(command.id);
     final data = _commandToMap(command);
     final createdAt = data.remove('createdAt');
+
+    // A create must carry `createdAt`; an update must omit it. The update rule
+    // compares `request.resource.data.createdAt` with the stored value, and
+    // SQLite can truncate the original timestamp, so re-sending it would be
+    // denied. `update()` cannot be used to probe for a missing document: the
+    // rules evaluate `resource.data.createdAt` against a null resource and
+    // return permission-denied rather than not-found. [remoteExists] comes
+    // from the local cache; when it is wrong, the other write is tried once.
+    Future<void> create() => doc.set({...data, 'createdAt': createdAt});
+    Future<void> update() => doc.update(data);
+
     try {
-      // `createdAt` is immutable in the security rules, but SQLite only keeps
-      // second precision. Re-sending a locally reconstructed timestamp would
-      // differ from the original server value (which may include microseconds)
-      // and every retry would be denied. Updating without that field preserves
-      // the server value, and the merged request resource still contains it
-      // for validation. `update()` replaces map fields such as `metadata`, so
-      // removing a metadata key does not leave a stale entry behind.
-      try {
-        await doc.update(data);
-      } on FirebaseException catch (error) {
-        if (error.code != 'not-found') rethrow;
-        await doc.set({...data, 'createdAt': createdAt});
+      if (remoteExists) {
+        try {
+          await update();
+        } on FirebaseException catch (error) {
+          if (error.code != 'permission-denied') rethrow;
+          await create();
+        }
+      } else {
+        try {
+          await create();
+        } on FirebaseException catch (error) {
+          if (error.code != 'permission-denied') rethrow;
+          await update();
+        }
       }
     } catch (error) {
       throw mapFirebaseError(error);
@@ -186,17 +202,24 @@ class FirestoreCloudStore implements CloudStore {
         await doc.set(data, SetOptions(merge: true));
         return;
       }
-      // `createdAt` is immutable in the security rules. Sending it on every
-      // profile sync made updates fail with permission-denied once the
-      // document already existed. Update first and only add `createdAt` when
-      // the document genuinely has to be created.
-      try {
-        await doc.update(data);
-      } on FirebaseException catch (error) {
-        if (error.code != 'not-found') rethrow;
-        data['createdAt'] = FieldValue.serverTimestamp();
-        await doc.set(data, SetOptions(merge: true));
-      }
+      // `createdAt` is immutable in the security rules. An `update()` cannot
+      // be used to detect a missing profile: the rules evaluate
+      // `resource.data.createdAt` against a null resource and return
+      // permission-denied instead of not-found, so the create branch never
+      // ran and new accounts had no profile document. A transaction reads the
+      // document (owners may read their own missing profile) and writes
+      // exactly one create or update.
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(doc);
+        if (snapshot.exists) {
+          transaction.update(doc, data);
+        } else {
+          transaction.set(doc, {
+            ...data,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      });
     } catch (error) {
       throw mapFirebaseError(error);
     }

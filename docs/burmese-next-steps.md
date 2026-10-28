@@ -54,8 +54,8 @@ Firebase အဆင့်များ၊ build/install နှင့် admin edit
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Dart tests | ✅ ပြီး | `flutter test` — 180/180 အောင် |
-| Firestore rules tests | ✅ ပြီး | emulator တွင် 26/26 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 181/181 အောင် |
+| Firestore rules tests | ✅ ပြီး | emulator တွင် 29/29 အောင် |
 | Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
 | Release APK build | ✅ ပြီး | `app-release.apk` (71.1 MB) — debug key ဖြင့် |
 | Native Kotlin haptics | ✅ compile အောင် | `HapticsController.class` APK ထဲ ပါဝင် |

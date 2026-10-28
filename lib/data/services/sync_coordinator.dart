@@ -516,7 +516,10 @@ class SyncCoordinator {
         );
       case PendingOperationType.commandUpsert:
         final post = _parseCommandPayload(operation.payload, uid);
-        await cloud.saveCommand(post);
+        await cloud.saveCommand(
+          post,
+          remoteExists: operation.payload['remoteExists'] == true,
+        );
         await _commandDao.markSynced(post);
       case PendingOperationType.commandDelete:
         if (operation.entityId.isEmpty) {

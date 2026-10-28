@@ -131,8 +131,43 @@ void main() {
     }
 
     expect(cloud.savedCommandIds, contains(draft.id));
+    expect(cloud.savedCommandRemoteExists.last, isFalse);
     expect(await db.syncDao.pendingCount(_memberSession.uid), 0);
     expect((await db.commandDao.getCommand(draft.id))?.isPendingSync, isFalse);
+  });
+
+  test('edits a synced guide with the update-first hint', () async {
+    gateway.emit(_memberSession);
+    await pumpEventQueue(times: 20);
+
+    final repository = CommandRepository(
+      commandDao: db.commandDao,
+      preferenceDao: db.preferenceDao,
+      syncDao: db.syncDao,
+      cloudConfigured: true,
+    );
+    final synced = buildCommand(id: 'synced-edit', name: 'Original');
+    await db.commandDao.saveLocalPost(synced, pendingSync: false);
+
+    await repository.savePost(
+      session: _memberSession,
+      post: synced.copyWith(
+        name: 'Edited',
+        updatedAt: DateTime.utc(2026, 10, 2, 8),
+      ),
+      publish: true,
+      authorNickname: 'Member',
+    );
+
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while (cloud.savedCommandIds.isEmpty && DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+
+    expect(cloud.savedCommandNames, contains('Edited'));
+    // The guide already has a remote document, so the gateway must update
+    // instead of attempting a create that the rules would deny.
+    expect(cloud.savedCommandRemoteExists.last, isTrue);
   });
 
   test('sends a newer payload queued during an in-flight write', () async {
@@ -405,6 +440,7 @@ class _FakeAuthGateway implements AuthGateway {
 class _FakeCloudStore implements CloudStore {
   final List<String> savedCommandIds = [];
   final List<String> savedCommandNames = [];
+  final List<bool> savedCommandRemoteExists = [];
   final List<String> deletedCommandIds = [];
   final _commandEvents = StreamController<CloudCommandEvent>.broadcast();
   List<CommandPost> fetchedCommands = const [];
@@ -434,11 +470,15 @@ class _FakeCloudStore implements CloudStore {
   Future<List<CommandPost>> fetchAuthoredCommands(String uid) async => const [];
 
   @override
-  Future<void> saveCommand(CommandPost command) async {
+  Future<void> saveCommand(
+    CommandPost command, {
+    bool remoteExists = false,
+  }) async {
     final error = saveCommandError;
     if (error != null) throw error;
     savedCommandIds.add(command.id);
     savedCommandNames.add(command.name);
+    savedCommandRemoteExists.add(remoteExists);
     await onSaveCommand?.call(command);
   }
 

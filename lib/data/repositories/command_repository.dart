@@ -206,11 +206,17 @@ class CommandRepository {
 
     await _commandDao.saveLocalPost(saved, pendingSync: !session.isLocalOnly);
     if (!session.isLocalOnly) {
+      // A guide loaded from the cache without a pending write is known to have
+      // a remote copy. A brand-new guide, or one whose first upload never
+      // completed, has none. The gateway falls back to the other write if this
+      // hint is stale, so it is only an optimization, never an authorization
+      // decision.
+      final remoteExists = existing != null && !existing.isPendingSync;
       await _syncDao.enqueue(
         uid: session.uid,
         type: PendingOperationType.commandUpsert,
         entityId: saved.id,
-        payload: saved.toJson(),
+        payload: {...saved.toJson(), 'remoteExists': remoteExists},
       );
     }
     return saved;

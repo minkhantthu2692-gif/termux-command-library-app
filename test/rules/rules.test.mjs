@@ -14,6 +14,7 @@ import {
   getDoc,
   getDocs,
   query,
+  runTransaction,
   setDoc,
   updateDoc,
   where,
@@ -320,6 +321,58 @@ test('profile may be created before the favorite and pin arrays exist', async ()
     setDoc(doc(carol, 'users/carol'), profile('carol', {}, false)),
   );
   await assertSucceeds(getDoc(doc(carol, 'users/carol')));
+});
+
+test('an update cannot create a missing profile', async () => {
+  const dave = asUser('dave');
+  // This is the write the app used to send first. The update rule reads
+  // `resource.data.createdAt`, which is null for a missing document, so the
+  // request is denied instead of returning not-found.
+  await assertFails(
+    updateDoc(doc(dave, 'users/dave'), {
+      uid: 'dave',
+      nickname: 'Dave',
+      email: 'dave@example.com',
+      avatarId: 'avatar-1',
+      updatedAt: UPDATED_AT,
+    }),
+  );
+  // The app now creates through a transaction, which reads the missing
+  // document (allowed for the owner) and writes a complete payload.
+  await assertSucceeds(
+    runTransaction(dave, async (transaction) => {
+      const ref = doc(dave, 'users/dave');
+      const snapshot = await transaction.get(ref);
+      if (snapshot.exists()) throw new Error('unexpected');
+      transaction.set(ref, profile('dave'));
+    }),
+  );
+});
+
+test('an update cannot create a missing guide', async () => {
+  const erin = asUser('erin');
+  const payload = command({ authorUid: 'erin', authorNickname: 'Erin' });
+  const withoutCreatedAt = { ...payload };
+  delete withoutCreatedAt.createdAt;
+  await assertFails(
+    updateDoc(doc(erin, 'commands/erin-guide'), withoutCreatedAt),
+  );
+  await assertSucceeds(setDoc(doc(erin, 'commands/erin-guide'), payload));
+});
+
+test('a transaction can update an existing profile without createdAt', async () => {
+  const alice = aliceDb();
+  await assertSucceeds(
+    runTransaction(alice, async (transaction) => {
+      const ref = doc(alice, 'users/alice');
+      const snapshot = await transaction.get(ref);
+      if (!snapshot.exists()) throw new Error('missing');
+      transaction.update(ref, {
+        nickname: 'Alice Updated',
+        updatedAt: UPDATED_AT,
+      });
+    }),
+  );
 });
 
 test('profile cannot contain a role-like field', async () => {

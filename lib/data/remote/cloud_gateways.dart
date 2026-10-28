@@ -122,7 +122,10 @@ abstract interface class CloudStore {
   /// Fetches the signed-in user's own documents, including drafts.
   Future<List<CommandPost>> fetchAuthoredCommands(String uid);
 
-  Future<void> saveCommand(CommandPost command);
+  /// Creates or updates a guide. [remoteExists] is a local cache hint: when
+  /// true the gateway updates, otherwise it creates. A wrong hint is corrected
+  /// by the implementation with a single fallback write.
+  Future<void> saveCommand(CommandPost command, {bool remoteExists = false});
 
   Future<void> deleteCommand(String commandId);
 

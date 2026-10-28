@@ -135,6 +135,22 @@ command document at write time. If a user later changes their nickname, existing
 guides keep the old display name until they are updated; this avoids an extra
 read/query and a denormalized update fan-out.
 
+### Client write pattern
+
+A missing document cannot be detected with `update()`: the rules evaluate
+`resource.data.createdAt` against a null resource, so Firestore returns
+`permission-denied` rather than `not-found`. The app therefore:
+
+- creates a missing profile inside a transaction (owners may read their own
+  absent profile), and
+- writes a new guide with a full create payload, falling back to an update only
+  when the document already exists. The pending-operation payload carries a
+  `remoteExists` hint from the local cache, so an edit normally goes straight to
+  `update()`.
+
+Both fallbacks are one-shot. If neither write is allowed, the mapped
+permission-denied error is shown and the queued operation remains for a retry.
+
 ## Everything else
 
 A catch-all rule denies all other paths. Do not add a client-writable roles
@@ -176,7 +192,7 @@ Use the Emulator UI or a rules-unit-testing harness to verify at least:
 13. A maximum-density guide (30 steps, 10 tags, 12 metadata entries) is accepted
     end to end; one step beyond the limit is rejected.
 
-The rules suite lives in `test/rules/rules.test.mjs` with 26 tests. Run it with:
+The rules suite lives in `test/rules/rules.test.mjs` with 29 tests. Run it with:
 
 ```bash
 # Requires Java on PATH. On Windows without a system JDK, point JAVA_HOME at a

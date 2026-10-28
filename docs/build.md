@@ -203,8 +203,8 @@ zone.
 Firebase rules tests and live Firebase/Groq end-to-end tests require external
 projects and are not run by `flutter test`.
 
-The Dart suite currently passes **180 tests**, and the Firestore rules tests pass
-**26 cases** locally against the Firestore emulator with Node (Java only for the
+The Dart suite currently passes **181 tests**, and the Firestore rules tests pass
+**29 cases** locally against the Firestore emulator with Node (Java only for the
 emulator itself). See
 [Security Rules › Emulator testing](security-rules.md#emulator-testing) for the
 exact command.
