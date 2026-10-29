@@ -797,6 +797,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This app sends commands to Termux. It is not a terminal emulator and cannot run commands by itself.';
 
   @override
+  String get termuxGuideButtons =>
+      'Use Run via Termux on a step, or Run all in Termux on a guide. Every command is shown for confirmation before it is sent.';
+
+  @override
   String get termuxStepInstall =>
       'Install the official Termux release (GitHub, F-Droid or a trusted mirror).';
 
@@ -813,6 +817,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Run termux-reload-settings or restart Termux.';
 
   @override
+  String get termuxStepOverlay =>
+      'Allow Termux to open sessions from the background.';
+
+  @override
+  String get termuxOverlayBody =>
+      'Android 10 and later blocks Termux from opening a terminal session while this app is in front unless Termux can display over other apps. Grant the permission once; background runs do not need it.';
+
+  @override
+  String get termuxOverlayGrant => 'Open Termux display settings';
+
+  @override
+  String get termuxOverlayPill => 'Display over apps';
+
+  @override
+  String get termuxOverlayTitle => 'Termux needs display permission';
+
+  @override
+  String get termuxOverlayRunBody =>
+      'Android 10 and later requires the \"Display over other apps\" permission for Termux to open a terminal session while this app is in front. Grant it in Termux\'s Android settings, or turn on Run in the background in the confirmation sheet.';
+
+  @override
   String get termuxTestTitle => 'Test the connection';
 
   @override
@@ -823,8 +848,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get termuxTestButton => 'Send test command';
 
   @override
-  String get termuxApiNote =>
-      'Some guides use the Termux:API package. Install the Termux:API app and pkg install termux-api for those commands.';
+  String get termuxStepApi =>
+      'Install Termux:API for built-in commands (optional).';
+
+  @override
+  String get termuxApiStepBody =>
+      'Some guides use termux-* commands such as termux-battery-status or termux-toast. They need two separate parts:';
+
+  @override
+  String get termuxApiApk => '1. The Termux:API APK (adds the Android side).';
+
+  @override
+  String get termuxApiPackage =>
+      '2. The termux-api package inside Termux (adds the commands):';
+
+  @override
+  String get termuxApiSameSource =>
+      'Install Termux and Termux:API from the same source. GitHub and F-Droid builds use different signing keys, so switching sources requires uninstalling every Termux app and plugin.';
+
+  @override
+  String get termuxStatusNote =>
+      'Status reflects installed apps and Android permissions. Packages installed inside Termux are not visible to this app.';
+
+  @override
+  String get termuxApiTestTitle => 'Test Termux:API';
+
+  @override
+  String get termuxApiTestBody =>
+      'Send a harmless toast. If nothing appears, the APK, the package or an Android permission is missing.';
+
+  @override
+  String get termuxApiTestButton => 'Send API test';
+
+  @override
+  String get termuxApiNoteTitle => 'Termux:API commands';
+
+  @override
+  String get termuxApiConfirmNote =>
+      'This guide uses termux-* commands. They only work when the Termux:API APK and the termux-api package are both installed.';
+
+  @override
+  String get termuxApiMissingTitle => 'Termux:API is required';
+
+  @override
+  String get termuxApiMissingBody =>
+      'This command uses a built-in termux-* command. Install the Termux:API APK, then run pkg install termux-api inside Termux. Both parts are required.';
+
+  @override
+  String get termuxApiGuide => 'Get Termux:API';
+
+  @override
+  String get termuxApiSettings => 'Open Termux:API settings';
+
+  @override
+  String get termuxApiNotInstalled => 'Termux:API is not installed.';
+
+  @override
+  String get openAppSettings => 'Open app settings';
+
+  @override
+  String get permissionGranted => 'Permission granted';
+
+  @override
+  String get permissionGrantedSnack => 'RUN_COMMAND permission granted.';
 
   @override
   String get riskWarningTitle => 'This command can be destructive';

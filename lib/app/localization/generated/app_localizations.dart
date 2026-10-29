@@ -1556,6 +1556,12 @@ abstract class AppLocalizations {
   /// **'This app sends commands to Termux. It is not a terminal emulator and cannot run commands by itself.'**
   String get termuxGuideIntro;
 
+  /// No description provided for @termuxGuideButtons.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Run via Termux on a step, or Run all in Termux on a guide. Every command is shown for confirmation before it is sent.'**
+  String get termuxGuideButtons;
+
   /// No description provided for @termuxStepInstall.
   ///
   /// In en, this message translates to:
@@ -1580,6 +1586,42 @@ abstract class AppLocalizations {
   /// **'Run termux-reload-settings or restart Termux.'**
   String get termuxStepReload;
 
+  /// No description provided for @termuxStepOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Termux to open sessions from the background.'**
+  String get termuxStepOverlay;
+
+  /// No description provided for @termuxOverlayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Android 10 and later blocks Termux from opening a terminal session while this app is in front unless Termux can display over other apps. Grant the permission once; background runs do not need it.'**
+  String get termuxOverlayBody;
+
+  /// No description provided for @termuxOverlayGrant.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Termux display settings'**
+  String get termuxOverlayGrant;
+
+  /// No description provided for @termuxOverlayPill.
+  ///
+  /// In en, this message translates to:
+  /// **'Display over apps'**
+  String get termuxOverlayPill;
+
+  /// No description provided for @termuxOverlayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux needs display permission'**
+  String get termuxOverlayTitle;
+
+  /// No description provided for @termuxOverlayRunBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Android 10 and later requires the \"Display over other apps\" permission for Termux to open a terminal session while this app is in front. Grant it in Termux\'s Android settings, or turn on Run in the background in the confirmation sheet.'**
+  String get termuxOverlayRunBody;
+
   /// No description provided for @termuxTestTitle.
   ///
   /// In en, this message translates to:
@@ -1598,11 +1640,119 @@ abstract class AppLocalizations {
   /// **'Send test command'**
   String get termuxTestButton;
 
-  /// No description provided for @termuxApiNote.
+  /// No description provided for @termuxStepApi.
   ///
   /// In en, this message translates to:
-  /// **'Some guides use the Termux:API package. Install the Termux:API app and pkg install termux-api for those commands.'**
-  String get termuxApiNote;
+  /// **'Install Termux:API for built-in commands (optional).'**
+  String get termuxStepApi;
+
+  /// No description provided for @termuxApiStepBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Some guides use termux-* commands such as termux-battery-status or termux-toast. They need two separate parts:'**
+  String get termuxApiStepBody;
+
+  /// No description provided for @termuxApiApk.
+  ///
+  /// In en, this message translates to:
+  /// **'1. The Termux:API APK (adds the Android side).'**
+  String get termuxApiApk;
+
+  /// No description provided for @termuxApiPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'2. The termux-api package inside Termux (adds the commands):'**
+  String get termuxApiPackage;
+
+  /// No description provided for @termuxApiSameSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Termux and Termux:API from the same source. GitHub and F-Droid builds use different signing keys, so switching sources requires uninstalling every Termux app and plugin.'**
+  String get termuxApiSameSource;
+
+  /// No description provided for @termuxStatusNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Status reflects installed apps and Android permissions. Packages installed inside Termux are not visible to this app.'**
+  String get termuxStatusNote;
+
+  /// No description provided for @termuxApiTestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Termux:API'**
+  String get termuxApiTestTitle;
+
+  /// No description provided for @termuxApiTestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a harmless toast. If nothing appears, the APK, the package or an Android permission is missing.'**
+  String get termuxApiTestBody;
+
+  /// No description provided for @termuxApiTestButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send API test'**
+  String get termuxApiTestButton;
+
+  /// No description provided for @termuxApiNoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux:API commands'**
+  String get termuxApiNoteTitle;
+
+  /// No description provided for @termuxApiConfirmNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This guide uses termux-* commands. They only work when the Termux:API APK and the termux-api package are both installed.'**
+  String get termuxApiConfirmNote;
+
+  /// No description provided for @termuxApiMissingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux:API is required'**
+  String get termuxApiMissingTitle;
+
+  /// No description provided for @termuxApiMissingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This command uses a built-in termux-* command. Install the Termux:API APK, then run pkg install termux-api inside Termux. Both parts are required.'**
+  String get termuxApiMissingBody;
+
+  /// No description provided for @termuxApiGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Termux:API'**
+  String get termuxApiGuide;
+
+  /// No description provided for @termuxApiSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Termux:API settings'**
+  String get termuxApiSettings;
+
+  /// No description provided for @termuxApiNotInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux:API is not installed.'**
+  String get termuxApiNotInstalled;
+
+  /// No description provided for @openAppSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open app settings'**
+  String get openAppSettings;
+
+  /// No description provided for @permissionGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission granted'**
+  String get permissionGranted;
+
+  /// No description provided for @permissionGrantedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'RUN_COMMAND permission granted.'**
+  String get permissionGrantedSnack;
 
   /// No description provided for @riskWarningTitle.
   ///

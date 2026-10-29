@@ -392,31 +392,110 @@ AI သည် ရွေးချယ်နိုင်သော လုပ်ဆေ
 
 ## ၁၂။ Termux သတ်မှတ်ခြင်း
 
+### ၁၂.၁ Termux ထည့်သွင်းခြင်း
+
 Termux ကို တရားဝင် GitHub release မှ ဒေါင်းလုဒ်လုပ်ပါ:
 
 <https://github.com/termux/termux-app/releases>
 
-Play Store version သည် ဟောင်းနေပြီး မထောက်ပံ့တော့ပါ။
+Play Store version သည် ဟောင်းနေပြီး မထောက်ပံ့တော့ပါ။ ထည့်ပြီးနောက်
+Termux ကို တစ်ကြိမ် ဖွင့်ပါ။
 
-Termux ထဲတွင် external app များကို ခွင့်ပြုရန်:
+### ၁၂.၂ ပြင်ပ command များ ခွင့်ပြုခြင်း
+
+Termux ထဲတွင် အောက်ပါကို run ပါ:
 
 ```bash
+mkdir -p ~/.termux
 echo "allow-external-apps=true" >> ~/.termux/termux.properties
 termux-reload-settings
 ```
 
-ထို့နောက် app ၏ **Termux guide** ကို ဖွင့်ပြီး လိုအပ်သော
-`RUN_COMMAND` permission ကို ခွင့်ပြုပါ။
+ဤ setting မရှိလျှင် Termux က command ကို လက်မခံပါ။ Termux တွင်
+`RunCommandService requires 'allow-external-apps' ...` ဟု toast ပြပါမည်။
+App သည် Termux ၏ သီးသန့် property ဖိုင်ကို မဖတ်နိုင်သောကြောင့်
+ဤ setting ကို ကြိုတင် မစစ်နိုင်ပါ။
+
+### ၁၂.၃ Termux:API (termux-* command များအတွက်)
+
+`termux-battery-status`, `termux-toast` စသည့် built-in command များ
+အသုံးပြုသော guide များအတွက် အပိုင်းနှစ်ခု လိုအပ်သည်:
+
+1. **Termux:API APK** — <https://github.com/termux/termux-api>
+   (APK ကို ထို repo ၏ Releases မှ ရယူပါ)
+2. **Termux အတွင်းရှိ package**:
+
+```bash
+pkg update
+pkg install termux-api
+```
+
+စမ်းသပ်ရန်:
+
+```bash
+termux-toast "Termux:API connection OK"
+```
+
+- `command not found` ဖြစ်လျှင် `termux-api` package မရှိပါ။
+- Command ရှိသော်လည်း ဘာမှမပေါ်လျှင် APK မရှိ၊ သို့မဟုတ် Android
+  permission မပေးရသေးပါ။ App ၏ Termux guide တွင်
+  **Open Termux:API settings** ကို သုံးပါ။
+- Termux နှင့် Termux:API ကို source တစ်ခုတည်းမှ ထည့်ပါ။ GitHub နှင့်
+  F-Droid signing key မတူသောကြောင့် source ပြောင်းလျှင် Termux app နှင့်
+  plugin အားလုံးကို ဖယ်ရှားရပါမည်။
+- App ၏ Termux:API status သည် APK ရှိ/မရှိကိုသာ စစ်သည်။ Termux အတွင်းရှိ
+  package ကို ဤ app မှ မစစ်နိုင်ပါ။
+
+### ၁၂.၄ "Display over other apps" permission (Android 10+)
+
+Android 10 နှင့် အထက်တွင် ဤ app ရှေ့တွင် ရှိနေစဉ် Termux က terminal
+session ဖွင့်ရန် Termux အတွက် **Display over other apps**
+(`SYSTEM_ALERT_WINDOW`) permission လိုအပ်သည်။ ၎င်းသည် ဤ app ၏ permission
+မဟုတ်ဘဲ Termux ၏ permission ဖြစ်သည်။
+
+App ၏ Termux guide ထဲရှိ **Open Termux display settings** ကို နှိပ်ပါ။
+သို့မဟုတ် ကိုယ်တိုင်:
+
+**Settings → Apps → Termux → Display over other apps → Allow**
+
+ဤ permission မရှိလျှင် Termux က အောက်ပါ dialog ပြပြီး command မ run ပါ:
+
+```text
+Termux requires "Display over other apps" permission to start terminal
+sessions from background on Android >= 10.
+```
+
+App သည် foreground run မလုပ်မီ ဤ permission ကို စစ်ပြီး မရှိလျှင်
+အကြောင်းရင်းနှင့် settings ဖွင့်ရန် button ပြသည်။ နောက်ကွယ် (background)
+run သည် session မဖွင့်သောကြောင့် ဤ permission မလိုအပ်ပါ။
+
+### ၁၂.၅ RUN_COMMAND permission ပေးခြင်း
+
+App ၏ **Termux guide** ကို ဖွင့်ပြီး `RUN_COMMAND` permission ကို
+ခွင့်ပြုပါ။ Permission dialog မပေါ်တော့လျှင် Android
+**Settings → Apps → Termux Command Library → Permissions** တွင် ပေးပါ။
+Guide ထဲရှိ **Open app settings** ကိုလည်း သုံးနိုင်သည်။
+
+### ၁၂.၆ Command များ run ခြင်း
 
 Command တစ်ခုကို run လုပ်သောအခါ app သည်:
 
 1. Termux ရှိ/မရှိ စစ်သည်။
 2. Permission ရှိ/မရှိ စစ်သည်။
-3. Command အားလုံးကို ပြသသည်။
-4. အန္တရာယ်ရှိသော command များအတွက် သတိပေးချက် ပြသည်။
-5. အတည်ပြုချက် တောင်းသည်။
-6. Termux သို့ ပို့သည်။
-7. "Sent to Termux" ဟုသာ ပြသည်။ အောင်မြင်ပြီးဟု မပြောပါ။
+3. `termux-*` command ဖြစ်ပြီး Termux:API APK မရှိလျှင် ရပ်ပြီး
+   လမ်းညွှန် ပြသည်။
+4. Command အားလုံးကို ပြသသည်။
+5. အန္တရာယ်ရှိသော command များအတွက် သတိပေးချက် ပြသည်။
+6. အတည်ပြုချက် တောင်းသည်။
+7. Foreground run ဖြစ်လျှင် Termux ၏ display permission ကို စစ်သည်။
+8. Termux သို့ ပို့သည်။
+9. "Sent to Termux" ဟုသာ ပြသည်။ အောင်မြင်ပြီးဟု မပြောပါ။
+
+Run လုပ်ရန် button များ:
+
+- Command details တွင် step တစ်ခု၏ **Run via Termux**။
+- Guide တစ်ခုလုံးအတွက် **Run all in Termux**။
+- Termux guide ထဲရှိ **Send test command** နှင့် **Send API test**။
 
 အသေးစိတ်: [Termux integration](termux-integration.md)။
 
@@ -502,7 +581,10 @@ Groq နှင့်အတူ:
 | GitHub ကုဒ် သက်တမ်းကုန် | ကုဒ်ကို အချိန်မီ မသုံးခဲ့ | Dialog တွင် **Try again** နှိပ်ပြီး ကုဒ်အသစ် ယူပါ |
 | GitHub အီးမေးလ်ဖြင့် အကောင့်ရှိပြီး | GitHub ၏ အီးမေးလ်ကို အီးမေးလ်/စကားဝှက် သို့မဟုတ် Google အကောင့်က သုံးထားသည် | ယခင်က သုံးခဲ့သော နည်းလမ်းဖြင့် ဝင်ပြီး **Account → Connected accounts → GitHub → Connect** ဖြင့် ချိတ်ဆက်ပါ။ UID၊ favorite၊ pin နှင့် guide များ မပြောင်းလဲပါ။ Firebase ၏ **Link accounts that use the same email** ကို email verification မပါဘဲ ဖွင့်ခြင်းသည် လုံခြုံရေးအန္တရာယ် ရှိသည် |
 | Termux မတွေ့ | GitHub release မှ ပြန်တပ်ဆင်ပါ၊ Termux ကို တစ်ကြိမ်ဖွင့်ပါ |
-| Command မလုပ် | `allow-external-apps=true` နှင့် permission စစ်ပါ |
+| Command မလုပ် (Termux တွင် `allow-external-apps` error ပြ) | `~/.termux/termux.properties` တွင် `allow-external-apps=true` ထည့်ပြီး `termux-reload-settings` လုပ်ပါ |
+| Termux က "Display over other apps" dialog ပြ | Termux အတွက် **Display over other apps** ကို ခွင့်ပြုပါ (Android 10+) သို့မဟုတ် background mode သုံးပါ |
+| `termux-*` command မတွေ့ | Termux:API APK ထည့်ပြီး Termux ထဲတွင် `pkg install termux-api` လုပ်ပါ |
+| `termux-*` run သော်လည်း ဘာမှမပေါ် | Termux:API ၏ Android permission များကို **Open Termux:API settings** မှ စစ်ပါ |
 | AI 401 | ကီး မှန်/မမှန်၊ revoke ဖြစ်/မဖြစ် စစ်ပါ |
 | AI 429 | Rate limit — ခဏစောင့်ပြီး ပြန်စမ်းပါ |
 | မြန်မာစာ မဖတ်နိုင် | မြန်မာဘာသာ ရွေးပါ၊ Noto Sans Myanmar fallback ကို မဖျက်ပါ |

@@ -521,11 +521,21 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 
 - [ ] Termux မထည့်ထားလျှင် app က ရှင်းလင်းသော လမ်းညွှန် ပြသည်။
 - [ ] Termux ထည့်ပြီး `allow-external-apps=true` သတ်မှတ်ထားလျှင်
-      command ပို့နိုင်သည်။
+      step တစ်ခု၏ **Run via Termux** နှင့် guide တစ်ခုလုံး၏
+      **Run all in Termux** ကို နှိပ်ပြီး command ပို့နိုင်သည်။
 - [ ] Permission မရှိသေးလျှင် တောင်းခံသည့် မျက်နှာပြင် ပြသည်။
-- [ ] Command ပို့မီ အတည်ပြုချက် တောင်းသည်။
+- [ ] Permission ပိတ်ထားလျှင် **Open app settings** ဖြင့် ပြင်နိုင်သည်။
+- [ ] Android 10+ တွင် Termux ကို **Display over other apps** ပေးထားလျှင်
+      foreground run အလုပ်လုပ်သည်။ မပေးထားလျှင် app က ရှင်းလင်းစွာ
+      ရပ်ပြီး settings ဖွင့်ရန် ပြသည်။
+- [ ] Command ပို့မီ အတည်ပြုချက်တွင် command အားလုံး ပြသည်။
+- [ ] အန္တရာယ်ရှိသော command အတွက် ထပ်မံ အတည်ပြုရသည်။
 - [ ] ပယ်ဖျက်နိုင်သည်။
 - [ ] App က "Sent to Termux" ဟုသာ ပြသည်။ "အောင်မြင်ပြီး" ဟု မပြောပါ။
+- [ ] `termux-*` command ဖြစ်ပြီး Termux:API APK မရှိလျှင် app က
+      ရပ်ပြီး APK နှင့် `pkg install termux-api` လမ်းညွှန် ပြသည်။
+- [ ] Termux:API APK ရှိလျှင် confirmation sheet တွင် package လိုအပ်ကြောင်း
+      သတိပေးချက် ပြသည်။
 
 ### ၈.၆ AI (ကီး ထည့်ပြီးမှ)
 
@@ -588,14 +598,38 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 3. Termux ထဲတွင် အောက်ပါကို run ပါ:
 
    ```bash
+   mkdir -p ~/.termux
    echo "allow-external-apps=true" >> ~/.termux/termux.properties
    termux-reload-settings
    ```
 
+   ဤ setting မရှိလျှင် Termux က `RunCommandService requires
+   'allow-external-apps' ...` ဟု ငြင်းပယ်ပါမည်။
+
 4. App ထဲတွင် **Termux guide** ကို ဖွင့်ပြီး လိုအပ်သော
    `RUN_COMMAND` permission ကို ခွင့်ပြုပါ။
-5. Android Settings → Apps → Termux → Permissions တွင် လိုအပ်သော
-   permission များ ရှိကြောင်း စစ်ပါ။
+   Permission dialog မပေါ်တော့လျှင် Android
+   **Settings → Apps → Termux Command Library → Permissions** တွင် ပေးပါ။
+5. Android 10 နှင့် အထက်တွင် Termux ကို **Display over other apps**
+   permission ပေးပါ။ App ၏ Termux guide ထဲရှိ
+   **Open Termux display settings** ကို သုံးနိုင်သည်။
+   ဤ permission မရှိလျှင် foreground run သည် Termux ၏ dialog ဖြင့် ရပ်တန့်သည်။
+6. `termux-*` command များ အသုံးပြုမည်ဆိုလျှင် Termux:API ကို
+   အပိုင်းနှစ်ခု ထည့်ပါ:
+   - APK: <https://github.com/termux/termux-api> (Releases မှ)
+   - Termux ထဲတွင်:
+
+     ```bash
+     pkg update
+     pkg install termux-api
+     ```
+
+   `termux-toast "Termux:API connection OK"` ဖြင့် စမ်းပါ။
+7. Termux:API ၏ Android permission များကို စစ်ပါ။ App ၏ Termux guide ထဲရှိ
+   **Open Termux:API settings** ကို သုံးနိုင်သည်။
+8. Command details မှ **Run via Termux** သို့မဟုတ် guide မှ
+   **Run all in Termux** ကို နှိပ်ပြီး Termux တွင် output ပေါ်ကြောင်း
+   စစ်ပါ။ App က "sent" ဟုသာ ပြမည်ဖြစ်ပြီး exit status ကို မပြပါ။
 
 > **သတိ:** App သည် command များကို အလိုအလျောက် မလုပ်ဆောင်ပါ။
 > အမြဲတမ်း command ကို ပြပြီး အတည်ပြုချက် တောင်းသည်။

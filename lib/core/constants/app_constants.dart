@@ -57,8 +57,7 @@ abstract final class AppConstants {
   // URLs used for guidance. They are not credentials.
   static const termuxReleasesUrl =
       'https://github.com/termux/termux-app/releases';
-  static const termuxApiReleasesUrl =
-      'https://github.com/termux/termux-api/releases';
+  static const termuxApiUrl = 'https://github.com/termux/termux-api';
   static const groqConsoleUrl = 'https://console.groq.com/keys';
   static const groqDocsUrl = 'https://console.groq.com/docs';
   static const projectRepositoryUrl =

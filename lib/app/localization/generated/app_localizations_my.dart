@@ -803,6 +803,10 @@ class AppLocalizationsMy extends AppLocalizations {
       'ဤ app သည် Termux သို့ command ပို့သည်။ ၎င်းသည် terminal emulator မဟုတ်ပြီး ကိုယ်တိုင် command မ run နိုင်ပါ။';
 
   @override
+  String get termuxGuideButtons =>
+      'Step တစ်ခုတွင် Run via Termux ကို သုံးပါ၊ သို့မဟုတ် guide တစ်ခုလုံးအတွက် Run all in Termux ကို သုံးပါ။ Command တိုင်းကို မပို့မီ အတည်ပြုရန် ပြပါမည်။';
+
+  @override
   String get termuxStepInstall =>
       'တရားဝင် Termux release (GitHub၊ F-Droid သို့မဟုတ် ယုံကြည်ရသော mirror) ထည့်သွင်းပါ။';
 
@@ -819,6 +823,27 @@ class AppLocalizationsMy extends AppLocalizations {
       'termux-reload-settings run ပါ သို့မဟုတ် Termux ကို ပြန်စပါ။';
 
   @override
+  String get termuxStepOverlay =>
+      'Termux ကို နောက်ကွယ်မှ session ဖွင့်ခွင့်ပြုပါ။';
+
+  @override
+  String get termuxOverlayBody =>
+      'Android 10 နှင့် အထက်တွင် ဤ app ရှေ့တွင် ရှိနေစဉ် Termux က terminal session ဖွင့်ရန် \"Display over other apps\" permission လိုအပ်သည်။ တစ်ကြိမ်သာ ခွင့်ပြုပါ။ နောက်ကွယ် run ခြင်းအတွက် မလိုအပ်ပါ။';
+
+  @override
+  String get termuxOverlayGrant => 'Termux display settings ဖွင့်';
+
+  @override
+  String get termuxOverlayPill => 'Display over apps';
+
+  @override
+  String get termuxOverlayTitle => 'Termux သည် display permission လိုအပ်သည်';
+
+  @override
+  String get termuxOverlayRunBody =>
+      'Android 10 နှင့် အထက်တွင် ဤ app ရှေ့တွင် ရှိနေစဉ် Termux က terminal session ဖွင့်ရန် \"Display over other apps\" permission လိုအပ်သည်။ Termux ၏ Android settings တွင် ခွင့်ပြုပါ၊ သို့မဟုတ် အတည်ပြုချက် sheet တွင် Run in the background ကို ဖွင့်ပါ။';
+
+  @override
   String get termuxTestTitle => 'ချိတ်ဆက်မှု စမ်းသပ်';
 
   @override
@@ -829,8 +854,69 @@ class AppLocalizationsMy extends AppLocalizations {
   String get termuxTestButton => 'Test command ပို့';
 
   @override
-  String get termuxApiNote =>
-      'Guide အချို့သည် Termux:API package ကို အသုံးပြုသည်။ ထို command များအတွက် Termux:API app ထည့်ပြီး pkg install termux-api လုပ်ပါ။';
+  String get termuxStepApi =>
+      'Built-in command များအတွက် Termux:API ထည့်သွင်းပါ (မဖြစ်မနေ မဟုတ်)။';
+
+  @override
+  String get termuxApiStepBody =>
+      'Guide အချို့သည် termux-battery-status သို့မဟုတ် termux-toast ကဲ့သို့ termux-* command များ အသုံးပြုသည်။ ၎င်းတို့အတွက် အပိုင်းနှစ်ခု လိုအပ်သည်:';
+
+  @override
+  String get termuxApiApk => '၁။ Termux:API APK (Android ဘက်ခြမ်းကို ထည့်သည်)။';
+
+  @override
+  String get termuxApiPackage =>
+      '၂။ Termux အတွင်းရှိ termux-api package (command များကို ထည့်သည်):';
+
+  @override
+  String get termuxApiSameSource =>
+      'Termux နှင့် Termux:API ကို source တစ်ခုတည်းမှ ထည့်ပါ။ GitHub နှင့် F-Droid build များသည် signing key မတူသောကြောင့် source ပြောင်းလျှင် Termux app နှင့် plugin အားလုံးကို ဖယ်ရှားရသည်။';
+
+  @override
+  String get termuxStatusNote =>
+      'Status သည် ထည့်ထားသော app များနှင့် Android permission များကို ပြသည်။ Termux အတွင်းတွင် ထည့်ထားသော package များကို ဤ app မှ မမြင်နိုင်ပါ။';
+
+  @override
+  String get termuxApiTestTitle => 'Termux:API စမ်းသပ်';
+
+  @override
+  String get termuxApiTestBody =>
+      'ဘေးကင်းသော toast တစ်ခု ပို့ပါ။ မပေါ်လျှင် APK၊ package သို့မဟုတ် Android permission တစ်ခု လိုအပ်နေသည်။';
+
+  @override
+  String get termuxApiTestButton => 'API test ပို့';
+
+  @override
+  String get termuxApiNoteTitle => 'Termux:API command များ';
+
+  @override
+  String get termuxApiConfirmNote =>
+      'ဤ guide သည် termux-* command များ အသုံးပြုသည်။ Termux:API APK နှင့် termux-api package နှစ်ခုလုံး ရှိမှသာ အလုပ်လုပ်မည်။';
+
+  @override
+  String get termuxApiMissingTitle => 'Termux:API လိုအပ်သည်';
+
+  @override
+  String get termuxApiMissingBody =>
+      'ဤ command သည် termux-* built-in command ကို အသုံးပြုသည်။ Termux:API APK ကို ထည့်ပြီး Termux ထဲတွင် pkg install termux-api ကို run ပါ။ နှစ်ခုလုံး လိုအပ်သည်။';
+
+  @override
+  String get termuxApiGuide => 'Termux:API ရယူ';
+
+  @override
+  String get termuxApiSettings => 'Termux:API settings ဖွင့်';
+
+  @override
+  String get termuxApiNotInstalled => 'Termux:API မထည့်သွင်းရသေးပါ။';
+
+  @override
+  String get openAppSettings => 'App settings ဖွင့်';
+
+  @override
+  String get permissionGranted => 'Permission ပေးပြီး';
+
+  @override
+  String get permissionGrantedSnack => 'RUN_COMMAND permission ပေးပြီးပါပြီ။';
 
   @override
   String get riskWarningTitle => 'ဤ command သည် ပျက်စီးမှု ဖြစ်စေနိုင်သည်';

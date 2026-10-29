@@ -43,16 +43,25 @@ Always read a command before sending it. Destructive commands are labelled, but 
 
 1. Install Termux from the [official GitHub releases](https://github.com/termux/termux-app/releases). Play Store builds are outdated and do not support this integration.
 2. Open Termux once so its environment is created.
-3. Allow the `RUN_COMMAND` permission when Android asks. On some Android versions you must grant it from Android Settings → Apps → Termux → Permissions.
+3. Allow the `RUN_COMMAND` permission when Android asks. If the dialog no longer appears, grant it from Android Settings → Apps → **Termux Command Library** → Permissions. The in-app Termux guide also has an **Open app settings** action.
 4. For direct execution, enable external apps in Termux:
 
 ```bash
+mkdir -p ~/.termux
 echo "allow-external-apps=true" >> ~/.termux/termux.properties
 ```
 
-5. Restart Termux, or run `termux-reload-settings`.
+5. Restart Termux, or run `termux-reload-settings`. Without this setting Termux rejects the request with a `RunCommandService requires 'allow-external-apps'` toast, and the app cannot detect that rejection.
+6. On Android 10 and later, allow Termux **Display over other apps** so it can open a session while this app is in front: **Settings → Apps → Termux → Display over other apps → Allow**, or use **Open Termux display settings** in the Termux guide. Without it Termux shows its own dialog and the command does not run. Background runs do not need it.
 
-For device features such as notifications and the clipboard, install the matching [Termux:API](https://github.com/termux/termux-api/releases) app and the `termux-api` package.
+Use **Run via Termux** on a step or **Run all in Termux** on a guide. Every command is shown for confirmation first.
+
+For guides that use built-in `termux-*` commands, install **both** parts of Termux:API:
+
+1. The [Termux:API APK](https://github.com/termux/termux-api).
+2. The package inside Termux: `pkg install termux-api`.
+
+Test them with `termux-toast "Termux:API connection OK"`. The app detects the APK only; it cannot see the package inside Termux. It stops before running a `termux-*` command when the APK is missing, and the confirmation sheet reminds you about the package. Install Termux and Termux:API from the same source, because GitHub and F-Droid builds use different signing keys.
 
 The in-app **Termux guide** checks whether Termux and the API app are installed and whether the run permission is available. It cannot grant Android permissions for you.
 

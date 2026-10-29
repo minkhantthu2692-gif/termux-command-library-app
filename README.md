@@ -165,12 +165,27 @@ outdated):
 To allow this app to send commands, enable external apps in Termux:
 
 ```bash
+mkdir -p ~/.termux
 echo "allow-external-apps=true" >> ~/.termux/termux.properties
 termux-reload-settings
 ```
 
 Then open the app's Termux guide and grant the requested `RUN_COMMAND`
-permission. Full details and safety notes: [Termux integration](docs/termux-integration.md).
+permission. On Android 10 and later, also allow Termux **Display over other
+apps**; without it Termux cannot open a session while this app is in front.
+Commands can be sent from **Run via Termux** on a step and **Run all in
+Termux** on a guide.
+
+For guides that use built-in `termux-*` commands, install **both** parts of
+Termux:API:
+
+1. The Termux:API APK — <https://github.com/termux/termux-api>
+2. The package inside Termux — `pkg install termux-api`
+
+The app detects the APK and warns before running `termux-*` commands when it is
+missing. It cannot detect the package inside Termux, so the confirmation sheet
+also shows a reminder. Full details and safety notes:
+[Termux integration](docs/termux-integration.md).
 
 ## Groq AI setup
 
@@ -220,7 +235,7 @@ buttons, the Riverpod app shell and theme/locale propagation.
 | [Security rules](docs/security-rules.md) | Role model, rule behavior and deployment |
 | [Admin configuration](docs/admin-setup.md) | Custom admin claim and verification |
 | [Groq API setup](docs/groq-setup.md) | BYOK, secure storage, models, cache and history |
-| [Termux integration](docs/termux-integration.md) | Install, permissions, `RUN_COMMAND`, safety |
+| [Termux integration](docs/termux-integration.md) | Install, permissions, Termux:API, `RUN_COMMAND`, safety |
 | [Build instructions](docs/build.md) | Debug/release builds, signing, defines |
 | [Troubleshooting](docs/troubleshooting.md) | Common setup and runtime failures |
 | [Architecture](docs/architecture.md) | Layers, providers, data flow, extension points |

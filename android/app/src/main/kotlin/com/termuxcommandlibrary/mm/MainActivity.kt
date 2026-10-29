@@ -1,10 +1,14 @@
 package com.termuxcommandlibrary.mm
 
 import android.Manifest
+import android.app.AppOpsManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -25,6 +29,7 @@ class MainActivity : FlutterActivity() {
     private val hapticsChannelName = "dev.termuxlibrary/haptics"
     private val requestRunCommandPermissionCode = 7101
     private val termuxPackage = "com.termux"
+    private val termuxApiPackage = "com.termux.api"
     private val termuxRunPermission = "com.termux.permission.RUN_COMMAND"
     private var pendingPermissionResult: MethodChannel.Result? = null
 
@@ -62,7 +67,8 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "isTermuxInstalled" -> result.success(isPackageInstalled(termuxPackage))
-                    "isTermuxApiInstalled" -> result.success(isPackageInstalled("com.termux.api"))
+                    "isTermuxApiInstalled" -> result.success(isPackageInstalled(termuxApiPackage))
+                    "canTermuxDrawOverlays" -> result.success(canTermuxDrawOverlays())
                     "hasRunCommandPermission" -> result.success(hasRunCommandPermission())
                     "requestRunCommandPermission" -> requestRunCommandPermission(result)
                     "runTermuxCommand" -> {
@@ -94,7 +100,13 @@ class MainActivity : FlutterActivity() {
                         result.success(true)
                     }
                     "openTermuxSettings" -> {
-                        openTermuxAppInfo(result)
+                        openPackageAppInfo(termuxPackage, result)
+                    }
+                    "openTermuxApiSettings" -> {
+                        openPackageAppInfo(termuxApiPackage, result)
+                    }
+                    "openTermuxOverlaySettings" -> {
+                        openTermuxOverlaySettings(result)
                     }
                     "restartApp" -> {
                         val intent = Intent(this, MainActivity::class.java)
@@ -120,6 +132,31 @@ class MainActivity : FlutterActivity() {
     private fun hasRunCommandPermission(): Boolean {
         return ContextCompat.checkSelfPermission(this, termuxRunPermission) ==
             PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * Android 10+ refuses to let Termux open a terminal session while another
+     * app is in front unless Termux can draw over other apps. This is a Termux
+     * permission (SYSTEM_ALERT_WINDOW), not a permission of this app, so it has
+     * to be read through AppOps and granted from Android settings.
+     *
+     * Older Android versions and detection failures are treated as "allowed"
+     * so the run flow is never blocked by a failed check.
+     */
+    private fun canTermuxDrawOverlays(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true
+        if (!isPackageInstalled(termuxPackage)) return false
+        return try {
+            val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+            val uid = packageManager.getApplicationInfo(termuxPackage, 0).uid
+            appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW,
+                uid,
+                termuxPackage,
+            ) == AppOpsManager.MODE_ALLOWED
+        } catch (_: Exception) {
+            true
+        }
     }
 
     private fun requestRunCommandPermission(result: MethodChannel.Result) {
@@ -209,13 +246,31 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun openTermuxAppInfo(result: MethodChannel.Result) {
+    private fun openTermuxOverlaySettings(result: MethodChannel.Result) {
         if (!isPackageInstalled(termuxPackage)) {
             result.success(false)
             return
         }
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:$termuxPackage"),
+        )
+        try {
+            startActivity(intent)
+            result.success(true)
+        } catch (_: Exception) {
+            // Some vendors do not expose the per-package overlay screen.
+            openPackageAppInfo(termuxPackage, result)
+        }
+    }
+
+    private fun openPackageAppInfo(packageName: String, result: MethodChannel.Result) {
+        if (!isPackageInstalled(packageName)) {
+            result.success(false)
+            return
+        }
         val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            .setData(Uri.fromParts("package", termuxPackage, null))
+            .setData(Uri.fromParts("package", packageName, null))
         startActivity(intent)
         result.success(true)
     }

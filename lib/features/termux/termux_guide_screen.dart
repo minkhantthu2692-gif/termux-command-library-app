@@ -26,6 +26,7 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
   bool _installed = false;
   bool _apiInstalled = false;
   bool _permission = false;
+  bool _overlay = false;
 
   TermuxService get _service => ref.read(termuxServiceProvider);
 
@@ -46,16 +47,48 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
         service.isTermuxInstalled(),
         service.isTermuxApiInstalled(),
         service.hasRunCommandPermission(),
+        service.canTermuxDrawOverlays(),
       ]);
       if (!mounted) return;
       setState(() {
         _installed = results[0];
         _apiInstalled = results[1];
         _permission = results[2];
+        _overlay = results[3];
         _checking = false;
       });
     } catch (_) {
       if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  Future<void> _openAppSettings() async {
+    try {
+      await _service.openAppSettings();
+    } catch (error) {
+      if (mounted) context.showErrorSnack(error);
+    }
+  }
+
+  Future<void> _openTermuxApiSettings() async {
+    try {
+      final opened = await _service.openTermuxApiAppInfo();
+      if (!opened && mounted) {
+        context.showSnack(AppLocalizations.of(context).termuxApiNotInstalled);
+      }
+    } catch (error) {
+      if (mounted) context.showErrorSnack(error);
+    }
+  }
+
+  Future<void> _openTermuxOverlaySettings() async {
+    try {
+      final opened = await _service.openTermuxOverlaySettings();
+      if (!opened && mounted) {
+        context.showSnack(AppLocalizations.of(context).termuxMissingTitle);
+      }
+    } catch (error) {
+      if (mounted) context.showErrorSnack(error);
     }
   }
 
@@ -81,11 +114,20 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
               height: 1.6,
             ),
           ),
+          const SizedBox(height: AppSpacing.x2),
+          Text(
+            l10n.termuxGuideButtons,
+            style: context.texts.bodyMedium?.copyWith(
+              color: context.scheme.onSurfaceVariant,
+              height: 1.6,
+            ),
+          ),
           const SizedBox(height: AppSpacing.x4),
           _StatusCard(
             installed: _installed,
             apiInstalled: _apiInstalled,
             permission: _permission,
+            overlay: _overlay,
             checking: _checking,
           ),
           const SizedBox(height: AppSpacing.x6),
@@ -148,35 +190,48 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.x3),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton.tonalIcon(
-                    onPressed: _permission
-                        ? null
-                        : () async {
-                            try {
-                              final granted = await _service
-                                  .requestRunCommandPermission();
-                              if (!context.mounted) return;
-                              context.showSnack(
-                                granted ? l10n.keyWorks : l10n.noPermission,
-                              );
-                              await _check();
-                            } catch (error) {
-                              if (context.mounted) {
-                                context.showErrorSnack(error);
+                Wrap(
+                  spacing: AppSpacing.x2,
+                  runSpacing: AppSpacing.x2,
+                  children: [
+                    FilledButton.tonalIcon(
+                      onPressed: _permission
+                          ? null
+                          : () async {
+                              try {
+                                final granted = await _service
+                                    .requestRunCommandPermission();
+                                if (!context.mounted) return;
+                                context.showSnack(
+                                  granted
+                                      ? l10n.permissionGrantedSnack
+                                      : l10n.noPermission,
+                                );
+                                await _check();
+                              } catch (error) {
+                                if (context.mounted) {
+                                  context.showErrorSnack(error);
+                                }
                               }
-                            }
-                          },
-                    icon: Icon(
-                      _permission
-                          ? Icons.check_circle_outline_rounded
-                          : Icons.shield_outlined,
+                            },
+                      icon: Icon(
+                        _permission
+                            ? Icons.check_circle_outline_rounded
+                            : Icons.shield_outlined,
+                      ),
+                      label: Text(
+                        _permission
+                            ? l10n.permissionGranted
+                            : l10n.grantPermission,
+                      ),
                     ),
-                    label: Text(
-                      _permission ? l10n.noPermission : l10n.grantPermission,
-                    ),
-                  ),
+                    if (!_permission)
+                      TextButton.icon(
+                        onPressed: _openAppSettings,
+                        icon: const Icon(Icons.settings_outlined),
+                        label: Text(l10n.openAppSettings),
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -216,6 +271,41 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
           const SizedBox(height: AppSpacing.x3),
           _GuideStep(
             number: 4,
+            title: l10n.termuxStepOverlay,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.termuxOverlayBody,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.x3),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.tonalIcon(
+                    onPressed: _overlay || !_installed
+                        ? null
+                        : _openTermuxOverlaySettings,
+                    icon: Icon(
+                      _overlay
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.layers_outlined,
+                    ),
+                    label: Text(
+                      _overlay
+                          ? l10n.permissionGranted
+                          : l10n.termuxOverlayGrant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.x3),
+          _GuideStep(
+            number: 5,
             title: l10n.termuxTestTitle,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,14 +339,94 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.x5),
-          AppNote(
-            title: l10n.termuxApiNote,
-            message: l10n.termuxApiNote,
-            icon: Icons.extension_outlined,
-            actionLabel: l10n.officialReleases,
-            onAction: () =>
-                openExternalUrl(context, AppConstants.termuxApiReleasesUrl),
+          const SizedBox(height: AppSpacing.x3),
+          _GuideStep(
+            number: 6,
+            title: l10n.termuxStepApi,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.termuxApiStepBody,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.x3),
+                Text(
+                  l10n.termuxApiApk,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.x1),
+                Text(
+                  l10n.termuxApiPackage,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.x2),
+                const CommandCodeBlock(
+                  command: 'pkg install termux-api',
+                  label: 'Termux',
+                ),
+                const SizedBox(height: AppSpacing.x3),
+                Wrap(
+                  spacing: AppSpacing.x2,
+                  runSpacing: AppSpacing.x2,
+                  children: [
+                    FilledButton.tonalIcon(
+                      onPressed: () =>
+                          openExternalUrl(context, AppConstants.termuxApiUrl),
+                      icon: const Icon(Icons.open_in_new_rounded),
+                      label: Text(l10n.termuxApiGuide),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _apiInstalled ? _openTermuxApiSettings : null,
+                      icon: const Icon(Icons.settings_outlined),
+                      label: Text(l10n.termuxApiSettings),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.x3),
+                Text(
+                  l10n.termuxApiSameSource,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.x3),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _apiInstalled
+                        ? () => showTermuxRunFlow(
+                            context,
+                            ref,
+                            label: l10n.termuxApiTestTitle,
+                            items: const [
+                              TermuxRunItem(
+                                title: 'Termux:API test',
+                                command:
+                                    'termux-toast "Termux:API connection OK"',
+                              ),
+                            ],
+                          )
+                        : null,
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: Text(l10n.termuxApiTestButton),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.x2),
+                Text(
+                  l10n.termuxApiTestBody,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.x4),
           AppNote(
@@ -282,12 +452,14 @@ class _StatusCard extends StatelessWidget {
     required this.installed,
     required this.apiInstalled,
     required this.permission,
+    required this.overlay,
     required this.checking,
   });
 
   final bool installed;
   final bool apiInstalled;
   final bool permission;
+  final bool overlay;
   final bool checking;
 
   @override
@@ -310,39 +482,65 @@ class _StatusCard extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             )
-          : Wrap(
-              spacing: AppSpacing.x2,
-              runSpacing: AppSpacing.x2,
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                StatusPill(
-                  label: 'Termux',
-                  icon: installed
-                      ? Icons.check_circle_outline_rounded
-                      : Icons.cancel_outlined,
-                  tone: installed
-                      ? StatusPillTone.success
-                      : StatusPillTone.danger,
-                  dense: false,
+                Wrap(
+                  spacing: AppSpacing.x2,
+                  runSpacing: AppSpacing.x2,
+                  children: [
+                    StatusPill(
+                      label: 'Termux',
+                      icon: installed
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.cancel_outlined,
+                      tone: installed
+                          ? StatusPillTone.success
+                          : StatusPillTone.danger,
+                      dense: false,
+                    ),
+                    StatusPill(
+                      label: 'Termux:API',
+                      icon: apiInstalled
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.remove_circle_outline_rounded,
+                      tone: apiInstalled
+                          ? StatusPillTone.success
+                          : StatusPillTone.neutral,
+                      dense: false,
+                    ),
+                    StatusPill(
+                      label: permission
+                          ? l10n.permissionGranted
+                          : l10n.termuxPermissionTitle,
+                      icon: permission
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.shield_outlined,
+                      tone: permission
+                          ? StatusPillTone.success
+                          : StatusPillTone.warning,
+                      dense: false,
+                    ),
+                    StatusPill(
+                      label: l10n.termuxOverlayPill,
+                      icon: overlay
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.layers_outlined,
+                      tone: !installed
+                          ? StatusPillTone.neutral
+                          : overlay
+                          ? StatusPillTone.success
+                          : StatusPillTone.warning,
+                      dense: false,
+                    ),
+                  ],
                 ),
-                StatusPill(
-                  label: 'Termux:API',
-                  icon: apiInstalled
-                      ? Icons.check_circle_outline_rounded
-                      : Icons.remove_circle_outline_rounded,
-                  tone: apiInstalled
-                      ? StatusPillTone.success
-                      : StatusPillTone.neutral,
-                  dense: false,
-                ),
-                StatusPill(
-                  label: l10n.termuxPermissionTitle,
-                  icon: permission
-                      ? Icons.check_circle_outline_rounded
-                      : Icons.shield_outlined,
-                  tone: permission
-                      ? StatusPillTone.success
-                      : StatusPillTone.warning,
-                  dense: false,
+                const SizedBox(height: AppSpacing.x2),
+                Text(
+                  l10n.termuxStatusNote,
+                  style: context.texts.labelSmall?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),

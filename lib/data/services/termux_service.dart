@@ -15,6 +15,10 @@ abstract interface class TermuxService {
 
   Future<bool> isTermuxApiInstalled();
 
+  /// Whether Termux may draw over other apps (Android 10+), which it needs in
+  /// order to open a terminal session while this app is in front.
+  Future<bool> canTermuxDrawOverlays();
+
   Future<bool> hasRunCommandPermission();
 
   Future<bool> requestRunCommandPermission();
@@ -22,6 +26,10 @@ abstract interface class TermuxService {
   Future<void> openTermux();
 
   Future<bool> openTermuxAppInfo();
+
+  Future<bool> openTermuxApiAppInfo();
+
+  Future<bool> openTermuxOverlaySettings();
 
   Future<void> openAppSettings();
 
@@ -50,6 +58,9 @@ class PlatformTermuxService implements TermuxService {
   Future<bool> isTermuxApiInstalled() => _invokeBool('isTermuxApiInstalled');
 
   @override
+  Future<bool> canTermuxDrawOverlays() => _invokeBool('canTermuxDrawOverlays');
+
+  @override
   Future<bool> hasRunCommandPermission() =>
       _invokeBool('hasRunCommandPermission');
 
@@ -75,6 +86,13 @@ class PlatformTermuxService implements TermuxService {
 
   @override
   Future<bool> openTermuxAppInfo() => _invokeBool('openTermuxSettings');
+
+  @override
+  Future<bool> openTermuxApiAppInfo() => _invokeBool('openTermuxApiSettings');
+
+  @override
+  Future<bool> openTermuxOverlaySettings() =>
+      _invokeBool('openTermuxOverlaySettings');
 
   @override
   Future<void> openAppSettings() async {

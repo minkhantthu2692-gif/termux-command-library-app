@@ -203,23 +203,81 @@ in to that account instead.
 - Open Termux once after installation.
 - Rebuild/reinstall the app after manifest changes.
 
-## `RUN_COMMAND` permission is denied / command does nothing
+## App says "sent" but Termux does nothing
+
+Termux shows this toast when external apps are not enabled:
+
+```text
+(2) Error: RunCommandService requires 'allow-external-apps' property to be set
+to 'true' in '~/.termux/termux.properties' file.
+```
+
+The app cannot read Termux's private property file or see its toast, so it still
+reports that the intent was sent. Fix the Termux setting:
 
 1. Enable external apps in Termux:
 
    ```bash
+   mkdir -p ~/.termux
    echo "allow-external-apps=true" >> ~/.termux/termux.properties
    termux-reload-settings
    ```
 
-2. Grant the permission in Android settings:
-   **Apps → Termux Command Library → Permissions**.
-3. Restart Termux and the app.
-4. Use foreground mode for output; background commands may not show output.
-5. The app only reports "sent". Check Termux's terminal for the actual result.
+   If the file already contains the property, edit it to `true` instead of
+   appending a duplicate.
 
-If `termux-*` commands are missing, install Termux:API and grant the Android
-permissions it requests. See [Termux integration](termux-integration.md).
+2. Restart Termux, then retry the Run button.
+3. Use foreground mode for output; background commands may not show output.
+4. The app only reports "sent". Check Termux's terminal for the actual result.
+
+## `RUN_COMMAND` permission is denied
+
+- The app asks for `com.termux.permission.RUN_COMMAND` before the first run.
+- If the dialog no longer appears, grant it in Android settings:
+  **Apps → Termux Command Library → Permissions**.
+- The app's Termux guide has **Open app settings** and **Grant permission**
+  actions.
+
+## Termux shows a "Display over other apps" dialog (Android 10+)
+
+Termux cannot open a terminal session while this app is in front unless Termux
+has the **Display over other apps** permission:
+
+1. Open the app's Termux guide and tap **Open Termux display settings**, or go to
+   **Settings → Apps → Termux → Display over other apps → Allow**.
+2. Return to the app and run the command again.
+3. Background runs do not open a session, so they do not need this permission.
+
+The app checks this permission with Android's AppOps API and stops before a
+foreground run instead of reporting a false success. If the settings screen is
+missing on a vendor ROM, open Termux's app info page instead.
+
+## `termux-*` commands are missing or do nothing
+
+Termux:API needs two parts, and both must be installed:
+
+1. The **Termux:API APK** (`com.termux.api`):
+   <https://github.com/termux/termux-api>
+2. The **`termux-api` package** inside Termux:
+
+   ```bash
+   pkg update
+   pkg install termux-api
+   ```
+
+Verify with `termux-toast "Termux:API connection OK"`.
+
+- If the shell says `command not found`, the package is missing.
+- If the command exists but nothing happens, the APK is missing, disabled or an
+  Android permission was denied. Open **Termux:API settings** from the app's
+  Termux guide and review its permissions.
+- The app's Termux:API status pill only checks the APK. It cannot see packages
+  installed inside Termux.
+- Install Termux and Termux:API from the same source (GitHub or F-Droid).
+  Switching sources requires uninstalling every Termux app and plugin because
+  the signing keys differ.
+
+See [Termux integration](termux-integration.md) for the full setup.
 
 ## AI key test fails
 

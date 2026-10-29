@@ -6,9 +6,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/localization/generated/app_localizations.dart';
 import '../../app/providers.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/utils/command_risk.dart';
+import '../../core/utils/termux_api_command.dart';
 import '../../data/models/command_post.dart';
 import '../../data/services/haptics_service.dart';
 import '../../shared/utils/ui_actions.dart';
@@ -82,8 +84,39 @@ Future<bool> showTermuxRunFlow(
           context,
           title: l10n.termuxPermissionTitle,
           message: l10n.termuxPermissionBody,
-          actionLabel: l10n.openTermux,
-          onAction: service.openTermuxAppInfo,
+          actionLabel: l10n.openAppSettings,
+          onAction: service.openAppSettings,
+        );
+        return false;
+      }
+    }
+
+    // The termux-api package inside Termux cannot be detected from here, but
+    // the Termux:API APK can. A missing APK means every termux-* command will
+    // fail, so stop before showing a run confirmation that cannot work.
+    final usesTermuxApi = usesTermuxApiCommands(
+      items.map((item) => item.command),
+    );
+    if (usesTermuxApi) {
+      var apiInstalled = true;
+      try {
+        apiInstalled = await service.isTermuxApiInstalled();
+      } catch (_) {
+        // A detection failure must not block the user. The confirmation sheet
+        // still explains the Termux:API requirement.
+      }
+      if (!apiInstalled) {
+        if (!context.mounted) return false;
+        await _showMessage(
+          context,
+          title: l10n.termuxApiMissingTitle,
+          message: l10n.termuxApiMissingBody,
+          actionLabel: l10n.termuxApiGuide,
+          onAction: () async {
+            if (context.mounted) {
+              await openExternalUrl(context, AppConstants.termuxApiUrl);
+            }
+          },
         );
         return false;
       }
@@ -103,9 +136,34 @@ Future<bool> showTermuxRunFlow(
         items: items,
         risk: risk,
         defaultBackground: defaultBackground,
+        usesTermuxApi: usesTermuxApi,
       ),
     );
     if (confirmed == null) return false;
+
+    // Termux needs the SYSTEM_ALERT_WINDOW app-op to open a session while this
+    // app is in front. Sending anyway makes Termux show its own permission
+    // dialog and the command never runs, so stop with an actionable message.
+    // Background runs do not create a session and are not affected.
+    if (!confirmed) {
+      var canOpenSession = true;
+      try {
+        canOpenSession = await service.canTermuxDrawOverlays();
+      } catch (_) {
+        // Never block a run because the check itself failed.
+      }
+      if (!canOpenSession) {
+        if (!context.mounted) return false;
+        await _showMessage(
+          context,
+          title: l10n.termuxOverlayTitle,
+          message: l10n.termuxOverlayRunBody,
+          actionLabel: l10n.termuxOverlayGrant,
+          onAction: service.openTermuxOverlaySettings,
+        );
+        return false;
+      }
+    }
 
     final sent = await service.runCommands(
       items.map((item) => item.command).toList(growable: false),
@@ -130,8 +188,8 @@ Future<bool> showTermuxRunFlow(
         context,
         title: l10n.termuxPermissionTitle,
         message: l10n.termuxPermissionBody,
-        actionLabel: l10n.openTermux,
-        onAction: service.openTermuxAppInfo,
+        actionLabel: l10n.openAppSettings,
+        onAction: service.openAppSettings,
       );
     } else {
       context.showErrorSnack(error);
@@ -229,12 +287,14 @@ class _RunConfirmSheet extends ConsumerStatefulWidget {
     required this.items,
     required this.risk,
     required this.defaultBackground,
+    required this.usesTermuxApi,
   });
 
   final String label;
   final List<TermuxRunItem> items;
   final CommandRisk risk;
   final bool defaultBackground;
+  final bool usesTermuxApi;
 
   @override
   ConsumerState<_RunConfirmSheet> createState() => _RunConfirmSheetState();
@@ -312,6 +372,18 @@ class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
                     height: 1.5,
                   ),
                 ),
+                if (widget.usesTermuxApi) ...[
+                  const SizedBox(height: AppSpacing.x3),
+                  AppNote(
+                    title: l10n.termuxApiNoteTitle,
+                    message: l10n.termuxApiConfirmNote,
+                    icon: Icons.extension_outlined,
+                    tone: AppNoteTone.info,
+                    actionLabel: l10n.termuxApiGuide,
+                    onAction: () =>
+                        openExternalUrl(context, AppConstants.termuxApiUrl),
+                  ),
+                ],
                 if (widget.risk.hasWarnings) ...[
                   const SizedBox(height: AppSpacing.x4),
                   AppNote(
@@ -425,6 +497,7 @@ class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
                   Row(
                     children: [
                       Expanded(
+                        flex: 2,
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           child: Text(l10n.cancel),
@@ -432,6 +505,7 @@ class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
                       ),
                       const SizedBox(width: AppSpacing.x3),
                       Expanded(
+                        flex: 3,
                         child: FilledButton.icon(
                           onPressed: requiresAcknowledgement && !_acknowledged
                               ? null
@@ -447,7 +521,11 @@ class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
                                   Navigator.of(context).pop(_background);
                                 },
                           icon: const Icon(Icons.play_arrow_rounded),
-                          label: Text(l10n.confirmRun),
+                          label: Text(
+                            l10n.confirmRun,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                     ],
