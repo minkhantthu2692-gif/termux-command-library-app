@@ -173,5 +173,51 @@ void main() {
 
     expect(service.sent, ['echo hello']);
     expect(service.sentInBackground, [true]);
+    expect(service.sentKeepOpen, [false]);
+  });
+
+  testWidgets('keeps the terminal open by default', (tester) async {
+    final service = FakeTermuxService();
+    await pumpHost(tester, service, 'echo hello');
+
+    await tester.tap(find.text('Run'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Keep terminal open'), findsOneWidget);
+    await tester.tap(find.text('Send command'));
+    await tester.pumpAndSettle();
+
+    expect(service.sentKeepOpen, [true]);
+  });
+
+  testWidgets('can turn the keep-open option off', (tester) async {
+    final service = FakeTermuxService();
+    await pumpHost(tester, service, 'echo hello');
+
+    await tester.tap(find.text('Run'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Keep terminal open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send command'));
+    await tester.pumpAndSettle();
+
+    expect(service.sentKeepOpen, [false]);
+  });
+
+  testWidgets('hides keep-open for background runs', (tester) async {
+    final service = FakeTermuxService();
+    await pumpHost(tester, service, 'echo hello');
+
+    await tester.tap(find.text('Run'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Run in the background'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Keep terminal open'), findsNothing);
+
+    await tester.tap(find.text('Send command'));
+    await tester.pumpAndSettle();
+    expect(service.sentInBackground, [true]);
+    expect(service.sentKeepOpen, [false]);
   });
 }

@@ -199,7 +199,7 @@ The only supported flow is `showTermuxRunFlow`:
    install guidance and stop.
 4. Analyze the command(s) for risky patterns.
 5. Show a confirmation sheet containing the exact command text, foreground or
-   background mode, and warnings.
+   background mode, the keep-terminal-open option, and warnings.
 6. For risky commands, require an explicit acknowledgement.
 7. For a foreground run, verify that Termux has the "Display over other apps"
    permission. If it does not, stop with an explanation and a settings action.
@@ -256,6 +256,40 @@ The app cannot undo a command once Termux starts it.
 The confirmation sheet defaults to background only when every selected step uses
 `runMode: background`. The user can change the mode before confirming.
 
+### Keeping the terminal open
+
+Termux closes a foreground `RUN_COMMAND` session as soon as the command exits.
+Fast commands such as `termux-battery-status` therefore print their output and
+the session disappears before it can be read.
+
+To prevent that, the app wraps **foreground** commands in a subshell that waits
+for Enter after the command finishes:
+
+```bash
+(
+<original command>
+
+echo
+printf '%s\n' 'Command finished. Press Enter to close this session.'
+read -r __termux_keep_open
+)
+```
+
+- **Keep terminal open** is enabled by default in the confirmation sheet.
+- The session stays on its own screen with the output visible. Press Enter in
+  Termux to close it.
+- The wrapper is execution-only. The command shown in the app, copied to the
+  clipboard, and stored in the guide is never modified.
+- The subshell isolates `exit` and `exec`, so the original command cannot close
+  the terminal before the hint is printed.
+- Turning the switch off sends the original command and lets Termux close the
+  session when it exits.
+- **Background** runs ignore the option and always send the original command,
+  because they do not create a terminal session.
+
+The app still reports only that the command was sent. It cannot read the output
+or confirm success.
+
 ## 9. Filtering and multiple steps
 
 - Running one step sends one intent.
@@ -277,6 +311,7 @@ The confirmation sheet defaults to background only when every selected step uses
 | `termux-*` runs but nothing happens | Install or enable the Termux:API APK and grant its Android permissions. |
 | Termux:API status pill is green but API commands fail | The pill only checks the APK; install the `termux-api` package inside Termux. |
 | Output is not visible | Check Termux's terminal session; the app cannot capture output. |
+| Termux flashes `[2] bash` and returns to `[1] bash` | The command exited and Termux closed its session. Leave **Keep terminal open** on, or use a command that stays interactive. |
 | Background command seems silent | Use foreground mode or inspect Termux output/logs. |
 | Emulator cannot run Termux | Termux targets real Android; use a physical device or a suitable Android image. |
 | Play Store Termux fails | Use the official GitHub releases, not the deprecated store build. |

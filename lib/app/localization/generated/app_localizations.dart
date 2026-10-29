@@ -1454,6 +1454,24 @@ abstract class AppLocalizations {
   /// **'Background commands have no visible terminal output.'**
   String get runBackgroundHelper;
 
+  /// No description provided for @termuxKeepOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep terminal open'**
+  String get termuxKeepOpen;
+
+  /// No description provided for @termuxKeepOpenHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps the session open after the command finishes so you can read its output. Press Enter in Termux to close it.'**
+  String get termuxKeepOpenHelper;
+
+  /// No description provided for @termuxKeepOpenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Command finished. Press Enter to close this session.'**
+  String get termuxKeepOpenHint;
+
   /// No description provided for @runForeground.
   ///
   /// In en, this message translates to:

@@ -24,7 +24,8 @@ Cloud Firestore when an account and network are available.
 - Read multi-step guides with exact shell syntax preserved.
 - Copy one step or every command in a guide.
 - Send a step to Termux through the documented `RUN_COMMAND` intent, after a
-  confirmation and a destructive-command warning.
+  confirmation and a destructive-command warning. Foreground runs keep the
+  terminal session open by default so the output can be read.
 - Favorite guides and pin guides in a user-defined order.
 - Upload, edit and delete your own guides; drafts are supported.
 - Sign in with email/password or Google/GitHub, continue as an anonymous guest,
@@ -174,7 +175,9 @@ Then open the app's Termux guide and grant the requested `RUN_COMMAND`
 permission. On Android 10 and later, also allow Termux **Display over other
 apps**; without it Termux cannot open a session while this app is in front.
 Commands can be sent from **Run via Termux** on a step and **Run all in
-Termux** on a guide.
+Termux** on a guide. **Keep terminal open** is on by default: it leaves the
+session and its output visible after the command finishes. Press Enter in
+Termux to close it, or turn the option off to let Termux close it automatically.
 
 For guides that use built-in `termux-*` commands, install **both** parts of
 Termux:API:

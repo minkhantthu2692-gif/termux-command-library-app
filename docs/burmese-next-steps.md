@@ -529,6 +529,9 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
       foreground run အလုပ်လုပ်သည်။ မပေးထားလျှင် app က ရှင်းလင်းစွာ
       ရပ်ပြီး settings ဖွင့်ရန် ပြသည်။
 - [ ] Command ပို့မီ အတည်ပြုချက်တွင် command အားလုံး ပြသည်။
+- [ ] Foreground run တွင် **Keep terminal open** ကို default ဖွင့်ထားပြီး
+      output ကို ဖတ်ပြီးမှ Termux တွင် Enter နှိပ်ပိတ်နိုင်သည်။
+      Background run တွင် ဤ option မပြပါ။
 - [ ] အန္တရာယ်ရှိသော command အတွက် ထပ်မံ အတည်ပြုရသည်။
 - [ ] ပယ်ဖျက်နိုင်သည်။
 - [ ] App က "Sent to Termux" ဟုသာ ပြသည်။ "အောင်မြင်ပြီး" ဟု မပြောပါ။
@@ -629,7 +632,9 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
    **Open Termux:API settings** ကို သုံးနိုင်သည်။
 8. Command details မှ **Run via Termux** သို့မဟုတ် guide မှ
    **Run all in Termux** ကို နှိပ်ပြီး Termux တွင် output ပေါ်ကြောင်း
-   စစ်ပါ။ App က "sent" ဟုသာ ပြမည်ဖြစ်ပြီး exit status ကို မပြပါ။
+   စစ်ပါ။ **Keep terminal open** ကို ဖွင့်ထားလျှင် command ပြီးနောက်
+   session ပေါ်တွင် output ကျန်နေမည်။ Enter နှိပ်လျှင် ပိတ်မည်။
+   App က "sent" ဟုသာ ပြမည်ဖြစ်ပြီး exit status ကို မပြပါ။
 
 > **သတိ:** App သည် command များကို အလိုအလျောက် မလုပ်ဆောင်ပါ။
 > အမြဲတမ်း command ကို ပြပြီး အတည်ပြုချက် တောင်းသည်။

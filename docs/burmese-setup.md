@@ -476,7 +476,35 @@ App ၏ **Termux guide** ကို ဖွင့်ပြီး `RUN_COMMAND` per
 **Settings → Apps → Termux Command Library → Permissions** တွင် ပေးပါ။
 Guide ထဲရှိ **Open app settings** ကိုလည်း သုံးနိုင်သည်။
 
-### ၁၂.၆ Command များ run ခြင်း
+### ၁၂.၆ Termux session ကို ဖွင့်ထားခြင်း
+
+Termux သည် foreground `RUN_COMMAND` session တစ်ခုကို command ပြီးဆုံးသည်နှင့်
+ပိတ်ပစ်သည်။ ထို့ကြောင့် `termux-battery-status` ကဲ့သို့ မြန်ဆန်သော command
+များ၏ output သည် မဖတ်နိုင်မီ ပျောက်သွားနိုင်သည်။
+
+App သည် foreground command များကို အောက်ပါအတိုင်း ပတ်ထားပြီး Enter
+နှိပ်သည်အထိ စောင့်စေသည်:
+
+```bash
+(
+<မူရင်း command>
+
+echo
+printf '%s\n' 'Command finished. Press Enter to close this session.'
+read -r __termux_keep_open
+)
+```
+
+- Confirmation sheet တွင် **Keep terminal open** ကို default အနေဖြင့်
+  ဖွင့်ထားသည်။
+- Output ကို ဖတ်ပြီးနောက် Termux တွင် Enter နှိပ်လျှင် session ပိတ်မည်။
+- ဤပတ်ခြင်းသည် run လုပ်ရန်အတွက်သာ ဖြစ်သည်။ App တွင် ပြသော၊ ကော်ပီ
+  ကူးသော၊ သိမ်းဆည်းထားသော command စာသားကို မပြောင်းလဲပါ။
+- Switch ကို ပိတ်ထားလျှင် Termux သည် command ပြီးသည်နှင့် session ကို
+  အလိုအလျောက် ပိတ်မည်။
+- Background run များသည် session မဖွင့်သောကြောင့် ဤ option ကို မသုံးပါ။
+
+### ၁၂.၇ Command များ run ခြင်း
 
 Command တစ်ခုကို run လုပ်သောအခါ app သည်:
 
@@ -488,7 +516,8 @@ Command တစ်ခုကို run လုပ်သောအခါ app သည�
 5. အန္တရာယ်ရှိသော command များအတွက် သတိပေးချက် ပြသည်။
 6. အတည်ပြုချက် တောင်းသည်။
 7. Foreground run ဖြစ်လျှင် Termux ၏ display permission ကို စစ်သည်။
-8. Termux သို့ ပို့သည်။
+8. Termux သို့ ပို့သည် (foreground အတွက် session ဖွင့်ထားမည်/မမည်
+   ရွေးချယ်နိုင်သည်)။
 9. "Sent to Termux" ဟုသာ ပြသည်။ အောင်မြင်ပြီးဟု မပြောပါ။
 
 Run လုပ်ရန် button များ:
@@ -583,6 +612,7 @@ Groq နှင့်အတူ:
 | Termux မတွေ့ | GitHub release မှ ပြန်တပ်ဆင်ပါ၊ Termux ကို တစ်ကြိမ်ဖွင့်ပါ |
 | Command မလုပ် (Termux တွင် `allow-external-apps` error ပြ) | `~/.termux/termux.properties` တွင် `allow-external-apps=true` ထည့်ပြီး `termux-reload-settings` လုပ်ပါ |
 | Termux က "Display over other apps" dialog ပြ | Termux အတွက် **Display over other apps** ကို ခွင့်ပြုပါ (Android 10+) သို့မဟုတ် background mode သုံးပါ |
+| Termux က `[2] bash` ကို တစ်ခဏပြပြီး `[1] bash` သို့ ပြန်သွားသည် | Command ပြီးဆုံးလို့ Termux က session ပိတ်လိုက်ခြင်း။ **Keep terminal open** ကို ဖွင့်ထားပြီး Termux တွင် Enter နှိပ်ပြီးမှ ပိတ်ပါ |
 | `termux-*` command မတွေ့ | Termux:API APK ထည့်ပြီး Termux ထဲတွင် `pkg install termux-api` လုပ်ပါ |
 | `termux-*` run သော်လည်း ဘာမှမပေါ် | Termux:API ၏ Android permission များကို **Open Termux:API settings** မှ စစ်ပါ |
 | AI 401 | ကီး မှန်/မမှန်၊ revoke ဖြစ်/မဖြစ် စစ်ပါ |

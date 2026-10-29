@@ -747,6 +747,17 @@ class AppLocalizationsMy extends AppLocalizations {
       'နောက်ကွယ် command များအတွက် terminal output မမြင်ရပါ။';
 
   @override
+  String get termuxKeepOpen => 'Terminal ကို ဆက်ဖွင့်ထားမည်';
+
+  @override
+  String get termuxKeepOpenHelper =>
+      'Command ပြီးဆုံးပြီးနောက် output ဖတ်နိုင်ရန် session ကို ဖွင့်ထားပေးပါသည်။ ပိတ်ရန် Termux တွင် Enter နှိပ်ပါ။';
+
+  @override
+  String get termuxKeepOpenHint =>
+      'Command ပြီးဆုံးပါပြီ။ ဤ session ကို ပိတ်ရန် Enter နှိပ်ပါ။';
+
+  @override
   String get runForeground => 'Termux တွင် ဖွင့်';
 
   @override

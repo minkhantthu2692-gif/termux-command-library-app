@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/errors/app_exception.dart';
+import '../../core/utils/termux_command_wrapper.dart';
 import '../remote/firebase_errors.dart';
 
 /// Abstraction over the Android bridge so command execution can be faked in
@@ -36,6 +37,8 @@ abstract interface class TermuxService {
   Future<int> runCommands(
     List<String> commands, {
     bool background = false,
+    bool keepOpen = false,
+    String keepOpenHint = 'Command finished. Press Enter to close.',
     String? label,
   });
 
@@ -103,6 +106,8 @@ class PlatformTermuxService implements TermuxService {
   Future<int> runCommands(
     List<String> commands, {
     bool background = false,
+    bool keepOpen = false,
+    String keepOpenHint = 'Command finished. Press Enter to close.',
     String? label,
   }) async {
     if (!isSupported) {
@@ -111,9 +116,16 @@ class PlatformTermuxService implements TermuxService {
     if (commands.isEmpty) return 0;
     var sent = 0;
     for (final command in commands) {
+      final executed = background
+          ? command
+          : termuxCommandForExecution(
+              command,
+              keepOpen: keepOpen,
+              keepOpenHint: keepOpenHint,
+            );
       try {
         await _channel.invokeMethod<bool>('runTermuxCommand', {
-          'command': command,
+          'command': executed,
           'background': background,
           'label': label ?? 'Termux Command Library',
         });

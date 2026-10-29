@@ -18,6 +18,7 @@ class FakeTermuxService implements TermuxService {
   int overlaySettingsOpened = 0;
   final List<String> sent = <String>[];
   final List<bool> sentInBackground = <bool>[];
+  final List<bool> sentKeepOpen = <bool>[];
 
   @override
   bool get isSupported => true;
@@ -64,10 +65,13 @@ class FakeTermuxService implements TermuxService {
   Future<int> runCommands(
     List<String> commands, {
     bool background = false,
+    bool keepOpen = false,
+    String keepOpenHint = 'Command finished. Press Enter to close.',
     String? label,
   }) async {
     sent.addAll(commands);
     sentInBackground.addAll(commands.map((_) => background));
+    sentKeepOpen.addAll(commands.map((_) => keepOpen));
     return commands.length;
   }
 

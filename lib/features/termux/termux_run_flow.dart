@@ -127,7 +127,7 @@ Future<bool> showTermuxRunFlow(
     final defaultBackground =
         backgroundOverride ??
         items.every((item) => item.runMode == CommandRunMode.background);
-    final confirmed = await showModalBottomSheet<bool>(
+    final options = await showModalBottomSheet<_RunOptions>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -139,13 +139,13 @@ Future<bool> showTermuxRunFlow(
         usesTermuxApi: usesTermuxApi,
       ),
     );
-    if (confirmed == null) return false;
+    if (options == null) return false;
 
     // Termux needs the SYSTEM_ALERT_WINDOW app-op to open a session while this
     // app is in front. Sending anyway makes Termux show its own permission
     // dialog and the command never runs, so stop with an actionable message.
     // Background runs do not create a session and are not affected.
-    if (!confirmed) {
+    if (!options.background) {
       var canOpenSession = true;
       try {
         canOpenSession = await service.canTermuxDrawOverlays();
@@ -167,7 +167,9 @@ Future<bool> showTermuxRunFlow(
 
     final sent = await service.runCommands(
       items.map((item) => item.command).toList(growable: false),
-      background: confirmed,
+      background: options.background,
+      keepOpen: !options.background && options.keepOpen,
+      keepOpenHint: l10n.termuxKeepOpenHint,
       label: label,
     );
     if (!context.mounted) return false;
@@ -281,6 +283,15 @@ Future<void> showExternalAppsDialog(BuildContext context) async {
 
 const _termuxReleasesUrl = 'https://github.com/termux/termux-app/releases';
 
+/// The choices made in the confirmation sheet. Keeping them together avoids
+/// positional booleans and makes the run call explicit.
+class _RunOptions {
+  const _RunOptions({required this.background, required this.keepOpen});
+
+  final bool background;
+  final bool keepOpen;
+}
+
 class _RunConfirmSheet extends ConsumerStatefulWidget {
   const _RunConfirmSheet({
     required this.label,
@@ -302,6 +313,7 @@ class _RunConfirmSheet extends ConsumerStatefulWidget {
 
 class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
   late bool _background = widget.defaultBackground;
+  bool _keepOpen = true;
   bool _acknowledged = false;
 
   @override
@@ -449,6 +461,17 @@ class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
                     setState(() => _background = value);
                   },
                 ),
+                if (!_background)
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.termuxKeepOpen),
+                    subtitle: Text(l10n.termuxKeepOpenHelper),
+                    value: _keepOpen,
+                    onChanged: (value) {
+                      unawaited(triggerHaptic(ref, cue: HapticCue.toggle));
+                      setState(() => _keepOpen = value);
+                    },
+                  ),
                 if (requiresAcknowledgement) ...[
                   const SizedBox(height: AppSpacing.x1),
                   CheckboxListTile.adaptive(
@@ -518,7 +541,12 @@ class _RunConfirmSheetState extends ConsumerState<_RunConfirmSheet> {
                                           : HapticCue.tap,
                                     ),
                                   );
-                                  Navigator.of(context).pop(_background);
+                                  Navigator.of(context).pop(
+                                    _RunOptions(
+                                      background: _background,
+                                      keepOpen: _keepOpen,
+                                    ),
+                                  );
                                 },
                           icon: const Icon(Icons.play_arrow_rounded),
                           label: Text(

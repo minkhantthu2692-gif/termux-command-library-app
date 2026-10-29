@@ -34,7 +34,8 @@ Favorites are a set; pins have an order that you control. They belong to the sig
 The app is a command library, not a terminal emulator.
 
 - **Copy** places the exact command text on the clipboard, including newlines and quotes.
-- **Run in Termux** opens a confirmation sheet first. The sheet shows the command, the risk label, and whether it will run in the foreground or background.
+- **Run in Termux** opens a confirmation sheet first. The sheet shows the command, the risk label, whether it will run in the foreground or background, and whether the terminal stays open.
+- **Keep terminal open** is on by default for foreground runs. It keeps the session and its output visible after the command finishes; press Enter in Termux to close it. Background runs ignore this option.
 - Sending a command only means Android accepted the intent. The app cannot see the output or prove that the command succeeded inside Termux.
 
 Always read a command before sending it. Destructive commands are labelled, but the label is guidance, not a guarantee.
@@ -54,7 +55,7 @@ echo "allow-external-apps=true" >> ~/.termux/termux.properties
 5. Restart Termux, or run `termux-reload-settings`. Without this setting Termux rejects the request with a `RunCommandService requires 'allow-external-apps'` toast, and the app cannot detect that rejection.
 6. On Android 10 and later, allow Termux **Display over other apps** so it can open a session while this app is in front: **Settings → Apps → Termux → Display over other apps → Allow**, or use **Open Termux display settings** in the Termux guide. Without it Termux shows its own dialog and the command does not run. Background runs do not need it.
 
-Use **Run via Termux** on a step or **Run all in Termux** on a guide. Every command is shown for confirmation first.
+Use **Run via Termux** on a step or **Run all in Termux** on a guide. Every command is shown for confirmation first. Leave **Keep terminal open** on to read the output before the session closes.
 
 For guides that use built-in `termux-*` commands, install **both** parts of Termux:API:
 

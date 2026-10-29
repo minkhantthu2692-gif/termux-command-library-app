@@ -230,6 +230,22 @@ reports that the intent was sent. Fix the Termux setting:
 3. Use foreground mode for output; background commands may not show output.
 4. The app only reports "sent". Check Termux's terminal for the actual result.
 
+## Termux flashes `[2] bash` and closes before the output can be read
+
+Termux ends a foreground `RUN_COMMAND` session when its command exits, so a fast
+command such as `termux-battery-status` can print and vanish immediately.
+
+1. Leave **Keep terminal open** enabled in the run confirmation sheet (it is on
+   by default).
+2. The app then runs the command in a subshell and prints a hint before waiting
+   for Enter. The output stays visible on the `[2] bash` screen.
+3. Press Enter in Termux to close that session.
+4. If the option is off, Termux closes the session automatically. Background
+   runs ignore the option because they have no visible session.
+
+The wrapper changes only how the command is executed; the displayed, copied and
+stored command text stays exactly as written.
+
 ## `RUN_COMMAND` permission is denied
 
 - The app asks for `com.termux.permission.RUN_COMMAND` before the first run.

@@ -742,6 +742,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Background commands have no visible terminal output.';
 
   @override
+  String get termuxKeepOpen => 'Keep terminal open';
+
+  @override
+  String get termuxKeepOpenHelper =>
+      'Keeps the session open after the command finishes so you can read its output. Press Enter in Termux to close it.';
+
+  @override
+  String get termuxKeepOpenHint =>
+      'Command finished. Press Enter to close this session.';
+
+  @override
   String get runForeground => 'Open in Termux';
 
   @override
