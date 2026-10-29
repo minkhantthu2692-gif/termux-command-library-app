@@ -67,7 +67,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               SettingsValueTile(
                 title: l10n.accentColor,
-                value: _accentLabel(l10n, settings.accentId),
+                value: settings.useDynamicColor
+                    ? l10n.wallpaperColors
+                    : _accentLabel(l10n, settings.accentId),
                 leading: const Icon(Icons.palette_outlined),
                 onTap: () => context.push('/settings/appearance'),
               ),

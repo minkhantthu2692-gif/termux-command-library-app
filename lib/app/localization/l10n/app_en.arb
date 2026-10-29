@@ -451,6 +451,8 @@
   "accentLime": "Lime",
   "accentFuchsia": "Fuchsia",
   "accentSlate": "Slate",
+  "wallpaperColors": "Wallpaper colors",
+  "wallpaperColorsHelper": "Use colors from your home screen wallpaper. Choosing a palette below turns this off.",
   "typography": "Typography",
   "fontFamily": "Font family",
   "fontSystem": "System default",

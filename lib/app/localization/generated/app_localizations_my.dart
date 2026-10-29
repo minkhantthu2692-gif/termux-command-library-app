@@ -1275,6 +1275,13 @@ class AppLocalizationsMy extends AppLocalizations {
   String get accentSlate => 'Slate';
 
   @override
+  String get wallpaperColors => 'နောက်ခံပုံ အရောင်များ';
+
+  @override
+  String get wallpaperColorsHelper =>
+      'ဖုန်းနောက်ခံပုံမှ အရောင်များကို အသုံးပြုပါ။ အောက်တွင် palette ရွေးချယ်ပါက ၎င်းကို ပိတ်ပါမည်။';
+
+  @override
   String get typography => 'စာလုံးပုံစံ';
 
   @override

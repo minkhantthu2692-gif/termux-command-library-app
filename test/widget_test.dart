@@ -1,4 +1,5 @@
 import 'package:drift/native.dart';
+import 'package:dynamic_color_testing/dynamic_color_testing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +17,7 @@ void main() {
   late AppDatabase db;
 
   setUp(() {
+    DynamicColorTestingUtils.setMockDynamicColors();
     db = AppDatabase(NativeDatabase.memory());
   });
 

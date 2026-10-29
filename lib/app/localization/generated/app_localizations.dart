@@ -2426,6 +2426,18 @@ abstract class AppLocalizations {
   /// **'Slate'**
   String get accentSlate;
 
+  /// No description provided for @wallpaperColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper colors'**
+  String get wallpaperColors;
+
+  /// No description provided for @wallpaperColorsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Use colors from your home screen wallpaper. Choosing a palette below turns this off.'**
+  String get wallpaperColorsHelper;
+
   /// No description provided for @typography.
   ///
   /// In en, this message translates to:

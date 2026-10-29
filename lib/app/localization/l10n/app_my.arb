@@ -388,6 +388,8 @@
   "accentLime": "Lime",
   "accentFuchsia": "Fuchsia",
   "accentSlate": "Slate",
+  "wallpaperColors": "နောက်ခံပုံ အရောင်များ",
+  "wallpaperColorsHelper": "ဖုန်းနောက်ခံပုံမှ အရောင်များကို အသုံးပြုပါ။ အောက်တွင် palette ရွေးချယ်ပါက ၎င်းကို ပိတ်ပါမည်။",
   "typography": "စာလုံးပုံစံ",
   "fontFamily": "Font မိသားစု",
   "fontSystem": "System မူရင်း",

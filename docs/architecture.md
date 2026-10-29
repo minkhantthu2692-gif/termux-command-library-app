@@ -279,8 +279,10 @@ See [Termux integration](termux-integration.md).
 - All spacing values come from `AppSpacing` (4dp scale).
 - Typography, radii, icon sizes, elevation, durations and component dimensions
   are tokens in `lib/core/design_system/`.
-- Material 3 color schemes derive from a selected accent; light/dark/system modes
-  share the same token structure.
+- Material 3 color schemes derive from a selected accent, or optionally from
+  Android 12+ wallpaper colours; light/dark/system modes share the same token
+  structure. `WallpaperColorBuilder` reads the platform palette and `AppTheme`
+  maps it onto the app's neutral surfaces.
 - Edge-to-edge system bars use `AnnotatedRegion` and theme-derived navigation bar
   colors.
 - Frosted glass is centralized in `GlassSurface`

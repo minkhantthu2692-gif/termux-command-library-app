@@ -34,8 +34,9 @@ Cloud Firestore when an account and network are available.
 - Work offline. Changes are queued locally and synchronized later.
 - Use an optional AI assistant with your own Groq API key (BYOK), including
   command explanations, title/description help and English/Myanmar translation.
-- Customize theme, choose from 12 accent colours, frosted-glass blur (on/off
-  plus intensity), vibration, font size and font family.
+- Customize theme, choose from 12 accent colours or follow your Android
+  wallpaper (Android 12+), frosted-glass blur (on/off plus intensity), vibration,
+  font size and font family.
 - Switch between English and Myanmar; Myanmar text has a bundled fallback font.
 
 The app is **not** a terminal emulator. Termux executes commands and owns their

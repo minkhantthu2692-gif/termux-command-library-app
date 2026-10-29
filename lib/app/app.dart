@@ -9,6 +9,8 @@ import 'localization/generated/app_localizations.dart';
 import 'providers.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
+import 'theme/dynamic_color_scope.dart';
+import 'theme/wallpaper_colors.dart';
 
 /// Root widget. Theme, locale and system chrome are derived from the persisted
 /// settings stream so a change in Appearance is reflected without a restart.
@@ -65,29 +67,47 @@ class _TermuxCommandLibraryAppState
     // Starts the persistent SQLite -> Firestore synchronization listeners.
     ref.watch(syncBootstrapProvider);
 
-    final light = AppTheme.build(settings, Brightness.light);
-    final dark = AppTheme.build(settings, Brightness.dark);
+    // The platform palette is resolved asynchronously. Until it arrives (or on
+    // devices without wallpaper colors) the selected accent is used, so the
+    // first frame is never blank or unstyled.
+    return WallpaperColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        final light = AppTheme.build(
+          settings,
+          Brightness.light,
+          dynamicScheme: lightDynamic,
+        );
+        final dark = AppTheme.build(
+          settings,
+          Brightness.dark,
+          dynamicScheme: darkDynamic,
+        );
 
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      onGenerateTitle: (context) => AppLocalizations.of(context).appName,
-      theme: light,
-      darkTheme: dark,
-      themeMode: settings.themeMode,
-      themeAnimationDuration: AppDurations.medium,
-      themeAnimationCurve: Curves.easeOutCubic,
-      locale: Locale(settings.effectiveLanguageCode),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      routerConfig: router,
-      builder: (context, child) {
-        final theme = Theme.of(context);
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: AppSystemUi.style(
-            brightness: theme.brightness,
-            navigationBarColor: theme.scaffoldBackgroundColor,
+        return DynamicColorScope(
+          isSupported: lightDynamic != null || darkDynamic != null,
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            onGenerateTitle: (context) => AppLocalizations.of(context).appName,
+            theme: light,
+            darkTheme: dark,
+            themeMode: settings.themeMode,
+            themeAnimationDuration: AppDurations.medium,
+            themeAnimationCurve: Curves.easeOutCubic,
+            locale: Locale(settings.effectiveLanguageCode),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            routerConfig: router,
+            builder: (context, child) {
+              final theme = Theme.of(context);
+              return AnnotatedRegion<SystemUiOverlayStyle>(
+                value: AppSystemUi.style(
+                  brightness: theme.brightness,
+                  navigationBarColor: theme.scaffoldBackgroundColor,
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
           ),
-          child: child ?? const SizedBox.shrink(),
         );
       },
     );

@@ -1263,6 +1263,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accentSlate => 'Slate';
 
   @override
+  String get wallpaperColors => 'Wallpaper colors';
+
+  @override
+  String get wallpaperColorsHelper =>
+      'Use colors from your home screen wallpaper. Choosing a palette below turns this off.';
+
+  @override
   String get typography => 'Typography';
 
   @override

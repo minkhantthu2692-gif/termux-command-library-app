@@ -257,6 +257,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
+  dynamic_color:
+    dependency: "direct main"
+    description:
+      name: dynamic_color
+      sha256: "869b3bce0100eb519768ecd71c0111f0b5ea679f5f62e1f59c49d80067e730c5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
+  dynamic_color_testing:
+    dependency: "direct dev"
+    description:
+      name: dynamic_color_testing
+      sha256: "0c3e7c0d11bd78045547a3895a8d28293cdfe1126e94f4991a5c9c02eb517f01"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -694,7 +710,7 @@ packages:
     source: hosted
     version: "0.12.20"
   material_color_utilities:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: material_color_utilities
       sha256: "9c337007e82b1889149c82ed242ed1cb24a66044e30979c44912381e9be4c48b"

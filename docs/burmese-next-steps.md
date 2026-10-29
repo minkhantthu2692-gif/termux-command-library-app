@@ -569,6 +569,8 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 - [ ] Status bar နှင့် navigation bar အရောင် theme နှင့် ကိုက်ညီသည်။
 - [ ] အလင်းတွင် icon များ မြင်ရသည်၊ အမှောင်တွင်လည်း မြင်ရသည်။
 - [ ] Accent colour (၁၂ ရောင်)၊ font size၊ font family ပြောင်းနိုင်သည်။
+- [ ] Android 12+ တွင် **Wallpaper colours** ဖွင့်နိုင်ပြီး theme သည်
+      နောက်ခံပုံအရောင်နှင့် ကိုက်ညီသည်။ Palette တစ်ခု ရွေးလျှင် ၎င်း ပိတ်သည်။
 - [ ] မြန်မာဘာသာ ရွေးလျှင် စာများ ဖတ်နိုင်သည်။
 - [ ] Bottom tab တစ်ခုမှ တစ်ခုသို့ ပြောင်းပြီး **Back** နှိပ်လျှင်
       ယခင် tab သို့ ပြန်ရောက်သည်။

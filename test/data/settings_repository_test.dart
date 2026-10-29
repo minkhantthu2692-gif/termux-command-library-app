@@ -27,6 +27,7 @@ void main() {
       expect(settings.localGuestUid, startsWith(AppConstants.localUidPrefix));
       expect(settings.themeMode, ThemeMode.system);
       expect(settings.accentId, 'indigo');
+      expect(settings.useDynamicColor, isFalse);
       expect(settings.fontFamilyId, AppFonts.inter.id);
       expect(settings.languageCode, 'en');
       expect(settings.aiEnabled, isFalse);
@@ -51,6 +52,7 @@ void main() {
       final custom = base.copyWith(
         themeMode: ThemeMode.dark,
         accentId: 'teal',
+        useDynamicColor: true,
         blurEnabled: false,
         blurIntensity: 5.5,
         vibration: VibrationIntensity.strong,
@@ -68,6 +70,7 @@ void main() {
 
       expect(restored.themeMode, ThemeMode.dark);
       expect(restored.accentId, 'teal');
+      expect(restored.useDynamicColor, isTrue);
       expect(restored.blurEnabled, isFalse);
       expect(restored.blurIntensity, 5.5);
       expect(restored.vibration, VibrationIntensity.strong);
@@ -87,6 +90,22 @@ void main() {
         await repository.save(base.copyWith(accentId: accent.id));
         expect((await repository.read()).accentId, accent.id);
       }
+    });
+
+    test('wallpaper colors keep the selected accent as a fallback', () async {
+      final base = await repository.initialize();
+      await repository.save(
+        base.copyWith(accentId: 'coral', useDynamicColor: true),
+      );
+
+      var restored = await repository.read();
+      expect(restored.useDynamicColor, isTrue);
+      expect(restored.accentId, 'coral');
+
+      await repository.save(restored.copyWith(useDynamicColor: false));
+      restored = await repository.read();
+      expect(restored.useDynamicColor, isFalse);
+      expect(restored.accentId, 'coral');
     });
 
     test('clamps values written through save', () async {
@@ -131,6 +150,7 @@ void main() {
         'localGuestUid': 'local-guest-test',
         'themeMode': 'sepia',
         'accentId': 'neon',
+        'useDynamicColor': 'perhaps',
         'blurEnabled': 'perhaps',
         'blurIntensity': '-4',
         'vibration': 'earthquake',
@@ -146,6 +166,7 @@ void main() {
       final settings = await repository.read();
       expect(settings.themeMode, ThemeMode.system);
       expect(settings.accentId, 'indigo');
+      expect(settings.useDynamicColor, isFalse);
       expect(settings.blurEnabled, isFalse);
       expect(settings.blurIntensity, 0);
       expect(settings.vibration, VibrationIntensity.medium);

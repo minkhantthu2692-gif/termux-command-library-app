@@ -12,6 +12,7 @@ class SettingsRepository {
   final SettingsDao _dao;
   static const _keyTheme = 'themeMode';
   static const _keyAccent = 'accentId';
+  static const _keyDynamicColor = 'useDynamicColor';
   static const _keyBlur = 'blurEnabled';
   static const _keyBlurIntensity = 'blurIntensity';
   static const _keyVibration = 'vibration';
@@ -66,6 +67,7 @@ class SettingsRepository {
       _keyAccent: _validAccents.contains(settings.accentId)
           ? settings.accentId
           : AppSettings.defaults(settings.localGuestUid).accentId,
+      _keyDynamicColor: settings.useDynamicColor.toString(),
       _keyBlur: settings.blurEnabled.toString(),
       _keyBlurIntensity: settings.blurIntensity.clamp(0, 30).toString(),
       _keyVibration: settings.vibration.name,
@@ -92,6 +94,7 @@ class SettingsRepository {
       accentId: _validAccents.contains(map[_keyAccent])
           ? map[_keyAccent]!
           : defaults.accentId,
+      useDynamicColor: _parseBool(map[_keyDynamicColor], fallback: false),
       blurEnabled: _parseBool(map[_keyBlur], fallback: true),
       blurIntensity: _parseDouble(map[_keyBlurIntensity], 12).clamp(0, 30),
       vibration: _parseVibration(map[_keyVibration]),

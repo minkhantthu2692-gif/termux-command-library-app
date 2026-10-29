@@ -9,11 +9,20 @@ import '../settings/app_settings.dart';
 /// [AppSpacing], [AppRadius] and [AppColors]; this file only maps them onto
 /// Material components.
 abstract final class AppTheme {
-  static ThemeData build(AppSettings settings, Brightness brightness) {
+  static ThemeData build(
+    AppSettings settings,
+    Brightness brightness, {
+    ColorScheme? dynamicScheme,
+  }) {
     final dark = brightness == Brightness.dark;
     final accent = AppAccents.byId(settings.accentId);
     final palette = dark ? AppColors.dark : AppColors.light;
-    final scheme = _scheme(accent.seed, palette, brightness);
+    final scheme = _scheme(
+      accent.seed,
+      palette,
+      brightness,
+      dynamicScheme: settings.useDynamicColor ? dynamicScheme : null,
+    );
     final font = settings.font;
     final baseText = _textTheme(brightness, settings.fontScale);
     final textTheme = font.family == null
@@ -336,15 +345,23 @@ abstract final class AppTheme {
   static ColorScheme _scheme(
     Color seed,
     AppColors palette,
-    Brightness brightness,
-  ) {
+    Brightness brightness, {
+    ColorScheme? dynamicScheme,
+  }) {
     final dark = brightness == Brightness.dark;
-    final generated = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: brightness,
-      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-      contrastLevel: 0,
-    );
+    // A dynamic scheme is only valid for the brightness it was generated for.
+    // Anything else (including a missing palette on older Android versions)
+    // falls back to the user's accent so the app never renders a mismatched
+    // theme.
+    final generated =
+        dynamicScheme != null && dynamicScheme.brightness == brightness
+        ? dynamicScheme
+        : ColorScheme.fromSeed(
+            seedColor: seed,
+            brightness: brightness,
+            dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+            contrastLevel: 0,
+          );
     return generated.copyWith(
       surface: palette.card,
       onSurface: dark ? const Color(0xFFE7EAF2) : const Color(0xFF1B1F28),

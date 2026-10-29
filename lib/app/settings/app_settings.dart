@@ -101,6 +101,7 @@ class AppSettings {
   const AppSettings({
     required this.themeMode,
     required this.accentId,
+    required this.useDynamicColor,
     required this.blurEnabled,
     required this.blurIntensity,
     required this.vibration,
@@ -117,6 +118,10 @@ class AppSettings {
 
   final ThemeMode themeMode;
   final String accentId;
+
+  /// When true and the platform provides wallpaper colors, they replace the
+  /// selected accent. The accent remains saved as the fallback.
+  final bool useDynamicColor;
   final bool blurEnabled;
 
   /// Backdrop blur sigma. 0 disables the effect even if enabled.
@@ -143,6 +148,7 @@ class AppSettings {
   AppSettings copyWith({
     ThemeMode? themeMode,
     String? accentId,
+    bool? useDynamicColor,
     bool? blurEnabled,
     double? blurIntensity,
     VibrationIntensity? vibration,
@@ -158,6 +164,7 @@ class AppSettings {
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
     accentId: accentId ?? this.accentId,
+    useDynamicColor: useDynamicColor ?? this.useDynamicColor,
     blurEnabled: blurEnabled ?? this.blurEnabled,
     blurIntensity: blurIntensity ?? this.blurIntensity,
     vibration: vibration ?? this.vibration,
@@ -175,6 +182,7 @@ class AppSettings {
   static AppSettings defaults(String localGuestUid) => AppSettings(
     themeMode: ThemeMode.system,
     accentId: 'indigo',
+    useDynamicColor: false,
     blurEnabled: true,
     blurIntensity: 12,
     vibration: VibrationIntensity.medium,

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/localization/generated/app_localizations.dart';
 import '../../app/providers.dart';
 import '../../app/settings/app_settings.dart';
+import '../../app/theme/dynamic_color_scope.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/services/haptics_service.dart';
 import '../../shared/utils/ui_actions.dart';
@@ -41,6 +42,7 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final settings = ref.watch(settingsControllerProvider);
+    final dynamicColorSupported = DynamicColorScope.isSupportedOf(context);
     return AppPage(
       title: l10n.appearance,
       child: Column(
@@ -98,19 +100,42 @@ class _AppearanceScreenState extends ConsumerState<AppearanceScreen> {
             title: l10n.accentColor,
             padding: const EdgeInsets.all(AppSpacing.x4),
             children: [
+              if (dynamicColorSupported) ...[
+                SettingsSwitchTile(
+                  title: l10n.wallpaperColors,
+                  subtitle: l10n.wallpaperColorsHelper,
+                  leading: const Icon(Icons.wallpaper_rounded),
+                  value: settings.useDynamicColor,
+                  onChanged: (value) =>
+                      _save(settings.copyWith(useDynamicColor: value)),
+                ),
+                const SizedBox(height: AppSpacing.x2),
+              ],
               Wrap(
                 spacing: AppSpacing.x3,
                 runSpacing: AppSpacing.x3,
                 children: [
                   for (final accent in AppAccents.all)
-                    _AccentSwatch(
-                      accent: accent,
-                      label: _accentLabel(l10n, accent.id),
-                      selected: settings.accentId == accent.id,
-                      onTap: () {
-                        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
-                        _save(settings.copyWith(accentId: accent.id));
-                      },
+                    Opacity(
+                      opacity: settings.useDynamicColor ? 0.45 : 1,
+                      child: _AccentSwatch(
+                        accent: accent,
+                        label: _accentLabel(l10n, accent.id),
+                        selected:
+                            !settings.useDynamicColor &&
+                            settings.accentId == accent.id,
+                        onTap: () {
+                          unawaited(
+                            triggerHaptic(ref, cue: HapticCue.selection),
+                          );
+                          _save(
+                            settings.copyWith(
+                              accentId: accent.id,
+                              useDynamicColor: false,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                 ],
               ),
