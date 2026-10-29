@@ -27,12 +27,17 @@ class SettingsRepository {
 
   static const _validAccents = {
     'indigo',
-    'teal',
-    'rose',
-    'amber',
-    'violet',
-    'green',
     'blue',
+    'cyan',
+    'teal',
+    'green',
+    'lime',
+    'amber',
+    'coral',
+    'rose',
+    'fuchsia',
+    'violet',
+    'slate',
   };
 
   /// Ensures a stable on-device guest identity exists before any provider is

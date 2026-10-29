@@ -104,15 +104,46 @@ abstract final class AppAccents {
     labelKey: 'accentBlue',
     seed: Color(0xFF2B6CA3),
   );
+  static const cyan = AppAccent(
+    id: 'cyan',
+    labelKey: 'accentCyan',
+    seed: Color(0xFF0E7490),
+  );
+  static const coral = AppAccent(
+    id: 'coral',
+    labelKey: 'accentCoral',
+    seed: Color(0xFFC2544A),
+  );
+  static const lime = AppAccent(
+    id: 'lime',
+    labelKey: 'accentLime',
+    seed: Color(0xFF5C8A1E),
+  );
+  static const fuchsia = AppAccent(
+    id: 'fuchsia',
+    labelKey: 'accentFuchsia',
+    seed: Color(0xFFA23A8C),
+  );
+  static const slate = AppAccent(
+    id: 'slate',
+    labelKey: 'accentSlate',
+    seed: Color(0xFF475569),
+  );
 
+  /// Ordered around the colour wheel so the swatch grid reads as a palette.
   static const all = <AppAccent>[
     indigo,
-    teal,
-    rose,
-    amber,
-    violet,
-    green,
     blue,
+    cyan,
+    teal,
+    green,
+    lime,
+    amber,
+    coral,
+    rose,
+    fuchsia,
+    violet,
+    slate,
   ];
 
   static AppAccent byId(String? id) =>

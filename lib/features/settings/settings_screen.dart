@@ -354,6 +354,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     'violet' => l10n.accentViolet,
     'green' => l10n.accentGreen,
     'blue' => l10n.accentBlue,
+    'cyan' => l10n.accentCyan,
+    'coral' => l10n.accentCoral,
+    'lime' => l10n.accentLime,
+    'fuchsia' => l10n.accentFuchsia,
+    'slate' => l10n.accentSlate,
     _ => l10n.accentIndigo,
   };
 

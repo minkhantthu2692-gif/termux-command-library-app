@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:termux_command_library/app/settings/app_settings.dart';
 import 'package:termux_command_library/core/constants/app_constants.dart';
+import 'package:termux_command_library/core/design_system/app_tokens.dart';
 import 'package:termux_command_library/data/local/database/app_database.dart';
 import 'package:termux_command_library/data/repositories/settings_repository.dart';
 
@@ -78,6 +79,14 @@ void main() {
       expect(restored.aiCacheHours, 12);
       expect(restored.onboardingCompleted, isTrue);
       expect(restored.localGuestUid, base.localGuestUid);
+    });
+
+    test('persists every supported accent id', () async {
+      final base = await repository.initialize();
+      for (final accent in AppAccents.all) {
+        await repository.save(base.copyWith(accentId: accent.id));
+        expect((await repository.read()).accentId, accent.id);
+      }
     });
 
     test('clamps values written through save', () async {

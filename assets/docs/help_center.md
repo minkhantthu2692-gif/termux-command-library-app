@@ -83,7 +83,7 @@ The assistant can be wrong. Verify commands before running them, especially comm
 ## Appearance and accessibility
 
 - Choose light, dark or system theme.
-- Pick an accent colour, enable or reduce blur, and adjust vibration intensity.
+- Pick from 12 accent colours, enable or reduce blur, and adjust vibration intensity.
 - Choose a system font or one of the bundled readable font families.
 - Adjust the app text size. Myanmar text falls back to Noto Sans Myanmar when the chosen font has no Myanmar glyphs.
 - System font scaling and display size continue to apply.

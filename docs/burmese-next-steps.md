@@ -568,7 +568,7 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
 - [ ] Light/Dark/System theme ပြောင်းနိုင်သည်။
 - [ ] Status bar နှင့် navigation bar အရောင် theme နှင့် ကိုက်ညီသည်။
 - [ ] အလင်းတွင် icon များ မြင်ရသည်၊ အမှောင်တွင်လည်း မြင်ရသည်။
-- [ ] Accent colour၊ font size၊ font family ပြောင်းနိုင်သည်။
+- [ ] Accent colour (၁၂ ရောင်)၊ font size၊ font family ပြောင်းနိုင်သည်။
 - [ ] မြန်မာဘာသာ ရွေးလျှင် စာများ ဖတ်နိုင်သည်။
 - [ ] Bottom tab တစ်ခုမှ တစ်ခုသို့ ပြောင်းပြီး **Back** နှိပ်လျှင်
       ယခင် tab သို့ ပြန်ရောက်သည်။
