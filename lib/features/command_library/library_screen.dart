@@ -392,7 +392,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
         ),
       ),
-      const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.x8)),
+      SliverToBoxAdapter(
+        child: SizedBox(
+          height: AppSpacing.x8 + MediaQuery.paddingOf(context).bottom,
+        ),
+      ),
     ];
   }
 

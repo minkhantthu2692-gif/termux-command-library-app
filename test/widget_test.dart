@@ -8,6 +8,7 @@ import 'package:termux_command_library/app/providers.dart';
 import 'package:termux_command_library/data/local/database/app_database.dart';
 import 'package:termux_command_library/data/remote/firebase_bootstrap.dart';
 import 'package:termux_command_library/data/repositories/settings_repository.dart';
+import 'package:termux_command_library/shared/widgets/glass_surface.dart';
 
 import 'support/test_helpers.dart';
 
@@ -109,6 +110,43 @@ void main() {
     await disposeApp(tester);
   });
 
+  testWidgets('the navigation bar follows the blur setting', (tester) async {
+    final dependencies = await buildDependencies(onboardingCompleted: true);
+    await tester.pumpWidget(buildApp(dependencies, FakeApiKeyStore()));
+    await tester.pumpAndSettle();
+
+    // The bar is a GlassSurface laid over the scrolling body, not a plain
+    // tinted DecoratedBox, so blur is visible when enabled.
+    expect(
+      find.ancestor(
+        of: find.byType(NavigationBar),
+        matching: find.byType(GlassSurface),
+      ),
+      findsOneWidget,
+    );
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+    expect(scaffold.extendBody, isTrue);
+    expect(find.byType(BackdropFilter), findsOneWidget);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TermuxCommandLibraryApp)),
+    );
+    final settings = container.read(settingsControllerProvider);
+    await container
+        .read(settingsControllerProvider.notifier)
+        .save(settings.copyWith(blurEnabled: false));
+    await tester.pumpAndSettle();
+    expect(find.byType(BackdropFilter), findsNothing);
+
+    await container
+        .read(settingsControllerProvider.notifier)
+        .save(settings.copyWith(blurEnabled: true, blurIntensity: 24));
+    await tester.pumpAndSettle();
+    expect(find.byType(BackdropFilter), findsOneWidget);
+
+    await disposeApp(tester);
+  });
+
   testWidgets('back returns through the tab history instead of closing', (
     tester,
   ) async {
@@ -140,12 +178,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Quick actions'), findsOneWidget);
 
-    // A Quick Action destination is also part of the back history. The home
-    // header has a second "Browse library" call to action, so target the one
-    // inside the quick-actions grid and bring it into view first.
-    final quickBrowse = find.text('Browse library').last;
-    await tester.drag(find.byType(CustomScrollView), const Offset(0, -180));
-    await tester.pumpAndSettle();
+    // A Quick Action destination is also part of the back history. Target the
+    // tile by its icon so the identically labelled empty-state action further
+    // down the page is not selected by mistake.
+    final quickBrowse = find.byIcon(Icons.menu_book_rounded);
+    expect(quickBrowse, findsOneWidget);
     await tester.tap(quickBrowse);
     await tester.pumpAndSettle();
     expect(find.text('Community library'), findsOneWidget);

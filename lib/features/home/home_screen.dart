@@ -45,6 +45,9 @@ class HomeScreen extends ConsumerWidget {
     );
     final syncStatus = ref.watch(syncStatusProvider).value;
     final name = profile?.effectiveNickname.trim() ?? '';
+    // The shell extends the body behind the frosted navigation bar, so reserve
+    // its height at the end of the scroll extent.
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return RefreshIndicator(
       onRefresh: () => _refresh(context, ref),
@@ -54,11 +57,11 @@ class HomeScreen extends ConsumerWidget {
           SliverSafeArea(
             bottom: false,
             sliver: SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 AppSpacing.x5,
                 AppSpacing.x4,
                 AppSpacing.x5,
-                AppSpacing.x6,
+                AppSpacing.x6 + bottomInset,
               ),
               sliver: SliverList.list(
                 children: [

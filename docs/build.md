@@ -195,6 +195,9 @@ Current coverage includes:
   client (pending, slow-down, denial, expiry, disabled flow, malformed responses
   and cancellation) and the Google/GitHub provider buttons.
 - App onboarding, shell navigation, theme and Myanmar locale propagation.
+- Frosted-glass rendering: backdrop filter and sigma when enabled, opaque
+  fallback when disabled or at zero intensity, clamping, and the shell
+  navigation bar reacting to the live setting.
 
 Widget tests that use Drift must unmount the widget tree, pump the fake async
 zone so Drift's stream-cleanup timers run, and close the database inside
@@ -204,7 +207,7 @@ zone.
 Firebase rules tests and live Firebase/Groq end-to-end tests require external
 projects and are not run by `flutter test`.
 
-The Dart suite currently passes **219 tests**, and the Firestore rules tests pass
+The Dart suite currently passes **224 tests**, and the Firestore rules tests pass
 **29 cases** locally against the Firestore emulator with Node (Java only for the
 emulator itself). See
 [Security Rules › Emulator testing](security-rules.md#emulator-testing) for the

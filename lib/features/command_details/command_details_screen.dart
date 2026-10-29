@@ -18,6 +18,7 @@ import '../../shared/widgets/app_note.dart';
 import '../../shared/widgets/app_page.dart';
 import '../../shared/widgets/avatar_bubble.dart';
 import '../../shared/widgets/command_code_block.dart';
+import '../../shared/widgets/glass_surface.dart';
 import '../../shared/widgets/risk_labels.dart';
 import '../../shared/widgets/status_pill.dart';
 import '../termux/termux_run_flow.dart';
@@ -109,6 +110,9 @@ class _DetailsView extends ConsumerWidget {
     final visual = CategoryVisual.of(command.categoryId);
 
     return Scaffold(
+      // Steps scroll behind the frosted action bar; the sliver below reserves
+      // the bar height at the end of the scroll extent.
+      extendBody: true,
       appBar: AppBar(
         title: Text(l10n.commandDetails),
         actions: [
@@ -175,112 +179,122 @@ class _DetailsView extends ConsumerWidget {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverSafeArea(
-            bottom: false,
-            sliver: SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.x5,
-                AppSpacing.x2,
-                AppSpacing.x5,
-                AppSpacing.x12,
-              ),
-              sliver: SliverList.list(
-                children: [
-                  _Header(command: command, visual: visual),
-                  const SizedBox(height: AppSpacing.x4),
-                  if (command.status == CommandStatus.draft) ...[
-                    AppNote(
-                      title: l10n.draftBadge,
-                      message: l10n.draftSavedLocally,
-                      icon: Icons.edit_note_rounded,
-                      tone: AppNoteTone.warning,
-                    ),
-                    const SizedBox(height: AppSpacing.x3),
-                  ],
-                  if (risk.hasWarnings) ...[
-                    AppNote(
-                      title: risk.isHigh
-                          ? l10n.riskWarningTitle
-                          : l10n.riskMedium,
-                      message: [
-                        l10n.riskWarningBody,
-                        for (final reason in risk.reasons)
-                          '• ${riskReasonLabel(l10n, reason)}',
-                      ].join('\n'),
-                      tone: risk.isHigh
-                          ? AppNoteTone.danger
-                          : AppNoteTone.warning,
-                    ),
-                    const SizedBox(height: AppSpacing.x4),
-                  ],
-                  _OverviewCard(command: command),
-                  const SizedBox(height: AppSpacing.x6),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          l10n.stepsTitle,
-                          style: context.texts.titleMedium,
-                        ),
-                      ),
-                      Text(
-                        l10n.stepCount(command.steps.length),
-                        style: context.texts.labelSmall?.copyWith(
-                          color: context.scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+      body: Builder(
+        builder: (context) {
+          final bottomInset = MediaQuery.paddingOf(context).bottom;
+          return CustomScrollView(
+            slivers: [
+              SliverSafeArea(
+                bottom: false,
+                sliver: SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.x5,
+                    AppSpacing.x2,
+                    AppSpacing.x5,
+                    AppSpacing.x12 + bottomInset,
                   ),
-                  const SizedBox(height: AppSpacing.x3),
-                  if (command.steps.isEmpty)
-                    AppNote(message: l10n.noSteps, icon: Icons.list_alt_rounded)
-                  else
-                    for (final step in command.steps) ...[
-                      _StepCard(
-                        step: step,
-                        onCopy: () => copyWithFeedback(
-                          context,
-                          ref,
-                          step.command,
-                          message: l10n.stepCommandCopied,
+                  sliver: SliverList.list(
+                    children: [
+                      _Header(command: command, visual: visual),
+                      const SizedBox(height: AppSpacing.x4),
+                      if (command.status == CommandStatus.draft) ...[
+                        AppNote(
+                          title: l10n.draftBadge,
+                          message: l10n.draftSavedLocally,
+                          icon: Icons.edit_note_rounded,
+                          tone: AppNoteTone.warning,
                         ),
-                        onRun: () => showTermuxRunFlow(
-                          context,
-                          ref,
-                          label: '${command.name} · ${step.title}',
-                          items: [
-                            TermuxRunItem(
-                              title: step.title,
-                              command: step.command,
-                              runMode: step.runMode,
+                        const SizedBox(height: AppSpacing.x3),
+                      ],
+                      if (risk.hasWarnings) ...[
+                        AppNote(
+                          title: risk.isHigh
+                              ? l10n.riskWarningTitle
+                              : l10n.riskMedium,
+                          message: [
+                            l10n.riskWarningBody,
+                            for (final reason in risk.reasons)
+                              '• ${riskReasonLabel(l10n, reason)}',
+                          ].join('\n'),
+                          tone: risk.isHigh
+                              ? AppNoteTone.danger
+                              : AppNoteTone.warning,
+                        ),
+                        const SizedBox(height: AppSpacing.x4),
+                      ],
+                      _OverviewCard(command: command),
+                      const SizedBox(height: AppSpacing.x6),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l10n.stepsTitle,
+                              style: context.texts.titleMedium,
                             ),
-                          ],
-                        ),
+                          ),
+                          Text(
+                            l10n.stepCount(command.steps.length),
+                            style: context.texts.labelSmall?.copyWith(
+                              color: context.scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: AppSpacing.x3),
+                      if (command.steps.isEmpty)
+                        AppNote(
+                          message: l10n.noSteps,
+                          icon: Icons.list_alt_rounded,
+                        )
+                      else
+                        for (final step in command.steps) ...[
+                          _StepCard(
+                            step: step,
+                            onCopy: () => copyWithFeedback(
+                              context,
+                              ref,
+                              step.command,
+                              message: l10n.stepCommandCopied,
+                            ),
+                            onRun: () => showTermuxRunFlow(
+                              context,
+                              ref,
+                              label: '${command.name} · ${step.title}',
+                              items: [
+                                TermuxRunItem(
+                                  title: step.title,
+                                  command: step.command,
+                                  runMode: step.runMode,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.x3),
+                        ],
+                      if (command.metadata.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.x3),
+                        _MetadataCard(metadata: command.metadata),
+                      ],
+                      const SizedBox(height: AppSpacing.x5),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          unawaited(
+                            triggerHaptic(ref, cue: HapticCue.selection),
+                          );
+                          context.push(
+                            '/assistant/chat?command=${Uri.encodeComponent(command.id)}',
+                          );
+                        },
+                        icon: const Icon(Icons.auto_awesome_rounded),
+                        label: Text(l10n.explainWithAi),
+                      ),
                     ],
-                  if (command.metadata.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.x3),
-                    _MetadataCard(metadata: command.metadata),
-                  ],
-                  const SizedBox(height: AppSpacing.x5),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      unawaited(triggerHaptic(ref, cue: HapticCue.selection));
-                      context.push(
-                        '/assistant/chat?command=${Uri.encodeComponent(command.id)}',
-                      );
-                    },
-                    icon: const Icon(Icons.auto_awesome_rounded),
-                    label: Text(l10n.explainWithAi),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
       bottomNavigationBar: command.steps.isEmpty
           ? null
@@ -744,41 +758,41 @@ class _BottomActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.x5,
-          AppSpacing.x3,
-          AppSpacing.x5,
-          AppSpacing.x3,
+    return GlassSurface(
+      borderRadius: BorderRadius.zero,
+      border: Border(
+        top: BorderSide(
+          color: context.scheme.outlineVariant.withValues(alpha: 0.45),
         ),
-        decoration: BoxDecoration(
-          color: context.appColors.glassTint,
-          border: Border(
-            top: BorderSide(
-              color: context.scheme.outlineVariant.withValues(alpha: 0.45),
-            ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.x5,
+            AppSpacing.x3,
+            AppSpacing.x5,
+            AppSpacing.x3,
           ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: onCopy,
-                icon: const Icon(Icons.copy_all_rounded),
-                label: Text(l10n.copyAllCommands),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onCopy,
+                  icon: const Icon(Icons.copy_all_rounded),
+                  label: Text(l10n.copyAllCommands),
+                ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.x3),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: onRun,
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: Text(l10n.runAllCommands),
+              const SizedBox(width: AppSpacing.x3),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: onRun,
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: Text(l10n.runAllCommands),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -174,7 +174,9 @@ abstract final class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: palette.glassTint,
+        // The shell wraps the bar in GlassSurface, which owns the tint and the
+        // backdrop blur. A second background here would hide the blur.
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: AppSizes.navBarHeight,

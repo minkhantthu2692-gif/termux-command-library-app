@@ -20,6 +20,7 @@ import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_note.dart';
 import '../../shared/widgets/app_page.dart';
 import '../../shared/widgets/command_code_block.dart';
+import '../../shared/widgets/glass_surface.dart';
 import '../../shared/widgets/section_header.dart';
 import 'ai_assist_sheet.dart';
 
@@ -221,6 +222,7 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
       child: AppPage(
         title: title,
         scrollable: false,
+        extendBody: true,
         padding: EdgeInsets.zero,
         actions: [
           IconButton(
@@ -240,208 +242,216 @@ class _CommandEditorScreenState extends ConsumerState<CommandEditorScreen> {
           onSaveDraft: () => _save(publish: false),
           onPublish: () => _save(publish: true),
         ),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.x5,
-              AppSpacing.x2,
-              AppSpacing.x5,
-              AppSpacing.x10,
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: AppSizes.contentMaxWidth,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (!cloudConfigured)
-                      AppNote(
-                        title: l10n.cloudUnavailableTitle,
-                        message: l10n.cloudUnavailableBody,
-                        tone: AppNoteTone.warning,
-                      )
-                    else if (!session.canPublish)
-                      AppNote(
-                        title: l10n.guestCannotPublish,
-                        message: l10n.createAccountToPublish,
-                        tone: AppNoteTone.info,
-                        actionLabel: l10n.signIn,
-                        onAction: () =>
-                            context.push('/auth/register?next=%2Fupload'),
-                      )
-                    else
-                      AppNote(
-                        message: l10n.publishRulesBody,
-                        icon: Icons.verified_user_outlined,
+        child: Builder(
+          builder: (context) => Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.x5,
+                AppSpacing.x2,
+                AppSpacing.x5,
+                AppSpacing.x10 + MediaQuery.paddingOf(context).bottom,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSizes.contentMaxWidth,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!cloudConfigured)
+                        AppNote(
+                          title: l10n.cloudUnavailableTitle,
+                          message: l10n.cloudUnavailableBody,
+                          tone: AppNoteTone.warning,
+                        )
+                      else if (!session.canPublish)
+                        AppNote(
+                          title: l10n.guestCannotPublish,
+                          message: l10n.createAccountToPublish,
+                          tone: AppNoteTone.info,
+                          actionLabel: l10n.signIn,
+                          onAction: () =>
+                              context.push('/auth/register?next=%2Fupload'),
+                        )
+                      else
+                        AppNote(
+                          message: l10n.publishRulesBody,
+                          icon: Icons.verified_user_outlined,
+                        ),
+                      const SizedBox(height: AppSpacing.x5),
+                      SectionHeader(title: l10n.basics),
+                      const SizedBox(height: AppSpacing.x3),
+                      TextFormField(
+                        controller: _name,
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.sentences,
+                        maxLength: AppConstants.maxCommandNameLength,
+                        decoration: InputDecoration(
+                          labelText: l10n.commandName,
+                          hintText: l10n.commandNameHint,
+                          prefixIcon: const Icon(Icons.terminal_rounded),
+                        ),
+                        validator: (value) => localizeValidation(
+                          l10n,
+                          Validators.nameError(value),
+                        ),
+                        onChanged: (_) => _markDirty(),
                       ),
-                    const SizedBox(height: AppSpacing.x5),
-                    SectionHeader(title: l10n.basics),
-                    const SizedBox(height: AppSpacing.x3),
-                    TextFormField(
-                      controller: _name,
-                      textInputAction: TextInputAction.next,
-                      textCapitalization: TextCapitalization.sentences,
-                      maxLength: AppConstants.maxCommandNameLength,
-                      decoration: InputDecoration(
-                        labelText: l10n.commandName,
-                        hintText: l10n.commandNameHint,
-                        prefixIcon: const Icon(Icons.terminal_rounded),
+                      const SizedBox(height: AppSpacing.x2),
+                      TextFormField(
+                        controller: _description,
+                        minLines: 3,
+                        maxLines: 6,
+                        maxLength: AppConstants.maxDescriptionLength,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: InputDecoration(
+                          labelText: l10n.description,
+                          hintText: l10n.descriptionHint,
+                          alignLabelWithHint: true,
+                        ),
+                        validator: (value) => localizeValidation(
+                          l10n,
+                          Validators.descriptionError(value),
+                        ),
+                        onChanged: (_) => _markDirty(),
                       ),
-                      validator: (value) =>
-                          localizeValidation(l10n, Validators.nameError(value)),
-                      onChanged: (_) => _markDirty(),
-                    ),
-                    const SizedBox(height: AppSpacing.x2),
-                    TextFormField(
-                      controller: _description,
-                      minLines: 3,
-                      maxLines: 6,
-                      maxLength: AppConstants.maxDescriptionLength,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                        labelText: l10n.description,
-                        hintText: l10n.descriptionHint,
-                        alignLabelWithHint: true,
-                      ),
-                      validator: (value) => localizeValidation(
-                        l10n,
-                        Validators.descriptionError(value),
-                      ),
-                      onChanged: (_) => _markDirty(),
-                    ),
-                    const SizedBox(height: AppSpacing.x2),
-                    DropdownButtonFormField<String>(
-                      initialValue: _categoryId,
-                      decoration: InputDecoration(
-                        labelText: l10n.category,
-                        prefixIcon: const Icon(Icons.category_outlined),
-                      ),
-                      items: [
-                        for (final category in CommandCategories.all)
-                          DropdownMenuItem(
-                            value: category.id,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  CategoryVisual.of(category.id).icon,
-                                  size: AppIconSizes.sm,
-                                  color: CategoryVisual.of(category.id).color,
-                                ),
-                                const SizedBox(width: AppSpacing.x2),
-                                Text(categoryLabel(l10n, category.id)),
-                              ],
+                      const SizedBox(height: AppSpacing.x2),
+                      DropdownButtonFormField<String>(
+                        initialValue: _categoryId,
+                        decoration: InputDecoration(
+                          labelText: l10n.category,
+                          prefixIcon: const Icon(Icons.category_outlined),
+                        ),
+                        items: [
+                          for (final category in CommandCategories.all)
+                            DropdownMenuItem(
+                              value: category.id,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    CategoryVisual.of(category.id).icon,
+                                    size: AppIconSizes.sm,
+                                    color: CategoryVisual.of(category.id).color,
+                                  ),
+                                  const SizedBox(width: AppSpacing.x2),
+                                  Text(categoryLabel(l10n, category.id)),
+                                ],
+                              ),
                             ),
-                          ),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
-                        setState(() => _categoryId = value);
-                        _markDirty();
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.x4),
-                    TextFormField(
-                      controller: _tags,
-                      textInputAction: TextInputAction.done,
-                      decoration: InputDecoration(
-                        labelText: l10n.tags,
-                        hintText: l10n.tagsHint,
-                        helperText: l10n.tagsHelper,
-                        prefixIcon: const Icon(Icons.tag_rounded),
-                      ),
-                      onChanged: (_) => _markDirty(),
-                    ),
-                    const SizedBox(height: AppSpacing.x6),
-                    SectionHeader(
-                      title: l10n.stepsTitle,
-                      subtitle: l10n.stepsHelper,
-                    ),
-                    const SizedBox(height: AppSpacing.x3),
-                    for (var index = 0; index < _steps.length; index++) ...[
-                      _StepEditorCard(
-                        key: ValueKey(_steps[index].id),
-                        index: index,
-                        step: _steps[index],
-                        canMoveUp: index > 0,
-                        canMoveDown: index < _steps.length - 1,
-                        canRemove: _steps.length > 1,
-                        onMoveUp: () => _moveStep(index, index - 1),
-                        onMoveDown: () => _moveStep(index, index + 1),
-                        onRemove: () => _removeStep(index),
-                        onRunModeChanged: (mode) {
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
                           unawaited(
                             triggerHaptic(ref, cue: HapticCue.selection),
                           );
-                          setState(() => _steps[index].runMode = mode);
+                          setState(() => _categoryId = value);
                           _markDirty();
                         },
-                        onChanged: _markDirty,
-                        l10n: l10n,
+                      ),
+                      const SizedBox(height: AppSpacing.x4),
+                      TextFormField(
+                        controller: _tags,
+                        textInputAction: TextInputAction.done,
+                        decoration: InputDecoration(
+                          labelText: l10n.tags,
+                          hintText: l10n.tagsHint,
+                          helperText: l10n.tagsHelper,
+                          prefixIcon: const Icon(Icons.tag_rounded),
+                        ),
+                        onChanged: (_) => _markDirty(),
+                      ),
+                      const SizedBox(height: AppSpacing.x6),
+                      SectionHeader(
+                        title: l10n.stepsTitle,
+                        subtitle: l10n.stepsHelper,
                       ),
                       const SizedBox(height: AppSpacing.x3),
-                    ],
-                    OutlinedButton.icon(
-                      onPressed: _addStep,
-                      icon: const Icon(Icons.add_rounded),
-                      label: Text(l10n.addStep),
-                    ),
-                    const SizedBox(height: AppSpacing.x6),
-                    SectionHeader(
-                      title: l10n.metadata,
-                      subtitle: l10n.metadataHint,
-                      actionLabel: l10n.addMetadata,
-                      onAction: _addMetadata,
-                    ),
-                    const SizedBox(height: AppSpacing.x3),
-                    if (_metadata.isEmpty)
-                      Text(
-                        l10n.metadataHint,
-                        style: context.texts.bodySmall?.copyWith(
-                          color: context.scheme.onSurfaceVariant,
+                      for (var index = 0; index < _steps.length; index++) ...[
+                        _StepEditorCard(
+                          key: ValueKey(_steps[index].id),
+                          index: index,
+                          step: _steps[index],
+                          canMoveUp: index > 0,
+                          canMoveDown: index < _steps.length - 1,
+                          canRemove: _steps.length > 1,
+                          onMoveUp: () => _moveStep(index, index - 1),
+                          onMoveDown: () => _moveStep(index, index + 1),
+                          onRemove: () => _removeStep(index),
+                          onRunModeChanged: (mode) {
+                            unawaited(
+                              triggerHaptic(ref, cue: HapticCue.selection),
+                            );
+                            setState(() => _steps[index].runMode = mode);
+                            _markDirty();
+                          },
+                          onChanged: _markDirty,
+                          l10n: l10n,
                         ),
-                      )
-                    else
-                      for (var index = 0; index < _metadata.length; index++)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.x2),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 4,
-                                child: TextFormField(
-                                  controller: _metadata[index].key,
-                                  decoration: InputDecoration(
-                                    labelText: l10n.metadataKey,
-                                  ),
-                                  onChanged: (_) => _markDirty(),
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.x2),
-                              Expanded(
-                                flex: 6,
-                                child: TextFormField(
-                                  controller: _metadata[index].value,
-                                  decoration: InputDecoration(
-                                    labelText: l10n.metadataValue,
-                                  ),
-                                  onChanged: (_) => _markDirty(),
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: l10n.removeMetadata,
-                                onPressed: () => _removeMetadata(index),
-                                icon: const Icon(Icons.close_rounded),
-                              ),
-                            ],
+                        const SizedBox(height: AppSpacing.x3),
+                      ],
+                      OutlinedButton.icon(
+                        onPressed: _addStep,
+                        icon: const Icon(Icons.add_rounded),
+                        label: Text(l10n.addStep),
+                      ),
+                      const SizedBox(height: AppSpacing.x6),
+                      SectionHeader(
+                        title: l10n.metadata,
+                        subtitle: l10n.metadataHint,
+                        actionLabel: l10n.addMetadata,
+                        onAction: _addMetadata,
+                      ),
+                      const SizedBox(height: AppSpacing.x3),
+                      if (_metadata.isEmpty)
+                        Text(
+                          l10n.metadataHint,
+                          style: context.texts.bodySmall?.copyWith(
+                            color: context.scheme.onSurfaceVariant,
                           ),
-                        ),
-                  ],
+                        )
+                      else
+                        for (var index = 0; index < _metadata.length; index++)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.x2,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: TextFormField(
+                                    controller: _metadata[index].key,
+                                    decoration: InputDecoration(
+                                      labelText: l10n.metadataKey,
+                                    ),
+                                    onChanged: (_) => _markDirty(),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.x2),
+                                Expanded(
+                                  flex: 6,
+                                  child: TextFormField(
+                                    controller: _metadata[index].value,
+                                    decoration: InputDecoration(
+                                      labelText: l10n.metadataValue,
+                                    ),
+                                    onChanged: (_) => _markDirty(),
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: l10n.removeMetadata,
+                                  onPressed: () => _removeMetadata(index),
+                                  icon: const Icon(Icons.close_rounded),
+                                ),
+                              ],
+                            ),
+                          ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -866,45 +876,45 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.x5,
-          AppSpacing.x3,
-          AppSpacing.x5,
-          AppSpacing.x3,
+    return GlassSurface(
+      borderRadius: BorderRadius.zero,
+      border: Border(
+        top: BorderSide(
+          color: context.scheme.outlineVariant.withValues(alpha: 0.45),
         ),
-        decoration: BoxDecoration(
-          color: context.appColors.glassTint,
-          border: Border(
-            top: BorderSide(
-              color: context.scheme.outlineVariant.withValues(alpha: 0.45),
-            ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.x5,
+            AppSpacing.x3,
+            AppSpacing.x5,
+            AppSpacing.x3,
           ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: saving || !canSave ? null : onSaveDraft,
-                child: Text(l10n.saveDraft),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: saving || !canSave ? null : onSaveDraft,
+                  child: Text(l10n.saveDraft),
+                ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.x3),
-            Expanded(
-              child: FilledButton(
-                onPressed: saving || !canSave ? null : onPublish,
-                child: saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.publish),
+              const SizedBox(width: AppSpacing.x3),
+              Expanded(
+                child: FilledButton(
+                  onPressed: saving || !canSave ? null : onPublish,
+                  child: saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.publish),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

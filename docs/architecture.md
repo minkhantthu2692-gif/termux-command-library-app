@@ -283,6 +283,20 @@ See [Termux integration](termux-integration.md).
   share the same token structure.
 - Edge-to-edge system bars use `AnnotatedRegion` and theme-derived navigation bar
   colors.
+- Frosted glass is centralized in `GlassSurface`
+  (`lib/shared/widgets/glass_surface.dart`). It watches the settings controller
+  and applies a `BackdropFilter` with `sigma = blurIntensity` (clamped to
+  `0–30`) while blur is enabled. When blur is off, or the intensity is zero, it
+  paints an opaque `AppColors.card` and no filter, so the toggle is always
+  visible.
+- The shell navigation bar and the command details/editor action bars are
+  `GlassSurface`s. Their scaffolds set `extendBody: true` so content scrolls
+  behind the bar (a blur needs a backdrop), and those screens reserve
+  `MediaQuery.padding.bottom` at the end of their scroll extent so the last item
+  stays reachable. The `NavigationBar` theme background is transparent so it
+  cannot hide the blur.
+- `glassTint` keeps 70% opacity so the blurred backdrop reads through the tint
+  instead of looking like a flat colour.
 - `gen-l10n` supplies English and Myanmar strings. `Noto Sans Myanmar` is a font
   fallback so Burmese remains readable when another Latin font is selected.
 - Nine bundled families plus the system default are available; font licenses are

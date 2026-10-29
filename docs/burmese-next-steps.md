@@ -54,10 +54,10 @@ Firebase အဆင့်များ၊ build/install နှင့် admin edit
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Dart tests | ✅ ပြီး | `flutter test` — 219/219 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 224/224 အောင် |
 | Firestore rules tests | ✅ ပြီး | emulator တွင် 29/29 အောင် |
 | Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
-| Release APK build | ✅ ပြီး | `app-release.apk` (71.1 MB) — debug key ဖြင့် |
+| Release APK build | ✅ ပြီး | `app-release.apk` (71.2 MB) — debug key ဖြင့် |
 | Native Kotlin haptics | ✅ compile အောင် | `HapticsController.class` APK ထဲ ပါဝင် |
 | GitHub push | ✅ ပြီး | `origin/main` |
 | Firebase project ချိတ်ဆက်မှု | ✅ ဖိုင် ရှိ | `google-services.json` package ကိုက်ညီ |
@@ -563,6 +563,20 @@ build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
       အစဉ်လိုက် ပြန်သွားသည်။
 - [ ] ယခင် tab မရှိတော့မှသာ app မှ ထွက်သည်။
 
+### ၈.၉ Frosted glass (မှန်မှုန်အလွှာ) — အသစ်
+
+- [ ] Appearance → **Frosted glass** ကို ပိတ်/ဖွင့်ကြည့်လျှင် အောက်ခြေ
+      navigation bar နှင့် command action bar များ၏ ပုံစံ သိသိသာသာ
+      ပြောင်းသည် (ဖွင့် = မှန်မှုန်၊ ပိတ် = အရောင်အပြည့်)။
+- [ ] **Blur intensity** slider (0–30) ကို ဆွဲလျှင် နောက်ခံစာများ၏
+      မှုန်ဝါးမှု တဖြည်းဖြည်း ပြောင်းသည်။ 0 တွင် အရောင်အပြည့်သို့
+      ပြန်သွားသည်။
+- [ ] စာမျက်နှာကို အောက်ခြေအထိ scroll လုပ်လျှင် စာများ navigation bar
+      အောက်သို့ ဝင်သွားပြီး မှန်မှုန်အလွှာကို မြင်ရသည်။
+- [ ] နောက်ဆုံး item ကို navigation bar ဖြင့် မကွယ်ဘဲ နှိပ်နိုင်သည်။
+- [ ] စက်ဟောင်း သို့မဟုတ် မှုန်ဝါးမှု မကောင်းသော စက်တွင်လည်း
+      စာများ ဖတ်ရလွယ်နေဆဲ ဖြစ်သည်။
+
 ---
 
 ## ၉။ အဆင့် ၈ — Termux ပြင်ဆင်ခြင်း
@@ -670,7 +684,7 @@ release {
 
 ဤအခြေအနေဖြင့် ဖြန့်ဝေ၍ မရပါ။ သင့်ကိုယ်ပိုင် keystore လိုသည်။
 
-> **လက်ရှိ build:** `app-release.apk` (71.1 MB) ကို ထုတ်ပြီးဖြစ်သည်။
+> **လက်ရှိ build:** `app-release.apk` (71.2 MB) ကို ထုတ်ပြီးဖြစ်သည်။
 > ၎င်းသည် release mode ဖြင့် compile ထားသော်လည်း **debug key** ဖြင့်
 > လက်မှတ်ထိုးထားသည်။ `apksigner` ဖြင့် စစ်ဆေးပြီး လက်ဗွေနှစ်ခုလုံး
 > Firebase တွင် ထည့်ထားသည့် တန်ဖိုးများနှင့် ကိုက်ညီသည်:

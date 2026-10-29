@@ -46,11 +46,11 @@ class AssistantScreen extends ConsumerWidget {
         SliverSafeArea(
           bottom: false,
           sliver: SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.x5,
               AppSpacing.x4,
               AppSpacing.x5,
-              AppSpacing.x12,
+              AppSpacing.x12 + MediaQuery.paddingOf(context).bottom,
             ),
             sliver: SliverList.list(
               children: [

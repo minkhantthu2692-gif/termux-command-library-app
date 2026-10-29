@@ -24,6 +24,7 @@ class AppPage extends StatelessWidget {
     this.resizeToAvoidBottomInset = true,
     this.scrollable = true,
     this.backgroundColor,
+    this.extendBody = false,
   });
 
   final String title;
@@ -38,6 +39,11 @@ class AppPage extends StatelessWidget {
   final bool scrollable;
   final Color? backgroundColor;
 
+  /// Lets the body paint behind a translucent [bottomNavigationBar]. Pages that
+  /// enable this should reserve `MediaQuery.padding.bottom` in their scroll
+  /// extent.
+  final bool extendBody;
+
   @override
   Widget build(BuildContext context) {
     final content = Align(
@@ -50,6 +56,7 @@ class AppPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+      extendBody: extendBody,
       appBar: AppBar(title: Text(title), leading: leading, actions: actions),
       body: scrollable
           ? SingleChildScrollView(

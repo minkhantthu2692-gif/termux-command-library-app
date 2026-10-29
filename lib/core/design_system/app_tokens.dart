@@ -160,7 +160,8 @@ class AppColors extends ThemeExtension<AppColors> {
     cardMuted: Color(0xFFF0F2F8),
     codeBackground: Color(0xFFF3F4F8),
     codeBorder: Color(0xFFE2E5EE),
-    glassTint: Color(0xDDFDFDFF),
+    // 70% opacity leaves enough of the backdrop visible for the blur to read.
+    glassTint: Color(0xB3FDFDFF),
     glassBorder: Color(0x33FFFFFF),
     riskLow: Color(0xFF2F7D5B),
     riskMedium: Color(0xFF9A6700),
@@ -187,7 +188,7 @@ class AppColors extends ThemeExtension<AppColors> {
     cardMuted: Color(0xFF1E222C),
     codeBackground: Color(0xFF10131A),
     codeBorder: Color(0xFF2A303D),
-    glassTint: Color(0xCC161A23),
+    glassTint: Color(0xB3161A23),
     glassBorder: Color(0x22FFFFFF),
     riskLow: Color(0xFF7ED7AE),
     riskMedium: Color(0xFFF0C36A),

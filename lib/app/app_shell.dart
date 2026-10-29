@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../core/design_system/app_tokens.dart';
 import '../data/services/haptics_service.dart';
 import '../shared/utils/ui_actions.dart';
+import '../shared/widgets/glass_surface.dart';
 import 'localization/generated/app_localizations.dart';
 
 /// Persistent four-destination shell. Each branch keeps its own navigation
@@ -89,14 +90,16 @@ class _AppShellState extends ConsumerState<AppShell> {
         _goBackToPreviousTab();
       },
       child: Scaffold(
+        // Let tab content scroll behind the bar so the frosted glass has a
+        // backdrop. Tab screens add MediaQuery.padding.bottom (which Scaffold
+        // reports as the bar height) to their scroll extent.
+        extendBody: true,
         body: widget.navigationShell,
-        bottomNavigationBar: DecoratedBox(
-          decoration: BoxDecoration(
-            color: context.appColors.glassTint,
-            border: Border(
-              top: BorderSide(
-                color: scheme.outlineVariant.withValues(alpha: 0.45),
-              ),
+        bottomNavigationBar: GlassSurface(
+          borderRadius: BorderRadius.zero,
+          border: Border(
+            top: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.45),
             ),
           ),
           child: SafeArea(
