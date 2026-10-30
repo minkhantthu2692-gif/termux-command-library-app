@@ -1413,6 +1413,9 @@ class AppLocalizationsMy extends AppLocalizations {
   String get aiSettings => 'AI ဆက်တင်';
 
   @override
+  String get aiSettingsSubtitle => 'သင့် API key နှင့် model ကို ပြင်ဆင်ပါ။';
+
+  @override
   String get aiEnabled => 'AI အကူအညီ';
 
   @override

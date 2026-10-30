@@ -38,10 +38,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final keyAsync = ref.watch(aiKeyPresentProvider);
     final hasKey = keyAsync.value ?? false;
     final models = ref.watch(aiModelsProvider).value ?? const <AiModelInfo>[];
-    AiModelInfo? selectedModel;
-    for (final model in models) {
-      if (model.id == settings.aiModelId) selectedModel = model;
-    }
     final cachedCount = ref.watch(cachedCommandCountProvider);
 
     return AppPage(
@@ -118,12 +114,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onChanged: (value) =>
                     _toggleAi(value, hasKey: hasKey, models: models),
               ),
-              SettingsValueTile(
+              SettingsTile(
                 title: l10n.aiSettings,
-                value:
-                    selectedModel?.displayName ??
-                    (hasKey ? l10n.noAiModelSelected : l10n.keyMissing),
-                subtitle: hasKey ? l10n.aiProviderGroq : l10n.aiSetupGuideBody,
+                subtitle: l10n.aiSettingsSubtitle,
                 leading: const Icon(Icons.key_outlined),
                 onTap: () => context.push('/settings/ai'),
               ),

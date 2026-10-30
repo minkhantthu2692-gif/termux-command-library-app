@@ -431,6 +431,7 @@
   "aiDisabledTitle": "AI ပိတ်ထားသည်",
   "aiDisabledBody": "အကူအညီကို ဖွင့်ရန် Groq API key ထည့်ပါ။ Key၊ model နှင့် history ကို သင်ထိန်းချုပ်သည်။",
   "aiSettings": "AI ဆက်တင်",
+  "aiSettingsSubtitle": "သင့် API key နှင့် model ကို ပြင်ဆင်ပါ။",
   "aiEnabled": "AI အကူအညီ",
   "aiEnabledHelper": "Chat နှင့် စာရေးအကူအညီကို ဖွင့်သည်။",
   "aiProvider": "Provider",

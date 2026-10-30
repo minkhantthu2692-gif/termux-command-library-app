@@ -1401,6 +1401,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiSettings => 'AI settings';
 
   @override
+  String get aiSettingsSubtitle => 'Configure your API key and model';
+
+  @override
   String get aiEnabled => 'AI assistant';
 
   @override

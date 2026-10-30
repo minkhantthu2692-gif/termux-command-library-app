@@ -494,6 +494,7 @@
   "aiDisabledTitle": "AI is off",
   "aiDisabledBody": "Add a Groq API key to enable the assistant. You control the key, model and history.",
   "aiSettings": "AI settings",
+  "aiSettingsSubtitle": "Configure your API key and model",
   "aiEnabled": "AI assistant",
   "aiEnabledHelper": "Turns on chat and writing assistance.",
   "aiProvider": "Provider",

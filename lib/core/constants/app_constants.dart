@@ -58,7 +58,15 @@ abstract final class AppConstants {
   static const termuxReleasesUrl =
       'https://github.com/termux/termux-app/releases';
   static const termuxApiUrl = 'https://github.com/termux/termux-api';
-  static const groqConsoleUrl = 'https://console.groq.com/keys';
+
+  /// Console entry point. Visitors without a Groq session are shown Groq's own
+  /// sign-up/sign-in flow before they can reach any account pages.
+  static const groqConsoleUrl = 'https://console.groq.com';
+
+  /// Key management for users who already configured a key. Groq still gates
+  /// this page behind authentication, so the app never needs its own auth
+  /// detection.
+  static const groqKeysUrl = 'https://console.groq.com/keys';
   static const groqDocsUrl = 'https://console.groq.com/docs';
   static const projectRepositoryUrl =
       'https://github.com/your-account/termux-command-library';

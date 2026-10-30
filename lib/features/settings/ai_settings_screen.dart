@@ -125,9 +125,13 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                           ),
                         ),
                         TextButton(
+                          // New users need Groq's sign-up/sign-in before keys;
+                          // returning users go straight to key management.
                           onPressed: () => openExternalUrl(
                             context,
-                            AppConstants.groqConsoleUrl,
+                            hasKey
+                                ? AppConstants.groqKeysUrl
+                                : AppConstants.groqConsoleUrl,
                           ),
                           child: Text(l10n.getApiKey),
                         ),

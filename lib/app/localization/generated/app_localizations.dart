@@ -2684,6 +2684,12 @@ abstract class AppLocalizations {
   /// **'AI settings'**
   String get aiSettings;
 
+  /// No description provided for @aiSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure your API key and model'**
+  String get aiSettingsSubtitle;
+
   /// No description provided for @aiEnabled.
   ///
   /// In en, this message translates to:
