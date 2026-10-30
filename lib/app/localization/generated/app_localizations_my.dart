@@ -237,10 +237,6 @@ class AppLocalizationsMy extends AppLocalizations {
   String get emailHint => 'you သို့မဟုတ် you@example.com';
 
   @override
-  String get emailHelper =>
-      'Username ပဲရိုက်ပါက @gmail.com ကို အလိုအလျောက် ဖြည့်ပါမည်။';
-
-  @override
   String get emailRequired => 'အီးမေးလ် ရိုက်ထည့်ပါ။';
 
   @override

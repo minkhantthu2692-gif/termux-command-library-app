@@ -234,9 +234,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailHint => 'you or you@example.com';
 
   @override
-  String get emailHelper => 'A bare username becomes @gmail.com.';
-
-  @override
   String get emailRequired => 'Enter an email address.';
 
   @override

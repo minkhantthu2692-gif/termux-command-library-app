@@ -71,7 +71,6 @@
   "email": "Email",
   "emailOrUsername": "Email or username",
   "emailHint": "you or you@example.com",
-  "emailHelper": "A bare username becomes @gmail.com.",
   "emailRequired": "Enter an email address.",
   "emailInvalid": "Enter a valid email address.",
   "password": "Password",

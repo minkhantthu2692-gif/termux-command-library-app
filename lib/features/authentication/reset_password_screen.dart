@@ -52,46 +52,38 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     return AuthScaffold(
       title: l10n.resetPassword,
       subtitle: l10n.resetPasswordBody,
-      footer: Center(
-        child: TextButton.icon(
-          onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back_rounded, size: AppIconSizes.sm),
-          label: Text(l10n.backToSignIn),
-        ),
-      ),
-      child: _sent
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.x4),
-                  decoration: BoxDecoration(
-                    color: context.appColors.success.withValues(alpha: 0.1),
-                    borderRadius: AppRadius.medium,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_sent)
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.x4),
+              decoration: BoxDecoration(
+                color: context.appColors.success.withValues(alpha: 0.1),
+                borderRadius: AppRadius.medium,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.mark_email_read_outlined,
+                    color: context.appColors.success,
+                    size: AppIconSizes.md,
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.mark_email_read_outlined,
+                  const SizedBox(width: AppSpacing.x3),
+                  Expanded(
+                    child: Text(
+                      l10n.resetEmailSent,
+                      style: context.texts.bodyMedium?.copyWith(
                         color: context.appColors.success,
-                        size: AppIconSizes.md,
                       ),
-                      const SizedBox(width: AppSpacing.x3),
-                      Expanded(
-                        child: Text(
-                          l10n.resetEmailSent,
-                          style: context.texts.bodyMedium?.copyWith(
-                            color: context.appColors.success,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             )
-          : Form(
+          else
+            Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,14 +110,13 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     decoration: InputDecoration(
                       labelText: l10n.email,
                       hintText: l10n.emailHint,
-                      helperText: l10n.emailHelper,
                       prefixIcon: const Icon(Icons.alternate_email_rounded),
                     ),
                     validator: (value) =>
                         localizeValidation(l10n, Validators.emailError(value)),
                     onFieldSubmitted: (_) => _submit(),
                   ),
-                  const SizedBox(height: AppSpacing.x5),
+                  const SizedBox(height: AppSpacing.x10),
                   FilledButton(
                     onPressed: _loading || !cloudConfigured ? null : _submit,
                     child: _loading
@@ -139,6 +130,16 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 ],
               ),
             ),
+          const SizedBox(height: AppSpacing.x4),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => context.pop(),
+              icon: const Icon(Icons.arrow_back_rounded, size: AppIconSizes.sm),
+              label: Text(l10n.backToSignIn),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -524,12 +524,6 @@ abstract class AppLocalizations {
   /// **'you or you@example.com'**
   String get emailHint;
 
-  /// No description provided for @emailHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'A bare username becomes @gmail.com.'**
-  String get emailHelper;
-
   /// No description provided for @emailRequired.
   ///
   /// In en, this message translates to:

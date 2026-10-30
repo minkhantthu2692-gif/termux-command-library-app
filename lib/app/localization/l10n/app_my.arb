@@ -71,7 +71,6 @@
   "email": "အီးမေးလ်",
   "emailOrUsername": "အီးမေးလ် သို့မဟုတ် username",
   "emailHint": "you သို့မဟုတ် you@example.com",
-  "emailHelper": "Username ပဲရိုက်ပါက @gmail.com ကို အလိုအလျောက် ဖြည့်ပါမည်။",
   "emailRequired": "အီးမေးလ် ရိုက်ထည့်ပါ။",
   "emailInvalid": "မှန်ကန်သော အီးမေးလ် ရိုက်ထည့်ပါ။",
   "password": "စကားဝှက်",
