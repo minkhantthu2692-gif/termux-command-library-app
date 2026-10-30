@@ -104,7 +104,7 @@ class AiSetupCard extends ConsumerWidget {
             ),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: compact ? 36 : 46,
@@ -137,14 +137,11 @@ class AiSetupCard extends ConsumerWidget {
                 ),
               ),
               if (canOpenSettings) ...[
-                const SizedBox(width: AppSpacing.x2),
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.x1),
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    size: AppIconSizes.md,
-                    color: context.scheme.onSurfaceVariant,
-                  ),
+                const SizedBox(width: AppSpacing.x3),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: AppIconSizes.md,
+                  color: context.scheme.onSurfaceVariant,
                 ),
               ],
             ],
