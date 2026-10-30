@@ -83,18 +83,14 @@ class _AuthProviderButtonsState extends State<AuthProviderButtons> {
         Row(
           children: [
             const Expanded(child: Divider()),
-            Flexible(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x3),
-                child: Text(
-                  l10n.orContinueWith,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: context.texts.labelSmall?.copyWith(
-                    color: context.scheme.onSurfaceVariant,
-                  ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x3),
+              child: Text(
+                l10n.orContinueWith,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.texts.labelSmall?.copyWith(
+                  color: context.scheme.onSurfaceVariant,
                 ),
               ),
             ),

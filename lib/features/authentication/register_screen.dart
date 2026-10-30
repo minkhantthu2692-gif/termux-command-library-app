@@ -75,12 +75,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return AuthScaffold(
       title: linking ? l10n.upgradeAccount : l10n.createAccount,
       subtitle: linking ? l10n.upgradeAccountBody : l10n.createAccountSubtitle,
-      footer: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      footer: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
             l10n.haveAccount,
-            style: context.texts.bodySmall?.copyWith(
+            style: context.texts.bodyMedium?.copyWith(
               color: context.scheme.onSurfaceVariant,
             ),
           ),
@@ -156,7 +157,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.email,
                   hintText: l10n.emailHint,
-                  helperText: l10n.emailHelper,
                   prefixIcon: const Icon(Icons.alternate_email_rounded),
                 ),
                 validator: (value) =>
@@ -174,7 +174,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: l10n.password,
-                  helperText: l10n.passwordHelper,
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
                     tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,

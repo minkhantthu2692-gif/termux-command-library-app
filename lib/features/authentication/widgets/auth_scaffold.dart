@@ -5,7 +5,9 @@ import '../../../core/design_system/app_tokens.dart';
 /// Shared frame for authentication screens. It keeps forms centered, scrollable
 /// with the keyboard open, and visually consistent without nesting cards. The
 /// compact back button is the only chrome above the title, which keeps the
-/// focus on the form instead of a decorative banner.
+/// focus on the form instead of a decorative banner. An optional footer is
+/// pinned to the bottom of the screen and hidden while the keyboard is open so
+/// it never competes with the form for space.
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({
     super.key,
@@ -26,6 +28,9 @@ class AuthScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.scheme;
     final texts = context.texts;
+    // The pinned footer would otherwise sit directly above the keyboard and
+    // squeeze the form on short screens. It reappears as soon as typing ends.
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -52,7 +57,7 @@ class AuthScaffold extends StatelessWidget {
                   AppSpacing.x6,
                   AppSpacing.x2,
                   AppSpacing.x6,
-                  AppSpacing.x8,
+                  AppSpacing.x6,
                 ),
                 child: Center(
                   child: ConstrainedBox(
@@ -70,16 +75,27 @@ class AuthScaffold extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.x6),
                         child,
-                        if (footer != null) ...[
-                          const SizedBox(height: AppSpacing.x6),
-                          footer!,
-                        ],
                       ],
                     ),
                   ),
                 ),
               ),
             ),
+            if (footer != null && !keyboardOpen)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.x6,
+                  AppSpacing.x2,
+                  AppSpacing.x6,
+                  AppSpacing.x3,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: footer,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

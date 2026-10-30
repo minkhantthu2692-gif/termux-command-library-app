@@ -162,7 +162,8 @@ class AppLocalizationsMy extends AppLocalizations {
   String get signIn => 'ဝင်ရောက်';
 
   @override
-  String get signInSubtitle => 'ရပ်ထားသည့်နေရာမှ ဆက်လုပ်ပါ။';
+  String get signInSubtitle =>
+      'သင့် Termux command library ကို ဝင်ရောက်အသုံးပြုပါ။';
 
   @override
   String get createAccount => 'အကောင့်ဖွင့်';
@@ -433,7 +434,7 @@ class AppLocalizationsMy extends AppLocalizations {
       'ယာယီ cloud အကောင့် သိမ်းထားပြီး နောက်မှ အီးမေးလ် ထည့်နိုင်သည်။';
 
   @override
-  String get continueAnonymously => 'အမည်မသိအဖြစ် ဆက်လုပ်';
+  String get continueAnonymously => 'ဧည့်သည်အဖြစ် ဆက်လုပ်';
 
   @override
   String get upgradeAccount => 'အကောင့်သို့ အီးမေးလ် ထည့်';
@@ -460,9 +461,6 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get skipForNow => 'နောက်မှ';
-
-  @override
-  String get guestModeBanner => 'ဧည့်သည်မုဒ် · favorite များ ဤစက်တွင်သာ';
 
   @override
   String get createAccountToPublish => 'Guide တင်ရန် အကောင့်ဖွင့်ပါ။';

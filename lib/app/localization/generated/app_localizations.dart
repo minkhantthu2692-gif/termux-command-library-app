@@ -395,7 +395,7 @@ abstract class AppLocalizations {
   /// No description provided for @signInSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Pick up where you left off.'**
+  /// **'Access your Termux command library.'**
   String get signInSubtitle;
 
   /// No description provided for @createAccount.
@@ -425,7 +425,7 @@ abstract class AppLocalizations {
   /// No description provided for @orContinueWith.
   ///
   /// In en, this message translates to:
-  /// **'Or continue with'**
+  /// **'or'**
   String get orContinueWith;
 
   /// No description provided for @providerSignInSlow.
@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// No description provided for @chooseAvatar.
   ///
   /// In en, this message translates to:
-  /// **'Choose an avatar'**
+  /// **'Choose avatar'**
   String get chooseAvatar;
 
   /// No description provided for @forgotPassword.
@@ -677,7 +677,7 @@ abstract class AppLocalizations {
   /// No description provided for @noAccount.
   ///
   /// In en, this message translates to:
-  /// **'New here?'**
+  /// **'Don\'t have an account?'**
   String get noAccount;
 
   /// No description provided for @haveAccount.
@@ -893,7 +893,7 @@ abstract class AppLocalizations {
   /// No description provided for @continueAnonymously.
   ///
   /// In en, this message translates to:
-  /// **'Continue anonymously'**
+  /// **'Continue as Guest'**
   String get continueAnonymously;
 
   /// No description provided for @upgradeAccount.
@@ -943,12 +943,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip for now'**
   String get skipForNow;
-
-  /// No description provided for @guestModeBanner.
-  ///
-  /// In en, this message translates to:
-  /// **'Guest mode · favorites are local to this device'**
-  String get guestModeBanner;
 
   /// No description provided for @createAccountToPublish.
   ///

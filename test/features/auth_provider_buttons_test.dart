@@ -46,7 +46,7 @@ void main() {
     final taps = await pumpButtons(tester);
     expect(googleButton(), findsOneWidget);
     expect(githubButton(), findsOneWidget);
-    expect(find.text('Or continue with'), findsOneWidget);
+    expect(find.text('or'), findsOneWidget);
     expect(find.byTooltip('Continue with Google'), findsOneWidget);
     expect(find.byTooltip('Continue with GitHub'), findsOneWidget);
 

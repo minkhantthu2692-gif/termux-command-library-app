@@ -161,7 +161,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signIn => 'Sign in';
 
   @override
-  String get signInSubtitle => 'Pick up where you left off.';
+  String get signInSubtitle => 'Access your Termux command library.';
 
   @override
   String get createAccount => 'Create account';
@@ -177,7 +177,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueWithGithub => 'Continue with GitHub';
 
   @override
-  String get orContinueWith => 'Or continue with';
+  String get orContinueWith => 'or';
 
   @override
   String get providerSignInSlow =>
@@ -288,7 +288,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get avatar => 'Avatar';
 
   @override
-  String get chooseAvatar => 'Choose an avatar';
+  String get chooseAvatar => 'Choose avatar';
 
   @override
   String get forgotPassword => 'Forgot password?';
@@ -311,7 +311,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backToSignIn => 'Back to sign in';
 
   @override
-  String get noAccount => 'New here?';
+  String get noAccount => 'Don\'t have an account?';
 
   @override
   String get haveAccount => 'Already have an account?';
@@ -428,7 +428,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can save a temporary cloud account now and add an email later.';
 
   @override
-  String get continueAnonymously => 'Continue anonymously';
+  String get continueAnonymously => 'Continue as Guest';
 
   @override
   String get upgradeAccount => 'Add email to account';
@@ -455,10 +455,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skipForNow => 'Skip for now';
-
-  @override
-  String get guestModeBanner =>
-      'Guest mode · favorites are local to this device';
 
   @override
   String get createAccountToPublish => 'Create an account to publish guides.';

@@ -56,34 +56,23 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     return AuthScaffold(
       title: l10n.signIn,
       subtitle: l10n.signInSubtitle,
-      footer: Column(
+      footer: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                l10n.noAccount,
-                style: context.texts.bodySmall?.copyWith(
-                  color: context.scheme.onSurfaceVariant,
-                ),
-              ),
-              TextButton(
-                onPressed: _busy
-                    ? null
-                    : () => context.push(
-                        '/auth/register${widget.next == null ? '' : '?next=${Uri.encodeComponent(widget.next!)}'}',
-                      ),
-                child: Text(l10n.createAccount),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.x2),
           Text(
-            l10n.guestModeBanner,
-            textAlign: TextAlign.center,
-            style: context.texts.labelSmall?.copyWith(
+            l10n.noAccount,
+            style: context.texts.bodyMedium?.copyWith(
               color: context.scheme.onSurfaceVariant,
             ),
+          ),
+          TextButton(
+            onPressed: _busy
+                ? null
+                : () => context.push(
+                    '/auth/register${widget.next == null ? '' : '?next=${Uri.encodeComponent(widget.next!)}'}',
+                  ),
+            child: Text(l10n.createAccount),
           ),
         ],
       ),
@@ -116,7 +105,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.emailOrUsername,
                   hintText: l10n.emailHint,
-                  helperText: l10n.emailHelper,
                   prefixIcon: const Icon(Icons.alternate_email_rounded),
                 ),
                 validator: (value) =>
@@ -189,14 +177,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   onPressed: _busy ? null : _continueAnonymously,
                   icon: const Icon(Icons.person_outline_rounded),
                   label: Text(l10n.continueAnonymously),
-                ),
-                const SizedBox(height: AppSpacing.x2),
-                Text(
-                  l10n.anonymousExplanation,
-                  textAlign: TextAlign.center,
-                  style: context.texts.labelSmall?.copyWith(
-                    color: context.scheme.onSurfaceVariant,
-                  ),
                 ),
               ],
             ],
