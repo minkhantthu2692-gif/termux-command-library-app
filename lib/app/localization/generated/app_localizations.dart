@@ -2828,12 +2828,6 @@ abstract class AppLocalizations {
   /// **'AI cache cleared.'**
   String get aiCacheCleared;
 
-  /// No description provided for @aiSetupGuide.
-  ///
-  /// In en, this message translates to:
-  /// **'How to get a Groq key'**
-  String get aiSetupGuide;
-
   /// No description provided for @aiSetupGuideBody.
   ///
   /// In en, this message translates to:

@@ -532,7 +532,6 @@
   },
   "clearAiCache": "Clear AI cache",
   "aiCacheCleared": "AI cache cleared.",
-  "aiSetupGuide": "How to get a Groq key",
   "aiSetupGuideBody": "Open console.groq.com, sign in, create an API key, and paste it here. Keys start with gsk_. Billing and rate limits belong to your Groq account.",
   "askAi": "Ask the assistant",
   "askAiHint": "Ask about a command, error or workflow…",

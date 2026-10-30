@@ -276,25 +276,6 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.x4),
-          AppNote(
-            title: l10n.aiSetupGuide,
-            message: l10n.aiSetupGuideBody,
-            icon: Icons.menu_book_outlined,
-            actionLabel: l10n.getApiKey,
-            onAction: () =>
-                openExternalUrl(context, AppConstants.groqConsoleUrl),
-          ),
-          const SizedBox(height: AppSpacing.x3),
-          AppNote(message: l10n.cachePolicyNote, tone: AppNoteTone.neutral),
-          const SizedBox(height: AppSpacing.x3),
-          Text(
-            l10n.syncSecretsNote,
-            textAlign: TextAlign.center,
-            style: context.texts.labelSmall?.copyWith(
-              color: context.scheme.onSurfaceVariant,
-            ),
-          ),
         ],
       ),
     );

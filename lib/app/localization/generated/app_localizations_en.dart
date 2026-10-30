@@ -1479,9 +1479,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiCacheCleared => 'AI cache cleared.';
 
   @override
-  String get aiSetupGuide => 'How to get a Groq key';
-
-  @override
   String get aiSetupGuideBody =>
       'Open console.groq.com, sign in, create an API key, and paste it here. Keys start with gsk_. Billing and rate limits belong to your Groq account.';
 
