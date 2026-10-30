@@ -179,20 +179,6 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
               ],
             ),
           ],
-          const SizedBox(height: AppSpacing.x4),
-          AppNote(
-            message: l10n.syncSecretsNote,
-            tone: AppNoteTone.neutral,
-            icon: Icons.shield_outlined,
-          ),
-          const SizedBox(height: AppSpacing.x3),
-          Text(
-            l10n.guestDataNote,
-            textAlign: TextAlign.center,
-            style: context.texts.labelSmall?.copyWith(
-              color: context.scheme.onSurfaceVariant,
-            ),
-          ),
         ],
       ),
     );
