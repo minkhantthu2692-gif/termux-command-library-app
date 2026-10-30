@@ -50,6 +50,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   bool _includeDrafts = true;
   int _limit = AppConstants.pageSize;
 
+  /// Previous page kept on screen while the larger query loads. Without it the
+  /// list is replaced by a full-height loader, which collapses the scroll
+  /// extent and sends the user back to the top.
+  List<CommandSummary>? _retainedCommands;
+
   @override
   void initState() {
     super.initState();
@@ -86,7 +91,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     _categoryId = CommandCategories.isValid(widget.initialCategoryId ?? '')
         ? widget.initialCategoryId
         : null;
+    _resetPagination();
+  }
+
+  /// Returns to the first page whenever the query changes. The retained page
+  /// belongs to the previous query and must not leak into the new results.
+  void _resetPagination() {
     _limit = AppConstants.pageSize;
+    _retainedCommands = null;
   }
 
   @override
@@ -121,6 +133,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final async = _tab == LibraryTab.pinned
         ? null
         : ref.watch(commandsProvider(query));
+    final retained = _retainedCommands;
+    // Only a brand-new page query has no value yet. Refreshes of the current
+    // query keep their value, so they must use the normal path.
+    final loadingNextPage =
+        async != null &&
+        async.isLoading &&
+        async.value == null &&
+        retained != null;
 
     final pinnedFiltered = _tab == LibraryTab.pinned
         ? pinnedAll
@@ -185,7 +205,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       unawaited(triggerHaptic(ref, cue: HapticCue.selection));
                       setState(() {
                         _tab = tab;
-                        _limit = AppConstants.pageSize;
+                        _resetPagination();
                       });
                     },
                   ),
@@ -224,6 +244,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               pinnedFiltered,
               preferences,
               session,
+            )
+          else if (loadingNextPage)
+            // Keep the existing page in the tree so the scrollable keeps its
+            // extent and offset while the next page query is in flight.
+            ..._buildCommandSlivers(
+              context,
+              retained,
+              preferences,
+              session,
+              isLoadingMore: true,
             )
           else
             ...async!.when(
@@ -296,6 +326,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     AuthSession session, {
     bool showLoadMore = true,
     bool preservePinOrder = false,
+    bool isLoadingMore = false,
   }) {
     final l10n = AppLocalizations.of(context);
     if (commands.isEmpty) {
@@ -336,7 +367,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ];
     }
 
-    final hasMore = showLoadMore && commands.length >= _limit;
+    final hasMore = showLoadMore && !isLoadingMore && commands.length >= _limit;
+    final hasFooter = hasMore || isLoadingMore;
     return [
       SliverPadding(
         padding: const EdgeInsets.fromLTRB(
@@ -351,7 +383,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             final command = commands[index];
             return Padding(
               padding: EdgeInsets.only(
-                bottom: index == commands.length - 1 && !hasMore
+                bottom: index == commands.length - 1 && !hasFooter
                     ? 0
                     : AppSpacing.x2 + 2,
               ),
@@ -372,14 +404,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         child: Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.x6),
           child: Center(
-            child: hasMore
-                ? OutlinedButton.icon(
-                    onPressed: () => setState(
-                      () => _limit = (_limit + AppConstants.pageSize).clamp(
-                        1,
-                        AppConstants.maxPageSize,
+            child: isLoadingMore
+                // Match the button's tap-target height so swapping it for the
+                // spinner does not shrink the footer and nudge the viewport.
+                ? const SizedBox(
+                    height: kMinInteractiveDimension,
+                    child: Center(
+                      child: SizedBox.square(
+                        dimension: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
+                  )
+                : hasMore
+                ? OutlinedButton.icon(
+                    onPressed: () => _loadMore(session),
                     icon: const Icon(Icons.expand_more_rounded),
                     label: Text(l10n.loadMore),
                   )
@@ -400,13 +439,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     ];
   }
 
+  /// Grows the page while the previous results stay visible. Capturing them
+  /// before the limit changes is what prevents the scroll position reset.
+  void _loadMore(AuthSession session) {
+    if (_limit >= AppConstants.maxPageSize) return;
+    final current = ref.read(commandsProvider(_queryFor(session))).value;
+    setState(() {
+      _retainedCommands = current;
+      _limit = (_limit + AppConstants.pageSize).clamp(
+        1,
+        AppConstants.maxPageSize,
+      );
+    });
+  }
+
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(AppConstants.localSearchDebounce, () {
       if (!mounted) return;
       setState(() {
         _search = value;
-        _limit = AppConstants.pageSize;
+        _resetPagination();
       });
     });
   }
@@ -421,7 +474,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     setState(() {
       _categoryId = selected == _allCategoriesValue ? null : selected;
-      _limit = AppConstants.pageSize;
+      _resetPagination();
     });
   }
 
@@ -434,7 +487,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     unawaited(triggerHaptic(ref, cue: HapticCue.selection));
     setState(() {
       _sort = selected;
-      _limit = AppConstants.pageSize;
+      _resetPagination();
     });
   }
 
@@ -446,7 +499,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       _categoryId = null;
       _sort = CommandSort.recentlyUpdated;
       _includeDrafts = true;
-      _limit = AppConstants.pageSize;
+      _resetPagination();
     });
   }
 
