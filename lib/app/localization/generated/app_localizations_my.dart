@@ -1373,6 +1373,20 @@ class AppLocalizationsMy extends AppLocalizations {
       'သင့် Groq key သည် စက်၏ လုံခြုံသော သိုလှောင်ရာတွင် ရှိသည်။ Command များနှင့် AI history သည် မူရင်းအားဖြင့် ဒေသတွင်း ဖြစ်သည်။ Firebase ကို အကောင့်နှင့် public library အတွက်သာ အသုံးပြုသည်။';
 
   @override
+  String get privacyApiKeyTitle => 'API key';
+
+  @override
+  String get privacyApiKeyBody =>
+      'သင့် Groq key ကို ဤစက်ပေါ်တွင်သာ လုံခြုံစွာ သိမ်းဆည်းထားသည်။ Firebase သို့ sync မလုပ်သလို ပေးပို့ခြင်းလည်း မရှိပါ။';
+
+  @override
+  String get privacyDataTitle => 'သင့်ဒေတာ';
+
+  @override
+  String get privacyDataBody =>
+      'Command များ၊ favorite များ၊ pin များနှင့် AI history ကို အော့ဖ်လိုင်း အသုံးပြုနိုင်ရန် ဤစက်တွင် သိမ်းဆည်းထားသည်။ အကောင့်ဝင်ထားသူများအတွက် သင့်အကောင့်၊ သိမ်းဆည်းထားသော အရာများနှင့် public post များကို Firebase မှတစ်ဆင့် sync လုပ်ပါသည်။ AI ကို အသုံးပြုသည့်အခါမှသာ သင့်စာများကို Groq သို့ ပေးပို့ပါသည်။';
+
+  @override
   String get documentation => 'စာတမ်းများ';
 
   @override
@@ -1944,10 +1958,6 @@ class AppLocalizationsMy extends AppLocalizations {
   @override
   String get syncSecretsNote =>
       'API key များကို sync မလုပ်ပါ။ စက်၏ လုံခြုံသော သိုလှောင်ရာတွင် ကျန်ရှိသည်။';
-
-  @override
-  String get cachePolicyNote =>
-      'Cached AI အဖြေများကို model၊ prompt၊ context နှင့် prompt version အလိုက် ခွဲထားပြီး အလိုအလျောက် သက်တမ်းကုန်သည်။';
 
   @override
   String get clearDataSuccess => 'ဒေသတွင်း data ရှင်းပြီးပါပြီ။';

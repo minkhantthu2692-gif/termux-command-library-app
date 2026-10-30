@@ -1361,6 +1361,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your Groq key stays in secure device storage. Commands and AI history are local by default. Firebase is used only for accounts and the public library.';
 
   @override
+  String get privacyApiKeyTitle => 'API key';
+
+  @override
+  String get privacyApiKeyBody =>
+      'Your Groq key is stored securely on this device only. It is never synced or sent to Firebase.';
+
+  @override
+  String get privacyDataTitle => 'Your data';
+
+  @override
+  String get privacyDataBody =>
+      'Commands, favorites, pins and AI history are stored on this device for offline use. For signed-in users, your account, saved items and public posts sync through Firebase. AI messages are sent to Groq only when you use the assistant.';
+
+  @override
   String get documentation => 'Documentation';
 
   @override
@@ -1929,10 +1943,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get syncSecretsNote =>
       'API keys are never synced. They stay in secure device storage.';
-
-  @override
-  String get cachePolicyNote =>
-      'Cached AI answers are keyed by model, prompt, context and prompt version, and expire automatically.';
 
   @override
   String get clearDataSuccess => 'Local data cleared.';

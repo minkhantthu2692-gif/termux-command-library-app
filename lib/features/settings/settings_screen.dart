@@ -308,8 +308,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.privacy),
         content: SingleChildScrollView(
-          child: Text(
-            '${l10n.privacyBody}\n\n${l10n.syncSecretsNote}\n\n${l10n.cachePolicyNote}',
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _PrivacySection(
+                title: l10n.privacyApiKeyTitle,
+                body: l10n.privacyApiKeyBody,
+              ),
+              const SizedBox(height: AppSpacing.x4),
+              _PrivacySection(
+                title: l10n.privacyDataTitle,
+                body: l10n.privacyDataBody,
+              ),
+            ],
           ),
         ),
         actions: [
@@ -350,6 +362,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         VibrationIntensity.medium => l10n.vibrationMedium,
         VibrationIntensity.strong => l10n.vibrationStrong,
       };
+}
+
+/// A short titled paragraph in the privacy dialog. Two sections keep the copy
+/// scannable without turning the dialog into a wall of text.
+class _PrivacySection extends StatelessWidget {
+  const _PrivacySection({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: context.texts.titleSmall),
+        const SizedBox(height: AppSpacing.x1),
+        Text(
+          body,
+          style: context.texts.bodyMedium?.copyWith(
+            color: context.scheme.onSurfaceVariant,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _AccountSummary extends StatelessWidget {

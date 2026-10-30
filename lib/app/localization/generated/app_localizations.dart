@@ -2612,6 +2612,30 @@ abstract class AppLocalizations {
   /// **'Your Groq key stays in secure device storage. Commands and AI history are local by default. Firebase is used only for accounts and the public library.'**
   String get privacyBody;
 
+  /// No description provided for @privacyApiKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get privacyApiKeyTitle;
+
+  /// No description provided for @privacyApiKeyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Groq key is stored securely on this device only. It is never synced or sent to Firebase.'**
+  String get privacyApiKeyBody;
+
+  /// No description provided for @privacyDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data'**
+  String get privacyDataTitle;
+
+  /// No description provided for @privacyDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Commands, favorites, pins and AI history are stored on this device for offline use. For signed-in users, your account, saved items and public posts sync through Firebase. AI messages are sent to Groq only when you use the assistant.'**
+  String get privacyDataBody;
+
   /// No description provided for @documentation.
   ///
   /// In en, this message translates to:
@@ -3637,12 +3661,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'API keys are never synced. They stay in secure device storage.'**
   String get syncSecretsNote;
-
-  /// No description provided for @cachePolicyNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Cached AI answers are keyed by model, prompt, context and prompt version, and expire automatically.'**
-  String get cachePolicyNote;
 
   /// No description provided for @clearDataSuccess.
   ///
