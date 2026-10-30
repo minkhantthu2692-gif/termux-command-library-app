@@ -155,27 +155,30 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.x4),
-          SettingsGroup(
-            title: l10n.account,
-            children: [
-              if (!session.isLocalOnly)
+          // Guests have no cloud account, so this group would otherwise render
+          // as an empty card with only its heading.
+          if (!session.isLocalOnly) ...[
+            const SizedBox(height: AppSpacing.x4),
+            SettingsGroup(
+              title: l10n.account,
+              children: [
                 SettingsTile(
                   leading: const Icon(Icons.logout_rounded),
                   title: l10n.signOut,
                   subtitle: l10n.syncOnSignIn,
                   onTap: _busy ? null : _signOut,
                 ),
-              if (cloudConfigured && !session.isLocalOnly)
-                SettingsTile(
-                  leading: const Icon(Icons.delete_forever_outlined),
-                  title: l10n.deleteAccount,
-                  subtitle: l10n.deleteAccountBody,
-                  destructive: true,
-                  onTap: _busy ? null : _deleteAccount,
-                ),
-            ],
-          ),
+                if (cloudConfigured)
+                  SettingsTile(
+                    leading: const Icon(Icons.delete_forever_outlined),
+                    title: l10n.deleteAccount,
+                    subtitle: l10n.deleteAccountBody,
+                    destructive: true,
+                    onTap: _busy ? null : _deleteAccount,
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppSpacing.x4),
           AppNote(
             message: l10n.syncSecretsNote,
