@@ -16,10 +16,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTagline => 'A calm, curated library for Termux commands.';
 
   @override
-  String get appDescription =>
-      'Browse, collect and run community command guides. Built to work offline first.';
-
-  @override
   String get continueLabel => 'Continue';
 
   @override

@@ -110,12 +110,6 @@ abstract class AppLocalizations {
   /// **'A calm, curated library for Termux commands.'**
   String get appTagline;
 
-  /// No description provided for @appDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Browse, collect and run community command guides. Built to work offline first.'**
-  String get appDescription;
-
   /// No description provided for @continueLabel.
   ///
   /// In en, this message translates to:

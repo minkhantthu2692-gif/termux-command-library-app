@@ -17,10 +17,6 @@ class AppLocalizationsMy extends AppLocalizations {
       'Termux command များအတွက် သပ်ရပ်စွာ ရွေးချယ်ထားသော library။';
 
   @override
-  String get appDescription =>
-      'Community command guide များကို ရှာဖွေ၊ သိမ်းဆည်းပြီး run နိုင်သည်။ အင်တာနက်မလိုဘဲ အသုံးပြုနိုင်ရန် ဒီဇိုင်းထုတ်ထားသည်။';
-
-  @override
   String get continueLabel => 'ဆက်လုပ်';
 
   @override

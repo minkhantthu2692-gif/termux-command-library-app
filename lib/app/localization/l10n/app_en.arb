@@ -2,7 +2,6 @@
   "@@locale": "en",
   "appName": "Termux Command Library",
   "appTagline": "A calm, curated library for Termux commands.",
-  "appDescription": "Browse, collect and run community command guides. Built to work offline first.",
   "continueLabel": "Continue",
   "cancel": "Cancel",
   "save": "Save",

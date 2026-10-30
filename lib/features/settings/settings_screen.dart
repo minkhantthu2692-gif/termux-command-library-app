@@ -227,14 +227,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onAction: () => context.push('/docs'),
             ),
           ],
-          const SizedBox(height: AppSpacing.x4),
-          Text(
-            l10n.appDescription,
-            textAlign: TextAlign.center,
-            style: context.texts.labelSmall?.copyWith(
-              color: context.scheme.onSurfaceVariant,
-            ),
-          ),
         ],
       ),
     );
