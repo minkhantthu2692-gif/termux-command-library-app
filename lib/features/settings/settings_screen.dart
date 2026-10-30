@@ -164,12 +164,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 enabled: !_clearing,
                 onTap: _clearCache,
               ),
-              SettingsTile(
-                leading: const Icon(Icons.key_outlined),
-                title: l10n.aiSettings,
-                subtitle: l10n.cachePolicyNote,
-                onTap: () => context.push('/settings/ai'),
-              ),
             ],
           ),
           const SizedBox(height: AppSpacing.x4),
