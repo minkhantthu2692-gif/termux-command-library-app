@@ -22,6 +22,9 @@ const _avatarBackgrounds = <String, Color>{
   'spark': Color(0xFFF2C0B2),
   'leaf': Color(0xFFA8D8C8),
   'pixel': Color(0xFFF0D992),
+  'dune': Color(0xFFE4C7A1),
+  'reef': Color(0xFF9FD0C8),
+  'plum': Color(0xFFC7B2DA),
   'person': Color(0xFFC9D0DC),
 };
 

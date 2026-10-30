@@ -16,6 +16,9 @@ abstract final class AppAvatars {
     'spark',
     'leaf',
     'pixel',
+    'dune',
+    'reef',
+    'plum',
     'person',
   ];
 
