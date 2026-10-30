@@ -1,25 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../app/localization/generated/app_localizations.dart';
 import '../../core/design_system/app_tokens.dart';
 import '../../data/models/user_profile.dart';
 
-IconData avatarIcon(String id) => switch (id) {
-  'sprout' => Icons.eco_rounded,
-  'wave' => Icons.waves_rounded,
-  'sun' => Icons.wb_sunny_rounded,
-  'moon' => Icons.dark_mode_rounded,
-  'spark' => Icons.auto_awesome_rounded,
-  'leaf' => Icons.spa_rounded,
-  'pixel' => Icons.grid_view_rounded,
-  'person' => Icons.person_rounded,
-  _ => Icons.blur_on_rounded,
+/// Illustration asset for a persisted avatar id. Ids are stored in profiles and
+/// Firestore, so the artwork is mapped by id instead of renaming the records.
+String avatarAsset(String id) =>
+    'assets/avatars/${AppAvatars.normalize(id)}.svg';
+
+/// Solid backdrop of each illustration. Kept in sync with the first `<rect>` in
+/// the matching SVG so the bubble never flashes an unrelated color while the
+/// asset decodes, and so a missing asset still leaves a tidy circle.
+const _avatarBackgrounds = <String, Color>{
+  'orbit': Color(0xFFAEBDF2),
+  'sprout': Color(0xFFBFD8B8),
+  'wave': Color(0xFFA9D3E6),
+  'sun': Color(0xFFF3C99B),
+  'moon': Color(0xFFC9BCE8),
+  'spark': Color(0xFFF2C0B2),
+  'leaf': Color(0xFFA8D8C8),
+  'pixel': Color(0xFFF0D992),
+  'person': Color(0xFFC9D0DC),
 };
 
-int avatarColorIndex(String id) {
-  final index = AppAvatars.all.indexOf(id);
-  return index < 0 ? 0 : index;
-}
+Color avatarBackground(String id) =>
+    _avatarBackgrounds[AppAvatars.normalize(id)] ??
+    _avatarBackgrounds[AppAvatars.defaultId]!;
 
 class AvatarBubble extends StatelessWidget {
   const AvatarBubble({
@@ -37,19 +45,13 @@ class AvatarBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.appColors;
-    final color =
-        palette.avatarPalette[avatarColorIndex(AppAvatars.normalize(avatarId)) %
-            palette.avatarPalette.length];
+    final id = AppAvatars.normalize(avatarId);
+    final background = avatarBackground(id);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [color, Color.lerp(color, Colors.black, 0.18)!],
-        ),
+        color: background,
         shape: BoxShape.circle,
         border: showBorder
             ? Border.all(
@@ -60,17 +62,21 @@ class AvatarBubble extends StatelessWidget {
         boxShadow: size >= 64
             ? [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.28),
+                  color: background.withValues(alpha: 0.28),
                   blurRadius: 22,
                   offset: const Offset(0, 8),
                 ),
               ]
             : null,
       ),
-      child: Icon(
-        avatarIcon(AppAvatars.normalize(avatarId)),
-        size: size * 0.46,
-        color: Colors.white.withValues(alpha: 0.96),
+      // The border insets the child, so the illustration never paints over it.
+      child: ClipOval(
+        child: SvgPicture.asset(
+          avatarAsset(id),
+          fit: BoxFit.cover,
+          excludeFromSemantics: true,
+          errorBuilder: (context, error, stackTrace) => const SizedBox.expand(),
+        ),
       ),
     );
   }

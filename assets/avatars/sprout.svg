@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" fill="#BFD8B8"/>
+  <circle cx="64" cy="18" r="10" fill="#4A3226"/>
+  <path d="M38 56C36 32 50 22 64 22C78 22 92 32 90 56C88 40 80 34 64 34C48 34 40 40 38 56Z" fill="#4A3226"/>
+  <path d="M55 12Q61 8 68 11" fill="none" stroke="#5E4030" stroke-width="3" stroke-linecap="round"/>
+  <path d="M14 128C14 106 32 93 54 90L74 90C96 93 114 106 114 128Z" fill="#2F6B4F"/>
+  <rect x="55" y="67" width="18" height="27" rx="8" fill="#C98E5A"/>
+  <path d="M50 90C55 99 60 103 64 103C68 103 73 99 78 90L78 96C73 106 68 110 64 110C60 110 55 106 50 96Z" fill="#275A42"/>
+  <ellipse cx="64" cy="53" rx="24" ry="26" fill="#C98E5A"/>
+  <path d="M56 78C58 84 70 84 72 78L72 82C70 88 58 88 56 82Z" fill="#B57A48" opacity=".55"/>
+  <ellipse cx="40" cy="56" rx="4.5" ry="6" fill="#C98E5A"/>
+  <ellipse cx="88" cy="56" rx="4.5" ry="6" fill="#C98E5A"/>
+  <path d="M40 42Q36 54 40 70" fill="none" stroke="#4A3226" stroke-width="5" stroke-linecap="round"/>
+  <path d="M88 42Q92 54 88 70" fill="none" stroke="#4A3226" stroke-width="5" stroke-linecap="round"/>
+  <rect x="57" y="26" width="14" height="5" rx="2.5" fill="#3A271D"/>
+  <path d="M49 45Q54 42 59 45" fill="none" stroke="#4A3226" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M69 45Q74 42 79 45" fill="none" stroke="#4A3226" stroke-width="2.4" stroke-linecap="round"/>
+  <ellipse cx="54" cy="53" rx="2.6" ry="3.4" fill="#231D1B"/>
+  <ellipse cx="74" cy="53" rx="2.6" ry="3.4" fill="#231D1B"/>
+  <circle cx="54.9" cy="51.8" r=".9" fill="#FFFFFF" opacity=".9"/>
+  <circle cx="74.9" cy="51.8" r=".9" fill="#FFFFFF" opacity=".9"/>
+  <path d="M62 58Q64 62 66 59" fill="none" stroke="#B57A48" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+  <path d="M57 67Q64 73 71 67" fill="none" stroke="#6E2E34" stroke-width="2.4" stroke-linecap="round"/>
+  <ellipse cx="47" cy="62" rx="4" ry="2.4" fill="#E98B8B" opacity=".22"/>
+  <ellipse cx="81" cy="62" rx="4" ry="2.4" fill="#E98B8B" opacity=".22"/>
+  <circle cx="40" cy="63" r="4" fill="none" stroke="#E0B060" stroke-width="2"/>
+  <circle cx="88" cy="63" r="4" fill="none" stroke="#E0B060" stroke-width="2"/>
+</svg>
