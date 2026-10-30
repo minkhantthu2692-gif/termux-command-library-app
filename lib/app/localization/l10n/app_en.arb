@@ -493,7 +493,6 @@
   "aiWelcomeBody": "Explain a command, plan a workflow, or translate a guide. Your API key is stored on this device.",
   "aiDisabledTitle": "AI is off",
   "aiDisabledBody": "Add a Groq API key to enable the assistant. You control the key, model and history.",
-  "enableAi": "Enable assistant",
   "aiSettings": "AI settings",
   "aiEnabled": "AI assistant",
   "aiEnabledHelper": "Turns on chat and writing assistance.",

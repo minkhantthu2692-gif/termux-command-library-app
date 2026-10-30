@@ -1398,9 +1398,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add a Groq API key to enable the assistant. You control the key, model and history.';
 
   @override
-  String get enableAi => 'Enable assistant';
-
-  @override
   String get aiSettings => 'AI settings';
 
   @override

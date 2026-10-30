@@ -2678,12 +2678,6 @@ abstract class AppLocalizations {
   /// **'Add a Groq API key to enable the assistant. You control the key, model and history.'**
   String get aiDisabledBody;
 
-  /// No description provided for @enableAi.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable assistant'**
-  String get enableAi;
-
   /// No description provided for @aiSettings.
   ///
   /// In en, this message translates to:

@@ -1410,9 +1410,6 @@ class AppLocalizationsMy extends AppLocalizations {
       'အကူအညီကို ဖွင့်ရန် Groq API key ထည့်ပါ။ Key၊ model နှင့် history ကို သင်ထိန်းချုပ်သည်။';
 
   @override
-  String get enableAi => 'အကူအညီ ဖွင့်';
-
-  @override
   String get aiSettings => 'AI ဆက်တင်';
 
   @override

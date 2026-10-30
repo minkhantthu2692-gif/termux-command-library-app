@@ -11,7 +11,6 @@ import '../../data/models/ai_models.dart';
 import '../../data/services/haptics_service.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/widgets/app_logo.dart';
-import '../../shared/widgets/app_note.dart';
 import '../../shared/widgets/section_header.dart';
 import 'ai_conversation_tile.dart';
 import 'ai_setup_card.dart';
@@ -152,13 +151,6 @@ class AssistantScreen extends ConsumerWidget {
                           .toList(growable: false),
                     );
                   },
-                ),
-                const SizedBox(height: AppSpacing.x5),
-                AppNote(
-                  title: l10n.localOnly,
-                  message: l10n.aiPrivacyNote,
-                  icon: Icons.lock_outline_rounded,
-                  tone: AppNoteTone.neutral,
                 ),
               ],
             ),

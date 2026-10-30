@@ -430,7 +430,6 @@
   "aiWelcomeBody": "Command ရှင်းပြခြင်း၊ workflow စီစဉ်ခြင်း သို့မဟုတ် guide ဘာသာပြန်ခြင်း ပြုလုပ်ပါ။ API key ကို ဤစက်တွင် သိမ်းထားသည်။",
   "aiDisabledTitle": "AI ပိတ်ထားသည်",
   "aiDisabledBody": "အကူအညီကို ဖွင့်ရန် Groq API key ထည့်ပါ။ Key၊ model နှင့် history ကို သင်ထိန်းချုပ်သည်။",
-  "enableAi": "အကူအညီ ဖွင့်",
   "aiSettings": "AI ဆက်တင်",
   "aiEnabled": "AI အကူအညီ",
   "aiEnabledHelper": "Chat နှင့် စာရေးအကူအညီကို ဖွင့်သည်။",

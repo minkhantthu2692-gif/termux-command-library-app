@@ -81,19 +81,29 @@ class AiSetupCard extends ConsumerWidget {
       ),
     };
 
-    return Container(
-      padding: EdgeInsets.all(compact ? AppSpacing.x3 : AppSpacing.x5),
-      decoration: BoxDecoration(
-        color: context.appColors.card,
+    // Loading has no destination yet; every other state opens the existing AI
+    // settings route, so the whole card acts as the affordance.
+    final canOpenSettings = availability != AiAvailability.loading;
+    return Material(
+      color: context.appColors.card,
+      borderRadius: AppRadius.large,
+      child: InkWell(
         borderRadius: AppRadius.large,
-        border: Border.all(
-          color: context.scheme.outlineVariant.withValues(alpha: 0.45),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+        onTap: canOpenSettings
+            ? () {
+                unawaited(triggerHaptic(ref, cue: HapticCue.selection));
+                context.push('/settings/ai');
+              }
+            : null,
+        child: Container(
+          padding: EdgeInsets.all(compact ? AppSpacing.x3 : AppSpacing.x5),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.large,
+            border: Border.all(
+              color: context.scheme.outlineVariant.withValues(alpha: 0.45),
+            ),
+          ),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
@@ -126,28 +136,20 @@ class AiSetupCard extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (canOpenSettings) ...[
+                const SizedBox(width: AppSpacing.x2),
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.x1),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: AppIconSizes.md,
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ],
           ),
-          if (availability != AiAvailability.loading &&
-              availability != AiAvailability.ready) ...[
-            const SizedBox(height: AppSpacing.x3),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: FilledButton.tonalIcon(
-                onPressed: () {
-                  unawaited(triggerHaptic(ref, cue: HapticCue.selection));
-                  context.push('/settings/ai');
-                },
-                icon: const Icon(Icons.settings_outlined, size: 18),
-                label: Text(
-                  availability == AiAvailability.disabled
-                      ? l10n.enableAi
-                      : l10n.openAiSettings,
-                ),
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
