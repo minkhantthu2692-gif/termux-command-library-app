@@ -86,7 +86,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
           ),
           TextButton(
-            onPressed: _busy ? null : () => context.pop(),
+            onPressed: _busy
+                ? null
+                : () => context.push(
+                    '/auth/sign-in${widget.next == null ? '' : '?next=${Uri.encodeComponent(widget.next!)}'}',
+                  ),
             child: Text(l10n.signIn),
           ),
         ],

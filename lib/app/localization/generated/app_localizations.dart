@@ -2447,7 +2447,7 @@ abstract class AppLocalizations {
   /// No description provided for @fontSizePreview.
   ///
   /// In en, this message translates to:
-  /// **'The quick brown fox jumps over the lazy dog. မြန်မာစာသားကို ဖတ်ရှုရလွယ်ကူပါစေ။'**
+  /// **'The quick brown fox jumps over the lazy dog.'**
   String get fontSizePreview;
 
   /// No description provided for @language.

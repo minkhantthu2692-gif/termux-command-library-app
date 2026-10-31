@@ -96,19 +96,7 @@ class ProfileScreen extends ConsumerWidget {
                       context.push('/profile/edit');
                     },
                   ),
-                  if (cloudConfigured && session.isAnonymous) ...[
-                    const SizedBox(height: AppSpacing.x4),
-                    AppNote(
-                      title: l10n.anonymousAccount,
-                      message: l10n.anonymousExplanation,
-                      tone: AppNoteTone.info,
-                      actionLabel: l10n.upgradeAccount,
-                      onAction: () {
-                        unawaited(triggerHaptic(ref, cue: HapticCue.selection));
-                        context.push('/auth/register');
-                      },
-                    ),
-                  ] else if (!cloudConfigured) ...[
+                  if (!cloudConfigured) ...[
                     const SizedBox(height: AppSpacing.x4),
                     AppNote(
                       title: l10n.localOnly,
@@ -180,7 +168,8 @@ class ProfileScreen extends ConsumerWidget {
                           leading: const Icon(Icons.person_add_alt_rounded),
                           title: l10n.upgradeAccount,
                           subtitle: l10n.upgradeAccountBody,
-                          onTap: () => context.push('/auth/register'),
+                          onTap: () =>
+                              context.push('/auth/register?next=/profile'),
                         ),
                       SettingsTile(
                         leading: const Icon(Icons.settings_outlined),

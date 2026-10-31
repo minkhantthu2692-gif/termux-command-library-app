@@ -1284,8 +1284,7 @@ class AppLocalizationsMy extends AppLocalizations {
   String get fontSize => 'စာလုံးအရွယ်';
 
   @override
-  String get fontSizePreview =>
-      'The quick brown fox jumps over the lazy dog. မြန်မာစာသားကို ဖတ်ရှုရလွယ်ကူပါစေ။';
+  String get fontSizePreview => 'The quick brown fox jumps over the lazy dog.';
 
   @override
   String get language => 'ဘာသာစကား';
