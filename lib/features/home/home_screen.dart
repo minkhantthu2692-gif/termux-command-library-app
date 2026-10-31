@@ -797,7 +797,6 @@ class _StatTile extends StatelessWidget {
             vertical: AppSpacing.x3,
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(icon, size: AppIconSizes.sm, color: scheme.primary),
               const SizedBox(height: AppSpacing.x2),

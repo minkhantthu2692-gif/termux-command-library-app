@@ -350,33 +350,6 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-class _CountBadge extends StatelessWidget {
-  const _CountBadge({required this.value});
-
-  final int value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.x2,
-        vertical: 3,
-      ),
-      decoration: BoxDecoration(
-        color: context.appColors.cardMuted,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-      ),
-      child: Text(
-        AppFormatters.compactCount(value),
-        style: context.texts.labelSmall?.copyWith(
-          color: context.scheme.onSurfaceVariant,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
 class _StatsRow extends StatelessWidget {
   const _StatsRow({
     required this.stats,
