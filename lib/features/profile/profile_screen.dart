@@ -122,33 +122,6 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.x6),
                   SettingsGroup(
-                    title: l10n.myCollection,
-                    children: [
-                      SettingsTile(
-                        leading: const Icon(Icons.menu_book_outlined),
-                        title: l10n.myGuides,
-                        subtitle: l10n.myPostsCount,
-                        onTap: () => context.go('/library?tab=mine'),
-                        trailing: _CountBadge(value: stats.mine),
-                      ),
-                      SettingsTile(
-                        leading: const Icon(Icons.bookmark_outline_rounded),
-                        title: l10n.favorites,
-                        subtitle: l10n.emptyFavoritesBody,
-                        onTap: () => context.go('/library?tab=favorites'),
-                        trailing: _CountBadge(value: stats.favorites),
-                      ),
-                      SettingsTile(
-                        leading: const Icon(Icons.push_pin_outlined),
-                        title: l10n.pinned,
-                        subtitle: l10n.pinnedCommands,
-                        onTap: () => context.go('/library?tab=pinned'),
-                        trailing: _CountBadge(value: stats.pins),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.x4),
-                  SettingsGroup(
                     title: l10n.accountAndSync,
                     children: [
                       SettingsTile(
