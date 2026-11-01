@@ -112,6 +112,40 @@ void main() {
     await disposeApp(tester);
   });
 
+  testWidgets('quick actions pair up on phones and stack at large text', (
+    tester,
+  ) async {
+    final dependencies = await buildDependencies(onboardingCompleted: true);
+    await tester.pumpWidget(buildApp(dependencies, FakeApiKeyStore()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explore commands'), findsOneWidget);
+    expect(find.text('Contribute knowledge'), findsOneWidget);
+    expect(find.text('Get help with AI'), findsOneWidget);
+    expect(find.text('Set up your environment'), findsOneWidget);
+
+    final browse = find.byKey(const ValueKey('quick-action-browse'));
+    final share = find.byKey(const ValueKey('quick-action-share'));
+
+    // Two half-width cards share a row at the default text size.
+    expect(tester.getTopLeft(browse).dy, tester.getTopLeft(share).dy);
+    expect(tester.getSize(browse).width, lessThan(400));
+
+    // Larger text falls back to full-width rows so the label block keeps
+    // enough room, especially for Myanmar.
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pumpAndSettle();
+
+    expect(tester.getSize(browse).width, greaterThan(500));
+    expect(
+      tester.getTopLeft(share).dy,
+      greaterThan(tester.getTopLeft(browse).dy),
+    );
+
+    await disposeApp(tester);
+  });
+
   testWidgets('the navigation bar follows the blur setting', (tester) async {
     final dependencies = await buildDependencies(onboardingCompleted: true);
     await tester.pumpWidget(buildApp(dependencies, FakeApiKeyStore()));
@@ -181,9 +215,9 @@ void main() {
     expect(find.text('Quick actions'), findsOneWidget);
 
     // A Quick Action destination is also part of the back history. Target the
-    // tile by its icon so the identically labelled empty-state action further
-    // down the page is not selected by mistake.
-    final quickBrowse = find.byIcon(Icons.menu_book_rounded);
+    // tile by key so the identically labelled empty-state action further down
+    // the page is not selected by mistake.
+    final quickBrowse = find.byKey(const ValueKey('quick-action-browse'));
     expect(quickBrowse, findsOneWidget);
     await tester.tap(quickBrowse);
     await tester.pumpAndSettle();

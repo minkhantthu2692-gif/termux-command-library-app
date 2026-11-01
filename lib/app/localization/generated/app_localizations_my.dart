@@ -518,6 +518,18 @@ class AppLocalizationsMy extends AppLocalizations {
   String get quickActions => 'အမြန်လုပ်ဆောင်ချက်များ';
 
   @override
+  String get quickActionBrowseSubtitle => 'Command များ လေ့လာရန်';
+
+  @override
+  String get quickActionShareSubtitle => 'ဗဟုသုတ မျှဝေရန်';
+
+  @override
+  String get quickActionAiSubtitle => 'AI ဖြင့် အကူအညီယူရန်';
+
+  @override
+  String get quickActionTermuxSubtitle => 'ပတ်ဝန်းကျင် ပြင်ဆင်ရန်';
+
+  @override
   String get exploreCategories => 'အမျိုးအစားများ ကြည့်ရှု';
 
   @override

@@ -44,6 +44,7 @@ abstract final class AppIconSizes {
   static const double md = 22;
   static const double lg = 28;
   static const double xl = 36;
+  static const double xxl = 64;
 }
 
 abstract final class AppSizes {
@@ -51,6 +52,7 @@ abstract final class AppSizes {
   static const double contentMaxWidth = 760;
   static const double cardMinHeight = 108;
   static const double avatar = 40;
+  static const double iconTile = 36;
   static const double avatarLarge = 88;
   static const double navBarHeight = 72;
   static const double appBarHeight = 64;

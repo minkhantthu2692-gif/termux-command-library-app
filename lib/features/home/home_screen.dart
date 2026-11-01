@@ -92,11 +92,7 @@ class HomeScreen extends ConsumerWidget {
                     _SyncErrorNote(onRetry: () => _refresh(context, ref)),
                   ],
                   const SizedBox(height: AppSpacing.x6),
-                  SectionHeader(
-                    title: l10n.quickActions,
-                    actionLabel: l10n.seeAll,
-                    onAction: () => context.go('/library'),
-                  ),
+                  SectionHeader(title: l10n.quickActions),
                   const SizedBox(height: AppSpacing.x3),
                   _QuickActions(
                     onBrowse: () => context.go('/library'),
@@ -600,52 +596,63 @@ class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tiles = <_ActionTile>[
+      _ActionTile(
+        key: const ValueKey('quick-action-browse'),
+        icon: Icons.menu_book_rounded,
+        title: l10n.browseLibrary,
+        subtitle: l10n.quickActionBrowseSubtitle,
+        onTap: onBrowse,
+      ),
+      _ActionTile(
+        key: const ValueKey('quick-action-share'),
+        icon: Icons.add_circle_outline_rounded,
+        title: l10n.shareGuide,
+        subtitle: l10n.quickActionShareSubtitle,
+        onTap: onShare,
+      ),
+      _ActionTile(
+        key: const ValueKey('quick-action-ai'),
+        icon: Icons.auto_awesome_rounded,
+        title: l10n.aiAssistant,
+        subtitle: l10n.quickActionAiSubtitle,
+        onTap: onAi,
+      ),
+      _ActionTile(
+        key: const ValueKey('quick-action-termux'),
+        icon: Icons.terminal_rounded,
+        title: l10n.termuxGuide,
+        subtitle: l10n.quickActionTermuxSubtitle,
+        onTap: onTermux,
+      ),
+    ];
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final twoColumns = constraints.maxWidth >= 360;
-        final width = twoColumns
-            ? (constraints.maxWidth - AppSpacing.x3) / 2
-            : constraints.maxWidth;
-        return Wrap(
-          spacing: AppSpacing.x3,
-          runSpacing: AppSpacing.x3,
+        // A half-width card leaves little room for the title and subtitle on
+        // narrow screens or at large text scales, especially in Myanmar. Fall
+        // back to full-width rows, which keep the same icon/title/subtitle/
+        // chevron anatomy.
+        final titleSize = context.texts.titleSmall?.fontSize ?? 14;
+        final stacked =
+            constraints.maxWidth < 320 ||
+            MediaQuery.textScalerOf(context).scale(titleSize) > 17;
+        if (stacked) {
+          return Column(
+            children: [
+              for (var i = 0; i < tiles.length; i++) ...[
+                if (i > 0) const SizedBox(height: AppSpacing.x2),
+                tiles[i],
+              ],
+            ],
+          );
+        }
+
+        return Column(
           children: [
-            SizedBox(
-              width: width,
-              child: _ActionTile(
-                icon: Icons.menu_book_rounded,
-                label: l10n.browseLibrary,
-                color: const Color(0xFF4F5BD5),
-                onTap: onBrowse,
-              ),
-            ),
-            SizedBox(
-              width: width,
-              child: _ActionTile(
-                icon: Icons.add_circle_outline_rounded,
-                label: l10n.shareGuide,
-                color: const Color(0xFF0E8576),
-                onTap: onShare,
-              ),
-            ),
-            SizedBox(
-              width: width,
-              child: _ActionTile(
-                icon: Icons.auto_awesome_rounded,
-                label: l10n.aiAssistant,
-                color: const Color(0xFF7651C9),
-                onTap: onAi,
-              ),
-            ),
-            SizedBox(
-              width: width,
-              child: _ActionTile(
-                icon: Icons.terminal_rounded,
-                label: l10n.termuxGuide,
-                color: const Color(0xFFB27815),
-                onTap: onTermux,
-              ),
-            ),
+            _ActionRow(left: tiles[0], right: tiles[1]),
+            const SizedBox(height: AppSpacing.x3),
+            _ActionRow(left: tiles[2], right: tiles[3]),
           ],
         );
       },
@@ -653,62 +660,149 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
+/// Pairs two cards in a row and stretches them to the same height so the grid
+/// stays balanced when a title or subtitle wraps onto another line.
+class _ActionRow extends StatelessWidget {
+  const _ActionRow({required this.left, required this.right});
+
+  final Widget left;
+  final Widget right;
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: left),
+          const SizedBox(width: AppSpacing.x3),
+          Expanded(child: right),
+        ],
+      ),
+    );
+  }
+}
+
+/// One quick action: a tinted icon tile, a title/subtitle block and a trailing
+/// chevron, over a faint watermark of the action's own icon.
 class _ActionTile extends ConsumerWidget {
   const _ActionTile({
+    super.key,
     required this.icon,
-    required this.label,
-    required this.color,
+    required this.title,
+    required this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
-  final String label;
-  final Color color;
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = context.scheme;
     return Material(
       color: context.appColors.card,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.medium,
-        side: BorderSide(
-          color: context.scheme.outlineVariant.withValues(alpha: 0.45),
-        ),
+        borderRadius: AppRadius.large,
+        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.45)),
       ),
       child: InkWell(
-        borderRadius: AppRadius.medium,
+        borderRadius: AppRadius.large,
         onTap: () {
           unawaited(triggerHaptic(ref, cue: HapticCue.tap));
           onTap();
         },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.x3,
-            vertical: AppSpacing.x3,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
+        child: Stack(
+          children: [
+            // A faint accent wash and an oversized watermark of the action
+            // icon add depth while staying clearly behind the content.
+            Positioned.fill(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: Icon(icon, size: AppIconSizes.sm, color: color),
-              ),
-              const SizedBox(width: AppSpacing.x2),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.texts.labelLarge,
+                  gradient: LinearGradient(
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                    colors: [
+                      scheme.primary.withValues(alpha: 0.05),
+                      scheme.primary.withValues(alpha: 0),
+                    ],
+                    stops: const [0, 0.65],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: -AppSpacing.x5,
+              right: -AppSpacing.x3,
+              child: ExcludeSemantics(
+                child: Icon(
+                  icon,
+                  size: AppIconSizes.xxl,
+                  color: scheme.primary.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.x3,
+                AppSpacing.x3,
+                AppSpacing.x2,
+                AppSpacing.x3,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: AppSizes.iconTile,
+                    height: AppSizes.iconTile,
+                    decoration: BoxDecoration(
+                      color: scheme.primary.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.small,
+                    ),
+                    child: Icon(
+                      icon,
+                      size: AppIconSizes.md,
+                      color: scheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.x2),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Wrap freely so long Myanmar titles and large text
+                        // scales are never truncated; _ActionRow keeps both
+                        // cards the same height.
+                        Text(
+                          title,
+                          style: context.texts.titleSmall?.copyWith(
+                            height: 1.25,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.x1),
+                        Text(
+                          subtitle,
+                          style: context.texts.labelSmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.x1),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: AppIconSizes.sm,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

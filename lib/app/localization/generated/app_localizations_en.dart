@@ -513,6 +513,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickActions => 'Quick actions';
 
   @override
+  String get quickActionBrowseSubtitle => 'Explore commands';
+
+  @override
+  String get quickActionShareSubtitle => 'Contribute knowledge';
+
+  @override
+  String get quickActionAiSubtitle => 'Get help with AI';
+
+  @override
+  String get quickActionTermuxSubtitle => 'Set up your environment';
+
+  @override
   String get exploreCategories => 'Explore categories';
 
   @override

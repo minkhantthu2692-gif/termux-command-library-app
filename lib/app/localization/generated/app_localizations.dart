@@ -1040,6 +1040,30 @@ abstract class AppLocalizations {
   /// **'Quick actions'**
   String get quickActions;
 
+  /// No description provided for @quickActionBrowseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore commands'**
+  String get quickActionBrowseSubtitle;
+
+  /// No description provided for @quickActionShareSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute knowledge'**
+  String get quickActionShareSubtitle;
+
+  /// No description provided for @quickActionAiSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get help with AI'**
+  String get quickActionAiSubtitle;
+
+  /// No description provided for @quickActionTermuxSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your environment'**
+  String get quickActionTermuxSubtitle;
+
   /// No description provided for @exploreCategories.
   ///
   /// In en, this message translates to:
