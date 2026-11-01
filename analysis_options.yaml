@@ -13,6 +13,9 @@ analyzer:
   exclude:
     - build/**
     - android/**
+    # Exported release snapshots are independent Flutter projects, not part of
+    # this package's analysis context.
+    - final_release_*/**
 
 linter:
   # The lint rules applied to this project can be customized in the

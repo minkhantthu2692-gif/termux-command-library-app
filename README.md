@@ -15,6 +15,12 @@ Cloud Firestore when an account and network are available.
 > all work. The AI assistant remains optional and needs a BYOK key. The app
 > deliberately starts in a fully usable local-only mode when no Firebase
 > configuration is present.
+>
+> **Finalization:** re-verified on **2026-11-01** with Flutter 3.47.8. Static
+> analysis is clean and all 272 Dart tests pass. Release builds are signed with a
+> private 4096-bit upload key stored outside the repository, and the release
+> SHA-1/SHA-256 are registered in the existing Firebase Android app. See the
+> [Release guide](docs/release.md) for fingerprints and backup instructions.
 
 ---
 
@@ -208,11 +214,15 @@ written to history, logs or the repository. See [Groq setup](docs/groq-setup.md)
 ```bash
 flutter build apk --debug
 flutter build apk --release
+flutter build appbundle --release
 ```
 
-A release build currently uses the debug signing configuration as a development
-placeholder. Configure a private keystore before distributing the app. See
-[Build instructions](docs/build.md).
+Release builds load the private upload key from `android/key.properties`, which
+points at a keystore kept outside the repository. That file is git-ignored and
+must never be committed or shared. Without it the build falls back to the debug
+key so local verification still works — **never publish a debug-signed
+artifact**. See [Build instructions](docs/build.md) and the
+[Release guide](docs/release.md) for fingerprints and backup instructions.
 
 ## Test and quality checks
 
@@ -241,6 +251,7 @@ buttons, the Riverpod app shell and theme/locale propagation.
 | [Groq API setup](docs/groq-setup.md) | BYOK, secure storage, models, cache and history |
 | [Termux integration](docs/termux-integration.md) | Install, permissions, Termux:API, `RUN_COMMAND`, safety |
 | [Build instructions](docs/build.md) | Debug/release builds, signing, defines |
+| [Release guide](docs/release.md) | Final packaging, signing, exports, SHA fingerprints, limitations |
 | [Troubleshooting](docs/troubleshooting.md) | Common setup and runtime failures |
 | [Architecture](docs/architecture.md) | Layers, providers, data flow, extension points |
 | [Synchronization](docs/synchronization.md) | Offline-first flow, queue, conflicts, limits |

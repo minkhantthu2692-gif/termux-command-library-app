@@ -404,7 +404,7 @@ and rerun.
 
 ## Android build fails
 
-- Use JDK 17. Run `flutter doctor -v` and check the Java version.
+- Use JDK 17 or newer. Run `flutter doctor -v` and check the Java version.
 - Accept Android SDK licenses: `flutter doctor --android-licenses`.
 - Clean only when necessary; deleting `build/` is safe, deleting user data or
   generated source is not:
@@ -412,14 +412,18 @@ and rerun.
 - Ensure `android/local.properties` points at the installed Flutter SDK.
 - If Gradle fails after an SDK/AGP upgrade, read the first error, not the last
   cascade.
-- Release builds currently use debug signing as a placeholder. Configure a private
-  keystore before distribution.
+- Release builds use `android/key.properties` when present and fall back to the
+  debug key only for local verification. This project is signed with a private
+  upload key stored outside the repository; never publish a debug-signed
+  artifact. See [Release guide](release.md#release--upload-key).
 
 ## App cannot be installed over an existing build
 
-The signing key changed. Uninstall the old development build first, or use the same
-signing key consistently. Never uninstall a production app without confirming that
-cloud data is synchronized and local-only drafts are backed up.
+If `adb install` reports `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, the installed app
+was signed with a different certificate. This project moved from the debug key to
+a private upload key, so older debug-signed installs must be uninstalled once.
+Uninstalling clears local SQLite data (favorites/pins are restored from the
+profile document after sign-in).
 
 ## Firebase quota or billing surprise
 

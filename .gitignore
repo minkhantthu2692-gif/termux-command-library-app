@@ -46,8 +46,12 @@ app.*.map.json
 
 # Local Android signing and credentials. Never commit these.
 android/key.properties
+**/key.properties
 *.jks
 *.keystore
+*.p12
+*.pem
+*.credentials.txt
 *-service-account.json
 # Firebase Android client configuration is provisioned per environment and may
 # contain API keys. Download it from the Firebase console instead of committing.
@@ -55,6 +59,11 @@ android/app/google-services.json
 firebase-debug.log
 firestore-debug.log
 node_modules/
+
+# Exported release snapshots and archives are build outputs, not sources.
+/final_release_*/
+/final_release_*.zip
+/final_release_*.zip.sha256
 
 
 # Widget Preview related

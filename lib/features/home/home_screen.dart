@@ -930,7 +930,6 @@ class _PinnedCard extends StatelessWidget {
       width: 250,
       child: Material(
         color: context.appColors.card,
-        borderRadius: AppRadius.medium,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.medium,
           side: BorderSide(

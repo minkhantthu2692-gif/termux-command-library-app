@@ -22,7 +22,7 @@
 အောက်ပါအစီအစဉ်သည် ဤ repository ၏ လက်ရှိ အခြေအနေကို ပြသည်။
 Firebase အဆင့်များ၊ build/install နှင့် admin edit/delete စမ်းသပ်မှုကို
 ပြီးစီးထားပြီးဖြစ်သည်။ Groq AI ကိုလည်း စက်ပေါ်တွင် စမ်းသပ်ပြီးဖြစ်သည်။
-ကျန်ရှိသော Termux ပြင်ဆင်မှုနှင့် release keystore ကို ဆက်လုပ်ပါ။
+ကျန်ရှိသော Termux ပြင်ဆင်မှုကို ဆက်လုပ်ပါ။
 
 | အစီအစဉ် | လုပ်ငန်း | အခြေအနေ |
 | --- | --- | --- |
@@ -36,12 +36,12 @@ Firebase အဆင့်များ၊ build/install နှင့် admin edit
 | ၈ | Termux ပြင်ဆင်ခြင်း | ⬜ မရသေး |
 | ၉ | Groq API ကီး ထည့်ခြင်း | ✅ ပြီး (စက်ပေါ် စမ်းသပ်ပြီး) |
 | ၁၀ | Admin custom claim သတ်မှတ်ခြင်း | ✅ ပြီး (claim သတ်မှတ်ပြီး) |
-| ၁၁ | Release keystore ဖြင့် လက်မှတ်ထိုးခြင်း | ⬜ ဖြန့်ဝေမှသာ |
+| ၁၁ | Release keystore ဖြင့် လက်မှတ်ထိုးခြင်း | ✅ ပြီး (upload key ဖြင့်) |
 
 > **အရေးကြီး:** Firebase ချိတ်ဆက်မှု (provider များ၊ Firestore၊ rules၊
-> indexes)၊ APK build/install၊ admin edit/delete စမ်းသပ်မှုနှင့် Groq AI
-> စမ်းသပ်မှုကို ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော Termux ပြင်ဆင်မှုနှင့်
-> release keystore ကို သင်ကိုယ်တိုင် လုပ်ရမည်။
+> indexes)၊ APK build/install၊ admin edit/delete စမ်းသပ်မှု၊ Groq AI
+> စမ်းသပ်မှုနှင့် release signing ကို ပြီးစီးထားပြီးဖြစ်သည်။ ကျန်ရှိသော
+> Termux ပြင်ဆင်မှုကို သင်ကိုယ်တိုင် လုပ်ရမည်။
 > လျှို့ဝှက် credential များကို chat ထဲ မပို့ပါနှင့်။
 
 ---
@@ -54,10 +54,10 @@ Firebase အဆင့်များ၊ build/install နှင့် admin edit
 | --- | --- | --- |
 | Source code | ✅ ပြီး | TODO/FIXME မရှိ၊ feature အားလုံး ရေးထားပြီး |
 | Static analysis | ✅ ပြီး | `flutter analyze` — ပြဿနာ မတွေ့ |
-| Dart tests | ✅ ပြီး | `flutter test` — 224/224 အောင် |
+| Dart tests | ✅ ပြီး | `flutter test` — 272/272 အောင် |
 | Firestore rules tests | ✅ ပြီး | emulator တွင် 29/29 အောင် |
-| Debug APK build | ✅ ပြီး | `app-debug.apk` (216.7 MB) |
-| Release APK build | ✅ ပြီး | `app-release.apk` (71.2 MB) — debug key ဖြင့် |
+| Debug APK build | ✅ ပြီး | `app-debug.apk` (debug artifact၊ ဖြန့်ဝေရန် မဟုတ်) |
+| Release APK build | ✅ ပြီး | `app-release.apk` (72.9 MB) — upload key ဖြင့် |
 | Native Kotlin haptics | ✅ compile အောင် | `HapticsController.class` APK ထဲ ပါဝင် |
 | GitHub push | ✅ ပြီး | `origin/main` |
 | Firebase project ချိတ်ဆက်မှု | ✅ ဖိုင် ရှိ | `google-services.json` package ကိုက်ညီ |
@@ -65,20 +65,19 @@ Firebase အဆင့်များ၊ build/install နှင့် admin edit
 | Auth provider များ | ✅ ဖွင့်ပြီး | Email၊ Anonymous၊ Google၊ GitHub |
 | Google SHA-1 လက်ဗွေ | ✅ ပါပြီ | JSON ထဲတွင် Android OAuth client ပါပြီ |
 | Google ဝင်ရောက်မှု နည်းလမ်း | ✅ code ပြီး | Native account picker (`google_sign_in`) — browser မလိုပါ။ စက်တွင် စမ်းသပ်ရန် ကျန်။ |
-| Google SHA-256 လက်ဗွေ | ⚠️ မစစ်ရသေး | JSON တွင် မပါပါ (ပုံမှန်)။ Console တွင် စစ်ပါ |
+| Google SHA-256 လက်ဗွေ | ✅ ပြီး | debug နှင့် release SHA-1/SHA-256 လေးခုလုံး Firebase တွင် မှတ်ပုံတင်ပြီး |
 | Firestore database | ✅ ရှိ | `(default)`၊ Firestore Native |
 | Rules နှင့် Indexes | ✅ deploy ပြီး | index နှစ်ခုလုံး `READY` |
 | စက်ပေါ် install/စမ်းသပ်မှု | ✅ ပြီး | Xiaomi `2312DRAABC` တွင် install ပြီး admin edit/delete စမ်းပြီး |
 | Admin custom claim | ✅ သတ်မှတ်ပြီး | Profile တွင် **Admin** ပြ၍ စစ်ပြီး |
-| Release signing | ❌ မပါ | လက်ရှိ release သည် debug key သုံးထား |
+| Release signing | ✅ ပြီး | 4096-bit upload key (alias `main-upload`)၊ SHA-1 `39:93:56:E7:…:59:4A` |
 | Termux ပြင်ဆင်မှု | ⬜ မရသေး | `allow-external-apps` နှင့် permission လိုအပ် |
 | Groq API ကီး | ✅ စမ်းပြီး | 2026-10-28 တွင် စက်ပေါ်၌ ကီး၊ model ရွေးချယ်မှု၊ stream အဖြေ၊ token နှင့် cache စမ်းပြီး |
 
 **အနှစ်ချုပ်:** code၊ ဒေသတွင်း (offline) အလုပ်လုပ်မှု၊ Firebase project
 ချိတ်ဆက်မှု၊ auth provider များ၊ Firestore rules/indexes၊ APK build/install၊
 စက်ပေါ်တွင် admin edit/delete စမ်းသပ်မှုနှင့် Groq AI စမ်းသပ်မှု
-အားလုံး ပြီးစီးထားသည်။ ကျန်သည်မှာ **Termux ပြင်ဆင်ခြင်း** နှင့်
-ဖြန့်ဝေလိုမှသာ **release keystore** ဖြစ်သည်။
+အားလုံး ပြီးစီးထားသည်။ ကျန်သည်မှာ **Termux ပြင်ဆင်ခြင်း** သာ ဖြစ်သည်။
 
 ---
 
@@ -245,16 +244,16 @@ SHA256: XX:XX:...
 > ဖိုင်အဟောင်းဖြင့် build ထားသော APK တွင် SHA အသစ် မပါပါ။
 > **ပြန် build လုပ်ရမည်။** Hot reload ဖြင့် မရပါ။
 
-### ၃.၄ Release လက်ဗွေ (ဖြန့်ဝေမည်ဆိုမှ)
+### ၃.၄ Release လက်ဗွေ (ပြီးစီး)
 
-Release keystore ကို **အဆင့် ၁၁** တွင် ဖန်တီးပြီးမှ:
+Release keystore ကို **အဆင့် ၁၁** တွင် ပြင်ဆင်ပြီးဖြစ်သည်:
 
 ```powershell
-keytool -list -v -alias upload -keystore android\upload-keystore.jks
+keytool -list -v -alias main-upload -keystore C:\Users\minkh\keystores\termux-command-library-main-upload.jks
 ```
 
-ရလာသော SHA-1/SHA-256 ကိုလည်း Console တွင် ထည့်ပါ။
-မထည့်လျှင် release APK တွင် Google Sign-In မအောင်မြင်ပါ။
+ရလာသော SHA-1/SHA-256 ကို Console တွင် ထည့်ပြီးဖြစ်သည်။
+ထို့ကြောင့် release APK တွင် Google Sign-In အလုပ်လုပ်နိုင်သည်။
 
 ---
 
@@ -410,7 +409,7 @@ flutter build apk --debug
 adb install -r build\app\outputs\flutter-apk\app-debug.apk
 ```
 
-သို့မဟုတ် ဆိုဒ်သေးပြီး မြန်သည့် release APK (debug key ဖြင့်
+သို့မဟုတ် ဆိုဒ်သေးပြီး မြန်သည့် release APK (upload key ဖြင့်
 လက်မှတ်ထိုးထားသည်၊ စမ်းသပ်ရန် သင့်တော်သည်):
 
 ```bash
@@ -434,7 +433,7 @@ flutter run
 
 ### ၇.၃ ဖိုင်ဆိုဒ် လျှော့ချခြင်း (မဖြစ်မနေ မဟုတ်)
 
-Debug APK တွင် ABI အားလုံး ပါသဖြင့် ဆိုဒ်ကြီးသည် (၂၁၆ MB ခန့်)။
+Debug APK တွင် ABI အားလုံး ပါသဖြင့် ဆိုဒ်ကြီးသည် (၁၈၅ MB ခန့်)။
 စက်တစ်ခုအတွက်သာ လိုလျှင်:
 
 ```bash
@@ -713,65 +712,66 @@ role အသစ်ကို UI နှင့် sync coordinator သို့ ခ�
 
 ### ၁၂.၁ လက်ရှိ အခြေအနေ
 
-`android/app/build.gradle.kts` ၏ အောက်ပါအပိုင်းတွင်
-release build သည် **debug key** ဖြင့် လက်မှတ်ထိုးထားသည်:
+ဤ project ကို **4096-bit RSA upload key** ဖြင့် လက်မှတ်ထိုးထားပြီး
+ဖြစ်သည်။ Keystore ကို repository အပြင်တွင် သိမ်းထားသည်:
 
-```kotlin
-release {
-    // TODO: Add your own signing config for the release build.
-    signingConfig = signingConfigs.getByName("debug")
-}
+```text
+C:\Users\minkh\keystores\termux-command-library-main-upload.jks
+alias: main-upload
 ```
 
-ဤအခြေအနေဖြင့် ဖြန့်ဝေ၍ မရပါ။ သင့်ကိုယ်ပိုင် keystore လိုသည်။
+`android/key.properties` သည် ထိုဖိုင်ကို ညွှန်ပြသည်။ ဖိုင်ထဲတွင် password
+ပါသောကြောင့် Git၊ ZIP သို့မဟုတ် chat ထဲ **မထည့်ပါနှင့်**။
 
-> **လက်ရှိ build:** `app-release.apk` (71.2 MB) ကို ထုတ်ပြီးဖြစ်သည်။
-> ၎င်းသည် release mode ဖြင့် compile ထားသော်လည်း **debug key** ဖြင့်
-> လက်မှတ်ထိုးထားသည်။ `apksigner` ဖြင့် စစ်ဆေးပြီး လက်ဗွေနှစ်ခုလုံး
-> Firebase တွင် ထည့်ထားသည့် တန်ဖိုးများနှင့် ကိုက်ညီသည်:
->
-> ```text
-> SHA-1   ef4069727593878b4d2c56caf4684370c491dd00
-> SHA-256 63421e96b0707e58933bbd3856e517fd67e1654dc485e6d8e566f3ae30b96e22
-> ```
->
-> ထို့ကြောင့် ဤ APK ကို စက်ထဲ ထည့်၍ စမ်းသပ်နိုင်သည်။
-> သို့သော် Google Play က လက်ခံမည် မဟုတ်ပါ။
->
-> **လက်ရှိ စက်ပေါ် install:** release mode APK ကို Xiaomi `2312DRAABC`
-> တွင် install ပြီး admin edit/delete လုပ်ဆောင်ချက်များကို
-> စမ်းသပ်ပြီးဖြစ်သည်။ ဤ APK သည် ဖြန့်ဝေရန် မဟုတ်သေးပါ။
+| လက်မှတ် | SHA-1 | SHA-256 |
+| --- | --- | --- |
+| Upload | `39:93:56:E7:0F:D6:92:DE:AC:34:39:E8:D8:98:3A:FB:C6:78:59:4A` | `55:C9:FB:28:8C:52:5B:AA:BE:27:14:49:67:E7:4A:7A:D4:9E:23:8C:69:A2:BA:D9:81:0F:29:B2:01:1B:4A:CB` |
+| Debug | `EF:40:69:72:75:93:87:8B:4D:2C:56:CA:F4:68:43:70:C4:91:DD:00` | `63:42:1E:96:B0:70:7E:58:93:3B:BD:38:56:E5:17:FD:67:E1:65:4D:C4:85:E6:D8:E5:66:F3:AE:30:B9:6E:22` |
 
-### ၁၂.၂ Keystore ဖန်တီးခြင်း
+လက်ဗွေ လေးခုလုံးကို Firebase Android app
+`1:901373434656:android:6a53fc7c6af468aa011545` (project
+`termuxcommandlibrary`) တွင် မှတ်ပုံတင်ပြီးဖြစ်သည်။
+
+`android/key.properties` မရှိလျှင် build သည် debug key သို့ ပြန်ကျသည်။
+ထို artifact ကို ဖြန့်ဝေခြင်း **မပြုပါနှင့်**။
+
+> **လက်ရှိ build:** `app-release.apk` (72.9 MB) နှင့် `app-release.aab`
+> (71.8 MB) ကို upload key ဖြင့် ထုတ်ပြီးဖြစ်သည်။ `apksigner` ဖြင့်
+> စစ်ဆေးပြီး signer မှာ `CN=Termux Command Library Main Upload` ဖြစ်သည်။
+
+### ၁၂.၂ Keystore အသစ် ဖန်တီးခြင်း (အခြား machine အတွက်)
+
+အခြား machine တွင် ပြန်လည် build လုပ်လိုလျှင် keystore နှင့် password ကို
+လုံခြုံသော backup မှ ပြန်ယူပြီး `android/key.properties` ကို ပြန်ဖန်တီးပါ။
+လက်ဗွေများ ကိုက်ညီမှုကို ဤ command ဖြင့် စစ်ပါ:
 
 ```powershell
-keytool -genkey -v `
-  -keystore android\upload-keystore.jks `
-  -storetype JKS `
-  -keyalg RSA -keysize 2048 -validity 10000 `
-  -alias upload
+keytool -list -v -keystore C:\Users\minkh\keystores\termux-command-library-main-upload.jks -alias main-upload
 ```
 
-Password နှစ်ခုကို မှတ်ထားပါ။ **မပျောက်ပါစေနှင့်** —
-ပျောက်လျှင် app update မတင်နိုင်တော့ပါ။
+Keystore ကို ပျောက်လျှင် app update အသစ် မတင်နိုင်တော့ပါ။
+ထို့ကြောင့် encrypted backup နှစ်ခုကို သီးခြားနေရာတွင် သိမ်းပါ။
 
-### ၁၂.၃ `android/key.properties` ဖန်တီးခြင်း
+### ၁၂.၃ `android/key.properties` အခြေအနေ
+
+ဖိုင်ကို ဖန်တီးပြီးဖြစ်သည် (Git တွင် ပိတ်ထား):
 
 ```properties
-storePassword=YOUR_STORE_PASSWORD
-keyPassword=YOUR_KEY_PASSWORD
-keyAlias=upload
-storeFile=../upload-keystore.jks
+storePassword=...
+keyPassword=...
+keyAlias=main-upload
+storeFile=C:/Users/minkh/keystores/termux-command-library-main-upload.jks
 ```
 
 ဤဖိုင်နှင့် `.jks` ဖိုင်ကို Git ထဲ **မထည့်ပါနှင့်**။
 `.gitignore` တွင် ပိတ်ထားပြီးဖြစ်သည်။
 
-### ၁၂.၄ `build.gradle.kts` ပြင်ခြင်း
+### ၁၂.၄ `build.gradle.kts` အခြေအနေ
 
-`android/app/build.gradle.kts` ၏ အပေါ်ပိုင်းတွင်
-`key.properties` ဖတ်ပြီး signing config ဖန်တီးကာ
-`release` block ထဲတွင် အသုံးပြုပါ။
+`android/app/build.gradle.kts` တွင် `key.properties` ဖတ်ပြီး
+release signing config ဖန်တီးသည့် အပိုင်းကို ထည့်ထားပြီးဖြစ်သည်။
+ထို့ကြောင့် အပေါ်ပါ `key.properties` ဖိုင်ကို ဖန်တီးရုံဖြင့်
+release build သည် သင့် keystore ကို အလိုအလျောက် အသုံးပြုမည်။
 
 ### ၁၂.၅ Build လုပ်ခြင်း
 
@@ -867,7 +867,7 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 | မြန်မာစာ မဖတ်နိုင် | Font fallback မရ | မြန်မာဘာသာ ရွေးပါ။ Bundled fallback font ကို မဖျက်ပါ |
 | Admin ဟု မပြ | Claim အသစ် မရ / token အိုနေသည် | Admin claim ရှိကြောင်း စစ်ပါ။ **Settings → Account → Refresh account type** နှိပ်ပါ သို့မဟုတ် sign out/in လုပ်ပါ |
 | ဖျက်ထားသော guide ပြန်ပေါ် | ဟောင်းသော build သို့မဟုတ် မပြီးသော delete queue | နောက်ဆုံး build သို့ update လုပ်ပါ။ Sync badge တွင် pending/error ရှိ/မရှိ စစ်ပြီး refresh လုပ်ပါ |
-| Release build crash | Debug key ဖြင့် လက်မှတ်ထိုး | ကိုယ်ပိုင် keystore ဖြင့် ပြန် build လုပ်ပါ |
+| Release build crash | ကိုယ်ပိုင် keystore မသုံးထား / R8 ပြဿနာ | ကိုယ်ပိုင် keystore ဖြင့် ပြန် build လုပ်ပြီး logcat စစ်ပါ |
 
 အသေးစိတ်: [Troubleshooting](troubleshooting.md)။
 
@@ -897,18 +897,18 @@ projectId) သည် app binary ထဲ ပါလေ့ရှိသော client 
 1. Firebase provider များ ဖွင့်ခြင်း — ✅ **ပြီး** (Email၊ Anonymous၊ Google၊ GitHub)
 2. Firestore database ဖန်တီးပြီး rules/indexes deploy လုပ်ခြင်း — ✅ **ပြီး**
    (index နှစ်ခုလုံး `READY`)
-3. SHA လက်ဗွေ — ✅ **SHA-1 ပြီး**၊ SHA-256 ကို Console တွင် စစ်ရန် ကျန်
+3. SHA လက်ဗွေ — ✅ **ပြီး** (debug နှင့် release SHA-1/SHA-256 လေးခုလုံး မှတ်ပုံတင်ပြီး)
 4. GitHub OAuth App — ✅ **ပြီး** (provider ဖွင့်ပြီး)၊
    **Enable Device Flow** ကို GitHub တွင် အမှန်ခြစ်ရန် ကျန်
 5. စက်ပေါ်တွင် install လုပ်ပြီး အဓိက flow များ စမ်းသပ်ခြင်း — ✅ **ပြီး**
    (admin edit/delete၊ attribution ထိန်းသိမ်းမှု၊ delete ပြီးနောက်
    ပြန်မပေါ်ခြင်းတို့ကို စစ်ပြီး)
 6. Termux ပြင်ဆင်ခြင်း — ⬜ **မလုပ်ရသေး**
-7. Release keystore — ⬜ **မလုပ်ရသေး** (Play Store ဖြန့်ဝေမှသာ)
+7. Release keystore — ✅ **ပြီး** (upload key ဖြင့် လက်မှတ်ထိုးပြီး)
 8. Groq API ကီး — ✅ **ပြီး** (2026-10-28 စက်ပေါ် စမ်းပြီး၊ BYOK)
 
 အထက်ပါ ၆ ကို ပြီးလျှင် app သည် အသုံးပြုရန် အသင့် ဖြစ်မည်။
-Release ဖြန့်ဝေလိုမှသာ **အဆင့် ၁၁** (keystore) ကို ထပ်လုပ်ပါ။
+Release signing ကို **အဆင့် ၁၁** တွင် ပြီးစီးထားပြီးဖြစ်သည်။
 Admin claim ကို **အဆင့် ၁၀** တွင် သတ်မှတ်ပြီးဖြစ်သည်။
 
 ---

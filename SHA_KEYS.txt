@@ -1,0 +1,89 @@
+Termux Command Library — Android signing fingerprints
+====================================================
+
+Verified: 2026-11-01 (local)
+Project: Termux Command Library (Main Project)
+Package: com.termuxcommandlibrary.mm
+Version: 1.0.0+1
+Firebase project: termuxcommandlibrary (901373434656)
+Firebase Android app: 1:901373434656:android:6a53fc7c6af468aa011545
+
+SECURITY NOTE
+-------------
+This file records public certificate fingerprints and artifact checksums only.
+It contains no passwords, private key material or keystore secrets.
+
+DEBUG KEYSTORE
+--------------
+Label: debug
+Path: C:\Users\minkh\.android\debug.keystore
+Alias: androiddebugkey
+Certificate DN: C=US, O=Android, CN=Android Debug
+SHA-1:   EF:40:69:72:75:93:87:8B:4D:2C:56:CA:F4:68:43:70:C4:91:DD:00
+SHA-256: 63:42:1E:96:B0:70:7E:58:93:3B:BD:38:56:E5:17:FD:67:E1:65:4D:C4:85:E6:D8:E5:66:F3:AE:30:B9:6E:22
+Note: Standard per-machine Android debug key. Never use it for distribution.
+
+RELEASE / UPLOAD KEYSTORE
+-------------------------
+Label: upload
+Path: C:\Users\minkh\keystores\termux-command-library-main-upload.jks
+Alias: main-upload
+Key: RSA 4096-bit, SHA256withRSA, validity 10000 days
+Certificate DN: CN=Termux Command Library Main Upload, OU=Android,
+                O=Termux Command Library, L=Yangon, ST=Yangon, C=MM
+SHA-1:   39:93:56:E7:0F:D6:92:DE:AC:34:39:E8:D8:98:3A:FB:C6:78:59:4A
+SHA-256: 55:C9:FB:28:8C:52:5B:AA:BE:27:14:49:67:E7:4A:7A:D4:9E:23:8C:69:A2:BA:D9:81:0F:29:B2:01:1B:4A:CB
+
+The keystore and its credentials file live outside the repository:
+  C:\Users\minkh\keystores\termux-command-library-main-upload.credentials.txt
+Never commit, zip, email or paste either file.
+
+FIREBASE REGISTRATION
+---------------------
+All four fingerprints are registered in the existing Firebase Android app:
+  SHA-1   ef4069727593878b4d2c56caf4684370c491dd00   (debug)
+  SHA-256 63421e96b0707e58933bbd3856e517fd67e1654dc485e6d8e566f3ae30b96e22 (debug)
+  SHA-1   399356e70fd692deac3439e8d8983afbc678594a   (release/upload)
+  SHA-256 55c9fb288c525baabe27144967e74a7ad49e238c69a2bad9810f29b2011b4acb (release/upload)
+
+Verified with:
+  firebase apps:android:sha:list 1:901373434656:android:6a53fc7c6af468aa011545 --project termuxcommandlibrary
+
+BUILT ARTIFACT SIGNERS
+----------------------
+build/app/outputs/flutter-apk/app-debug.apk
+  Signer: Android Debug
+  SHA-1:   EF:40:69:72:75:93:87:8B:4D:2C:56:CA:F4:68:43:70:C4:91:DD:00
+  SHA-256: 63:42:1E:96:B0:70:7E:58:93:3B:BD:38:56:E5:17:FD:67:E1:65:4D:C4:85:E6:D8:E5:66:F3:AE:30:B9:6E:22
+
+build/app/outputs/flutter-apk/app-release.apk
+  Signer: CN=Termux Command Library Main Upload
+  SHA-1:   39:93:56:E7:0F:D6:92:DE:AC:34:39:E8:D8:98:3A:FB:C6:78:59:4A
+  SHA-256: 55:C9:FB:28:8C:52:5B:AA:BE:27:14:49:67:E7:4A:7A:D4:9E:23:8C:69:A2:BA:D9:81:0F:29:B2:01:1B:4A:CB
+  Schemes: APK Signature Scheme v2 (v1 not used; minSdk 24)
+
+build/app/outputs/bundle/release/app-release.aab
+  Signer: CN=Termux Command Library Main Upload
+  SHA-1:   39:93:56:E7:0F:D6:92:DE:AC:34:39:E8:D8:98:3A:FB:C6:78:59:4A
+  SHA-256: 55:C9:FB:28:8C:52:5B:AA:BE:27:14:49:67:E7:4A:7A:D4:9E:23:8C:69:A2:BA:D9:81:0F:29:B2:01:1B:4A:CB
+
+ARTIFACT CHECKSUMS (SHA-256)
+----------------------------
+9841D5612627B04CEF8A442FA9827FAD7DF7227E0569D02ED302D6923FCE3D46  app-debug.apk   (256.11 MB)
+CAA0C14F9AA17320F3D42F707B5D9DC12471460DD060B05F66AAE1A78AE291AD  app-release.apk (72.85 MB)
+E7B7B3C8BED2940DCFD80385FA6B6A32718CFE246A29592D688FC783ABE9FCA6  app-release.aab (71.85 MB)
+
+KEYSTORE BACKUP
+---------------
+1. Copy the .jks and its credentials file into an encrypted archive.
+2. Store the archive on two separate offline media in different locations.
+3. Record the SHA-256 checksum of the .jks next to the archive.
+4. Restore-test the backup in a temporary folder and confirm the fingerprints
+   above with: keytool -list -v -keystore <restored file> -alias main-upload
+5. Losing this key permanently prevents updates under the same signing identity.
+
+NOTE ON PLAY APP SIGNING
+------------------------
+If Play App Signing is enabled, Google re-signs the bundle with its own app
+signing key. Register that key's SHA-1/SHA-256 in Firebase as well, otherwise
+Google Sign-In fails in Play-distributed builds.

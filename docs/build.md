@@ -6,15 +6,39 @@
 | --- | --- |
 | Flutter | 3.47.8 (stable) |
 | Dart | 3.13.7 |
-| Java/JDK | 17 |
+| Java/JDK | 17 or newer (verified with Android Studio's bundled JDK 25.0.3) |
 | Android min SDK | 24 (Android 7.0) |
 | Android compile/target SDK | Flutter defaults for the installed Flutter version |
 | Android Gradle Plugin | 9.1.0 |
 | Kotlin | 2.4.0 |
 
-Use a JDK that matches the Android Gradle Plugin requirement (JDK 17 is the safe
-choice for this repository). Flutter's Android Studio bundle includes a suitable
-JDK; `flutter doctor -v` shows which one is in use.
+Use a JDK that matches the Android Gradle Plugin requirement (JDK 17 is the
+minimum; this project was verified with Android Studio's bundled JDK 25.0.3).
+Flutter's Android Studio bundle includes a suitable JDK; `flutter doctor -v`
+shows which one is in use.
+
+## Direct dependencies
+
+| Package | Purpose |
+| --- | --- |
+| `flutter_riverpod` | Application state and dependency injection |
+| `go_router` | Declarative navigation and the four-tab shell |
+| `drift`, `drift_flutter` | SQLite schema, DAOs and native database access |
+| `firebase_core`, `firebase_auth`, `cloud_firestore` | Authentication and Firestore only |
+| `flutter_secure_storage` | BYOK API key storage |
+| `http` | Groq HTTP and streaming requests |
+| `file_picker` | Bounded AI attachment selection |
+| `url_launcher` | External documentation and Termux release links |
+| `intl` | Date and number formatting |
+| `crypto` | Cache keys and request hashing |
+| `uuid` | Local entity identifiers |
+| `flutter_markdown_plus` | Help-centre and Markdown rendering |
+| `google_sign_in` | Google authentication provider |
+| `dynamic_color`, `material_color_utilities` | Android 12+ wallpaper colour support |
+| `flutter_svg` | Bundled avatar and brand artwork |
+
+`path` and `path_provider` are pulled transitively by `drift_flutter`; the app
+does not import them directly, so they are intentionally not declared again.
 
 ## First-time setup
 
@@ -104,46 +128,57 @@ With `android/app/google-services.json` in place, no build flags are needed. If
 you use compile-time overrides instead, append the same `--dart-define` flags to
 `flutter build`.
 
-## Release APK
+## Release APK and App Bundle
 
 ```bash
 flutter build apk --release
+flutter build appbundle --release
 ```
 
-The current `android/app/build.gradle.kts` deliberately uses the debug signing
-configuration for release builds as a development placeholder. **Do not distribute
-that artifact as a production release.**
+Outputs:
 
-To configure a private release key:
+```text
+build/app/outputs/flutter-apk/app-release.apk
+build/app/outputs/bundle/release/app-release.aab
+```
 
-1. Create a keystore outside the repository, for example:
+Signing is resolved automatically from `android/key.properties`:
 
-   ```bash
-   keytool -genkeypair -v \
-     -keystore ~/keystores/termux-command-library.jks \
-     -keyalg RSA -keysize 2048 -validity 10000 \
-     -alias termux-command-library
+1. The project already uses an upload keystore kept **outside** the repository:
+
+   ```text
+   C:\Users\minkh\keystores\termux-command-library-main-upload.jks
+   alias: main-upload (RSA 4096, valid for 10000 days)
    ```
 
-2. Create `android/key.properties` (already ignored by Git):
+2. `android/key.properties` (git-ignored) points at it:
 
    ```properties
    storePassword=...
    keyPassword=...
-   keyAlias=termux-command-library
-   storeFile=/absolute/path/to/termux-command-library.jks
+   keyAlias=main-upload
+   storeFile=C:/Users/minkh/keystores/termux-command-library-main-upload.jks
    ```
 
-3. Load the properties in `android/app/build.gradle.kts` and define a release
-   signing config, then use it in `buildTypes.release`.
-4. Never commit the keystore, `key.properties`, passwords or the extracted signing
-   certificate.
-5. Build and verify the signed APK/AAB:
+3. Build with the commands above. `android/app/build.gradle.kts` loads the file
+   when present and uses the `release` signing config automatically.
 
-   ```bash
-   flutter build apk --release
-   flutter build appbundle --release
-   ```
+To provision a fresh machine, copy the keystore and credentials from the secure
+backup, recreate `android/key.properties`, and confirm the fingerprints with
+`keytool -list -v`. The expected values are listed in
+[Release guide](release.md#release--upload-key).
+
+If `android/key.properties` is absent, the release build falls back to the debug
+key so `flutter run --release` and local verification still work. **That fallback
+artifact is not suitable for distribution.** Never commit the keystore,
+`key.properties`, passwords or the extracted signing certificate.
+
+Verify the signer before publishing:
+
+```bash
+"$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs \
+  build/app/outputs/flutter-apk/app-release.apk
+```
 
 Flutter can split by ABI to reduce APK size:
 
@@ -207,7 +242,7 @@ zone.
 Firebase rules tests and live Firebase/Groq end-to-end tests require external
 projects and are not run by `flutter test`.
 
-The Dart suite currently passes **224 tests**, and the Firestore rules tests pass
+The Dart suite currently passes **272 tests**, and the Firestore rules tests pass
 **29 cases** locally against the Firestore emulator with Node (Java only for the
 emulator itself). See
 [Security Rules › Emulator testing](security-rules.md#emulator-testing) for the
@@ -229,6 +264,24 @@ Use a pinned Flutter version. Do not inject production Firebase service-account
 credentials into PR builds. Firebase client identifiers can be supplied as CI
 secrets if an online smoke build is needed, but PRs from forks must not receive
 them.
+
+## Final release package layout
+
+The finalization workflow produces:
+
+```text
+final_release_<YYYYMMDD_HHMM>/
+  exports/debug/app-debug.apk
+  exports/release/app-release.apk
+  exports/bundle/app-release.aab
+  SHA_KEYS.txt
+  FINALIZATION_NOTES.md
+  <cleaned Flutter project>
+final_release_<YYYYMMDD_HHMM>.zip
+```
+
+The ZIP excludes signing secrets, `android/app/google-services.json`, build
+caches, `.git`, `node_modules` and logs. See [Release guide](release.md).
 
 ## Generated files
 

@@ -44,7 +44,7 @@ Firebase ကို **Authentication နှင့် Cloud Firestore** အတွ�
 | --- | --- |
 | Flutter | 3.47.8 သို့မဟုတ် အထက် (stable) |
 | Dart | 3.13.7 သို့မဟုတ် အထက် |
-| JDK | 17 |
+| JDK | 17 သို့မဟုတ် အထက် |
 | Android SDK | API 24 (Android 7.0) နှင့် အထက် |
 | Node.js | Firebase CLI အတွက် (ရွေးချယ်နိုင်) |
 | Android စက် သို့မဟုတ် Emulator | app စမ်းသပ်ရန် |
@@ -555,12 +555,14 @@ APK ကို ဤနေရာတွင် တွေ့နိုင်သည်:
 build/app/outputs/flutter-apk/
 ```
 
-**ထုတ်ဝေရန် အရေးကြီး:** လက်ရှိ `android/app/build.gradle.kts` သည်
-release build အတွက် debug signing ကို ယာယီသုံးထားသည်။ တကယ့်
-ထုတ်ဝေမှုအတွက် သင့်ကိုယ်ပိုင် keystore ဖြင့် release signing
-ပြင်ဆင်ရမည်။ Keystore၊ password နှင့် `android/key.properties` ကို
-Git သို့ မတင်ပါနှင့်။ အဆင့်ပြည့်:
-[Build instructions](build.md)။
+**ထုတ်ဝေရန် အရေးကြီး:** `android/app/build.gradle.kts` သည်
+`android/key.properties` ရှိလျှင် သင့် release keystore ကို
+အလိုအလျောက် အသုံးပြုသည်။ ဤ project တွင် 4096-bit upload key
+(`main-upload`) ကို repository အပြင်တွင် သိမ်းပြီး လက်မှတ်ထိုးထားသည်။
+ဖိုင်မရှိလျှင် ဒေသတွင်း စမ်းသပ်မှုအတွက် debug key ဖြင့် build လုပ်သည် —
+ထို artifact ကို ဖြန့်ဝေ၍ မရပါ။ Keystore၊ password နှင့်
+`android/key.properties` ကို Git သို့ မတင်ပါနှင့်။ အဆင့်ပြည့်:
+[Build instructions](build.md) နှင့် [Release guide](release.md)။
 
 ---
 
