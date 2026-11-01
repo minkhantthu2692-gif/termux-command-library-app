@@ -116,7 +116,9 @@ class CommandCodeBlock extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.x3),
-                      Text(command, style: style),
+                      // Selectable even with the line-number gutter so long
+                      // scripts can be copied by hand, not just with the button.
+                      SelectableText(command, style: style),
                     ],
                   )
                 : SelectableText(

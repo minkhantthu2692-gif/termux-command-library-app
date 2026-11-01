@@ -8,11 +8,17 @@ import '../../core/design_system/app_tokens.dart';
 import '../../data/services/termux_service.dart';
 import '../../shared/utils/ui_actions.dart';
 import '../../shared/utils/url_actions.dart';
-import '../../shared/widgets/app_note.dart';
 import '../../shared/widgets/app_page.dart';
 import '../../shared/widgets/command_code_block.dart';
 import '../../shared/widgets/status_pill.dart';
 import 'termux_run_flow.dart';
+
+const _externalAppsCommand =
+    'mkdir -p ~/.termux\n'
+    'echo "allow-external-apps=true" >> ~/.termux/termux.properties\n'
+    'termux-reload-settings';
+
+const _termuxApiCommand = 'pkg install termux-api';
 
 class TermuxGuideScreen extends ConsumerStatefulWidget {
   const TermuxGuideScreen({super.key});
@@ -250,13 +256,12 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.x3),
-                const CommandCodeBlock(
-                  command:
-                      'mkdir -p ~/.termux\n'
-                      'echo "allow-external-apps=true" >> ~/.termux/termux.properties\n'
-                      'termux-reload-settings',
+                CommandCodeBlock(
+                  command: _externalAppsCommand,
                   label: '~/.termux/termux.properties',
                   showLineNumbers: true,
+                  onCopy: () =>
+                      copyWithFeedback(context, ref, _externalAppsCommand),
                 ),
                 const SizedBox(height: AppSpacing.x2),
                 Text(
@@ -367,9 +372,11 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.x2),
-                const CommandCodeBlock(
-                  command: 'pkg install termux-api',
+                CommandCodeBlock(
+                  command: _termuxApiCommand,
                   label: 'Termux',
+                  onCopy: () =>
+                      copyWithFeedback(context, ref, _termuxApiCommand),
                 ),
                 const SizedBox(height: AppSpacing.x3),
                 Wrap(
@@ -426,19 +433,6 @@ class _TermuxGuideScreenState extends ConsumerState<TermuxGuideScreen> {
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x4),
-          AppNote(
-            title: l10n.commandNotRun,
-            message: l10n.runConfirmationBody,
-            icon: Icons.info_outline_rounded,
-          ),
-          const SizedBox(height: AppSpacing.x4),
-          Text(
-            l10n.syncSecretsNote,
-            style: context.texts.labelSmall?.copyWith(
-              color: context.scheme.onSurfaceVariant,
             ),
           ),
         ],
